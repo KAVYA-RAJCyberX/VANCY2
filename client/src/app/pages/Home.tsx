@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +11,7 @@ export function Home() {
   const addItem = useCartStore((state) => state.addItem);
   const toggleWishlist = useWishlistStore((state) => state.addItem);
   const wishlistItems = useWishlistStore((state) => state.items);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
@@ -218,18 +220,27 @@ export function Home() {
         <div className="container mx-auto px-4 lg:px-8">
           
           <div className="flex items-center justify-center relative">
-            <button className="absolute left-0 z-10 w-16 h-16 bg-[#111111] border-2 border-white rounded-full shadow-2xl flex items-center justify-center text-white hover:bg-[#ba9a5a] -ml-2 lg:-ml-7 transition-colors">
+            <button 
+              onClick={() => setCarouselIndex(Math.max(0, carouselIndex - 1))}
+              disabled={carouselIndex === 0}
+              className={`absolute left-0 z-10 w-16 h-16 bg-[#111111] border-2 border-white rounded-full shadow-2xl flex items-center justify-center text-white -ml-2 lg:-ml-7 transition-colors ${carouselIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ba9a5a]'}`}
+            >
               <ChevronLeft className="w-10 h-10" />
             </button>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full px-10">
               {/* Featured Products Map */}
-              {/* Featured Products Map */}
               {isLoading ? (
-                <div className="col-span-1 sm:col-span-2 lg:col-span-4 py-20 text-center text-gray-500 font-bold tracking-widest uppercase">
-                  Loading latest collections...
+                <div className="col-span-1 sm:col-span-2 lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="aspect-[4/5] bg-gray-200 rounded-xl mb-4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 mx-auto"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
+                    </div>
+                  ))}
                 </div>
-              ) : products.slice(0, 4).map((product: any, i: number) => (
+              ) : products.slice(carouselIndex, carouselIndex + 4).map((product: any, i: number) => (
                 <motion.div 
                   key={product._id} 
                   className="flex flex-col group relative"
@@ -244,20 +255,26 @@ export function Home() {
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex justify-end p-3">
                       <div className="flex flex-col gap-2">
                         <button 
-                          onClick={() => toggleWishlist({
-                            id: product._id,
-                            name: product.name,
-                            price: product.price,
-                            image: product.images[0],
-                            originalPrice: product.originalPrice
-                          })}
-                          className="bg-white p-2 rounded-full shadow-md transition-colors"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const el = e.currentTarget;
+                            el.style.transform = 'scale(1.2)';
+                            setTimeout(() => el.style.transform = 'scale(1)', 300);
+                            toggleWishlist({
+                              id: product._id,
+                              name: product.name,
+                              price: product.price,
+                              image: product.images[0],
+                              originalPrice: product.originalPrice
+                            });
+                          }}
+                          className="bg-white p-2 rounded-full shadow-md transition-all duration-300"
                         >
-                          <svg className={`w-4 h-4 ${wishlistItems.some(i => i.id === product._id) ? 'text-red-500 fill-red-500' : 'text-gray-700 hover:text-red-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className={`w-4 h-4 transition-colors ${wishlistItems.some(i => i.id === product._id) ? 'text-[#C9A961] fill-[#C9A961]' : 'text-gray-700 hover:text-[#C9A961]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                           </svg>
                         </button>
-                        <Link to={`/product/${product.slug}`} className="bg-white p-2 rounded-full shadow-md text-gray-700 hover:text-black transition-colors block">
+                        <Link to={`/product/${product.slug}`} className="bg-white p-2 rounded-full shadow-md text-gray-700 hover:text-black transition-colors block active:scale-95">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </Link>
                       </div>
@@ -303,7 +320,11 @@ export function Home() {
               ))}
             </div>
 
-            <button className="absolute right-0 z-10 w-16 h-16 bg-[#111111] border-2 border-white rounded-full shadow-2xl flex items-center justify-center text-white hover:bg-[#ba9a5a] -mr-2 lg:-mr-7 transition-colors">
+            <button 
+              onClick={() => setCarouselIndex(Math.min(products.length - 4, carouselIndex + 1))}
+              disabled={carouselIndex >= products.length - 4}
+              className={`absolute right-0 z-10 w-16 h-16 bg-[#111111] border-2 border-white rounded-full shadow-2xl flex items-center justify-center text-white -mr-2 lg:-mr-7 transition-colors ${carouselIndex >= products.length - 4 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#ba9a5a]'}`}
+            >
               <ChevronRight className="w-10 h-10" />
             </button>
           </div>

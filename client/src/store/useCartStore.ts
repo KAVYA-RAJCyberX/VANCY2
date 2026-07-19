@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../lib/axios';
+import { useToastStore } from './useToastStore';
 
 export interface CartItem {
   id: string;
@@ -67,8 +68,20 @@ export const useCartStore = create<CartState>()(
             sessionId
           });
           await get().fetchCart();
-        } catch (error) {
-          console.error('Failed to add item', error);
+          // Fire toast
+          useToastStore.getState().addToast({
+            type: 'cart',
+            message: 'Added to Cart',
+            image: item.image,
+            link: { label: 'View Cart', href: '/cart' }
+          });
+        } catch (error: any) {
+          const msg = error?.response?.data?.message || 'Failed to add item';
+          if (msg.toLowerCase().includes('stock') || msg.toLowerCase().includes('out of')) {
+            useToastStore.getState().addToast({ type: 'error', message: 'Currently Out of Stock' });
+          } else {
+            useToastStore.getState().addToast({ type: 'error', message: msg });
+          }
         }
       },
 
@@ -81,6 +94,7 @@ export const useCartStore = create<CartState>()(
           } else {
             set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
           }
+          useToastStore.getState().addToast({ type: 'info', message: 'Removed from Cart' });
         } catch (error) {
           console.error('Failed to remove item', error);
         }
@@ -89,14 +103,14 @@ export const useCartStore = create<CartState>()(
       updateQuantity: async (id, quantity, backendItemId) => {
         try {
           const { sessionId } = get();
+          if (quantity <= 0) {
+            get().removeItem(id, backendItemId);
+            return;
+          }
           if (backendItemId) {
             await api.put(`/cart/${backendItemId}`, { quantity, sessionId });
             await get().fetchCart();
           } else {
-            if (quantity <= 0) {
-              get().removeItem(id);
-              return;
-            }
             set((state) => ({
               items: state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),
             }));
@@ -112,7 +126,7 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'vancy-cart-storage',
-      partialize: (state) => ({ sessionId: state.sessionId }), // Only persist sessionId locally
+      partialize: (state) => ({ sessionId: state.sessionId }),
     }
   )
 );

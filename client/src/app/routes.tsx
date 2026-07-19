@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
 import { Layout } from "./components/Layout";
+import { NotFound } from "./pages/NotFound";
 
 // Lazy load all page components
 const Home = lazy(() => import("./pages/Home").then((module) => ({ default: module.Home })));
@@ -15,10 +16,19 @@ const Sale = lazy(() => import("./pages/Sale").then((module) => ({ default: modu
 const Wishlist = lazy(() => import("./pages/Wishlist").then((module) => ({ default: module.Wishlist })));
 const Luxury = lazy(() => import("./pages/Luxury").then((module) => ({ default: module.Luxury })));
 
+// Static Pages
+const About = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.About })));
+const Contact = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Contact })));
+const Shipping = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Shipping })));
+const Terms = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Terms })));
+const Privacy = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Privacy })));
+const FAQ = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.FAQ })));
+
+
 // Loading fallback component
 const PageLoader = () => (
-  <div className="flex h-[50vh] w-full items-center justify-center">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+  <div className="flex h-[50vh] w-full items-center justify-center bg-[#F5F1E8]">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#C9A961] border-t-transparent" />
   </div>
 );
 
@@ -39,6 +49,17 @@ export const router = createBrowserRouter([
       { path: "category/sale", element: <Suspense fallback={<PageLoader />}><Sale /></Suspense> },
       { path: "wishlist", element: <Suspense fallback={<PageLoader />}><Wishlist /></Suspense> },
       { path: "luxury", element: <Suspense fallback={<PageLoader />}><Luxury /></Suspense> },
+      
+      // Static Pages
+      { path: "about", element: <Suspense fallback={<PageLoader />}><About /></Suspense> },
+      { path: "contact", element: <Suspense fallback={<PageLoader />}><Contact /></Suspense> },
+      { path: "shipping", element: <Suspense fallback={<PageLoader />}><Shipping /></Suspense> },
+      { path: "terms", element: <Suspense fallback={<PageLoader />}><Terms /></Suspense> },
+      { path: "privacy", element: <Suspense fallback={<PageLoader />}><Privacy /></Suspense> },
+      { path: "faq", element: <Suspense fallback={<PageLoader />}><FAQ /></Suspense> },
+
+      // Catch-all 404
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);

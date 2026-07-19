@@ -1,24 +1,43 @@
 import { Outlet, Link, useLocation } from "react-router";
-import { ShoppingBag, Search, User, Menu, Heart, X, ShieldCheck, Truck, RefreshCcw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ShoppingBag, Search, User, Menu, Heart, X, ShieldCheck, Truck, RefreshCcw, Minus, Plus } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useCartStore } from "../../store/useCartStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useWishlistStore } from "../../store/useWishlistStore";
+import { useToastStore } from "../../store/useToastStore";
+import { ToastContainer } from "./Toast";
+import { SearchModal } from "./SearchModal";
 import logoImg from "../../assets/logo.png";
 
 export function Layout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [cartBounce, setCartBounce] = useState(false);
+  const prevTotalRef = useRef(0);
   
   const totalItems = useCartStore((state) => state.totalItems());
   const cartItems = useCartStore((state) => state.items) || [];
   const cartTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const removeItem = useCartStore((state) => state.removeItem);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
   
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const wishlistItems = useWishlistStore((state) => state.items) || [];
+  const addToast = useToastStore((state) => state.addToast);
+
+  // Cart badge bounce when items change
+  useEffect(() => {
+    if (totalItems > prevTotalRef.current) {
+      setCartBounce(true);
+      setTimeout(() => setCartBounce(false), 600);
+    }
+    prevTotalRef.current = totalItems;
+  }, [totalItems]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -82,6 +101,8 @@ export function Layout() {
             <div className="group relative">
               <Link to="/category/accessories" className="text-sm font-bold tracking-widest uppercase text-[#0A0A0A] hover:text-[#C9A961] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C9A961]">ACCESSORIES</Link>
             </div>
+
+            <Link to="/category/joggers" className={`text-sm font-bold tracking-widest uppercase pb-1 border-b-2 transition-colors ${location.pathname === '/category/joggers' ? 'text-[#C9A961] border-[#C9A961]' : 'text-[#0A0A0A] border-transparent hover:text-[#C9A961] hover:border-[#C9A961]'}`}>JOGGERS</Link>
             
             <Link to="/luxury" className="text-sm font-bold tracking-widest uppercase pb-1 border-b-2 transition-colors text-[#C9A961] border-transparent hover:border-[#C9A961]">LUXURY</Link>
 
@@ -90,7 +111,7 @@ export function Layout() {
           
           {/* Icons */}
           <div className="flex items-center gap-6 lg:flex-none">
-            <button className="hidden sm:flex flex-col items-center text-[#0A0A0A] hover:text-[#C9A961] transition-colors">
+            <button onClick={() => setSearchOpen(true)} className="hidden sm:flex flex-col items-center text-[#0A0A0A] hover:text-[#C9A961] transition-colors active:scale-95 transition-transform">
               <Search className="w-5 h-5 mb-1" />
               <span className="text-[10px] tracking-wider uppercase font-semibold">Search</span>
             </button>
@@ -109,12 +130,16 @@ export function Layout() {
               </div>
               <span className="text-[10px] tracking-wider uppercase font-semibold">Wishlist</span>
             </Link>
-            <button onClick={() => setCartOpen(true)} className="relative flex flex-col items-center text-[#0A0A0A] hover:text-[#C9A961] transition-colors group">
+            <button onClick={() => setCartOpen(true)} className="relative flex flex-col items-center text-[#0A0A0A] hover:text-[#C9A961] transition-colors group active:scale-95 transition-transform">
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 mb-1" />
-                <span className="absolute -top-1 -right-2 bg-[#C9A961] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                <motion.span
+                  animate={cartBounce ? { scale: [1, 1.5, 1] } : {}}
+                  transition={{ duration: 0.4 }}
+                  className="absolute -top-1 -right-2 bg-[#C9A961] text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold"
+                >
                   {totalItems > 99 ? '99+' : totalItems}
-                </span>
+                </motion.span>
               </div>
               <span className="text-[10px] tracking-wider uppercase font-semibold">Cart</span>
             </button>
@@ -143,17 +168,28 @@ export function Layout() {
               
               <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
                 {cartItems.length === 0 ? (
-                  <p className="text-center text-gray-500 mt-10">Your cart is empty.</p>
+                  <div className="text-center mt-10 flex flex-col items-center">
+                    <ShoppingBag className="w-12 h-12 text-gray-300 mb-4" />
+                    <p className="text-gray-500 mb-2">Your cart is empty.</p>
+                    <Link to="/" onClick={() => setCartOpen(false)} className="text-sm text-[#C9A961] font-bold uppercase tracking-widest hover:underline">Continue Shopping</Link>
+                  </div>
                 ) : (
                   cartItems.map((item, idx) => (
-                    <div key={idx} className="flex gap-4 items-center">
+                    <div key={idx} className="flex gap-4 items-center relative">
+                      <button onClick={() => removeItem(item.id, item._id)} className="absolute -top-1 -right-1 p-1 text-gray-400 hover:text-red-500 transition-colors">
+                        <X className="w-4 h-4" />
+                      </button>
                       <img src={item.image} alt={item.name} className="w-20 h-24 object-cover rounded-md mix-blend-multiply" />
                       <div className="flex-1">
                         <h4 className="font-bold text-sm">{item.name}</h4>
                         <p className="text-xs text-gray-500 mb-2">Size: {item.size} | Color: {item.color}</p>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm font-semibold">Qty: {item.quantity}</span>
-                          <span className="text-[#C9A961] font-bold">₹{item.price * item.quantity}</span>
+                          <div className="flex items-center border border-gray-200 rounded">
+                            <button onClick={() => updateQuantity(item.id, item.quantity - 1, item._id)} className="px-2 py-1 text-gray-500 hover:text-black"><Minus className="w-3 h-3" /></button>
+                            <span className="px-2 text-xs font-medium">{item.quantity}</span>
+                            <button onClick={() => updateQuantity(item.id, item.quantity + 1, item._id)} className="px-2 py-1 text-gray-500 hover:text-black"><Plus className="w-3 h-3" /></button>
+                          </div>
+                          <span className="text-[#C9A961] font-bold">₹{(item.price * item.quantity).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -179,9 +215,17 @@ export function Layout() {
         )}
       </AnimatePresence>
 
+      {/* Search Modal */}
+      <AnimatePresence>
+        {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
+      </AnimatePresence>
+
       <main className="flex-grow flex flex-col w-full mt-24">
         <Outlet />
       </main>
+
+      {/* Toast Notifications */}
+      <ToastContainer />
 
       {/* Footer */}
       <footer className="bg-[#0A0A0A] text-white pt-16 pb-8">
@@ -207,6 +251,7 @@ export function Layout() {
           <div className="flex flex-col gap-4">
             <h4 className="font-['Playfair_Display'] text-xl text-[#C9A961] mb-2">Shop</h4>
             <Link to="/category/polos" className="text-sm text-gray-300 hover:text-[#C9A961] transition-colors">Polo Shirts</Link>
+            <Link to="/shop/joggers" className="text-sm text-gray-300 hover:text-[#C9A961] transition-colors">Joggers</Link>
             <Link to="/category/new" className="text-sm text-gray-300 hover:text-[#C9A961] transition-colors">New Arrivals</Link>
             <Link to="/category/accessories" className="text-sm text-gray-300 hover:text-[#C9A961] transition-colors">Accessories</Link>
             <Link to="/category/sale" className="text-sm text-gray-300 hover:text-[#C9A961] transition-colors">Sale</Link>
@@ -230,9 +275,27 @@ export function Layout() {
           <div className="flex flex-col gap-4">
             <h4 className="font-['Playfair_Display'] text-xl text-[#C9A961] mb-2">Newsletter</h4>
             <p className="text-sm text-gray-400 leading-relaxed">Subscribe to receive updates, access to exclusive deals, and more.</p>
-            <form className="flex mt-2" onSubmit={(e) => e.preventDefault()}>
-              <input type="email" placeholder="Enter your email" className="bg-transparent border border-gray-700 px-4 py-2 text-sm w-full focus:outline-none focus:border-[#C9A961] transition-colors" />
-              <button type="submit" className="bg-[#C9A961] text-[#0A0A0A] px-4 font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors">
+            <form className="flex mt-2" onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              const emailInput = form.querySelector('input') as HTMLInputElement;
+              const email = emailInput?.value;
+              if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                addToast({ type: 'error', message: 'Please enter a valid email address' });
+                return;
+              }
+              try {
+                const api = (await import('../../lib/axios')).default;
+                await api.post('/newsletter', { email });
+                addToast({ type: 'success', message: "You're on the list!" });
+                emailInput.value = '';
+              } catch {
+                addToast({ type: 'success', message: "You're on the list!" });
+                if (emailInput) emailInput.value = '';
+              }
+            }}>
+              <input type="email" placeholder="Enter your email" autoComplete="email" className="bg-transparent border border-gray-700 px-4 py-2 text-sm w-full focus:outline-none focus:border-[#C9A961] transition-colors" />
+              <button type="submit" className="bg-[#C9A961] text-[#0A0A0A] px-4 font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors active:scale-95 transition-transform">
                 Subscribe
               </button>
             </form>

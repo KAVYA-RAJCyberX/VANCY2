@@ -10,7 +10,7 @@ connectDB();
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -28,6 +28,8 @@ const cartRoutes = require('./routes/cartRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const newsletterRoutes = require('./routes/newsletterRoutes');
+const couponRoutes = require('./routes/couponRoutes');
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
@@ -37,6 +39,8 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/newsletter', newsletterRoutes);
+app.use('/api/coupons', couponRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

@@ -112,6 +112,9 @@ export function Luxury() {
                     <button 
                       onClick={(e) => {
                         e.preventDefault();
+                        const el = e.currentTarget;
+                        el.style.transform = 'scale(1.2)';
+                        setTimeout(() => el.style.transform = 'scale(1)', 300);
                         toggleWishlist({
                           id: product._id,
                           name: product.name,
@@ -120,9 +123,9 @@ export function Luxury() {
                           originalPrice: product.originalPrice
                         });
                       }}
-                      className="bg-black/50 border border-[#C9A961]/30 p-2 rounded-full backdrop-blur-sm transition-colors hover:bg-black"
+                      className="bg-black/50 border border-[#C9A961]/30 p-2 rounded-full backdrop-blur-sm transition-all duration-300 hover:bg-black"
                     >
-                      <svg className={`w-4 h-4 ${wishlistItems.some(i => i.id === product._id) ? 'text-[#C9A961] fill-[#C9A961]' : 'text-white hover:text-[#C9A961]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-4 h-4 transition-colors ${wishlistItems.some(i => i.id === product._id) ? 'text-[#C9A961] fill-[#C9A961]' : 'text-white hover:text-[#C9A961]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
                     </button>

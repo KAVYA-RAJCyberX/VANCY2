@@ -95,7 +95,7 @@ export function Checkout() {
       const { data: order } = await api.post("/payments/razorpay", { amount: currentTotal });
 
       const options = {
-        key: "rzp_test_xxxxxx", // Replace with actual Key ID in a real app, ideally from env
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_xxxxxx",
         amount: order.amount,
         currency: order.currency,
         name: "VANCY",
@@ -222,6 +222,7 @@ export function Checkout() {
                   <input 
                     type="email" 
                     placeholder="Email Address" 
+                    autoComplete="email"
                     {...register("email")}
                     className={`w-full border p-4 focus:outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                   />
@@ -234,6 +235,7 @@ export function Checkout() {
                     <input 
                       type="text" 
                       placeholder="First Name" 
+                      autoComplete="given-name"
                       {...register("firstName")}
                       className={`w-full border p-4 focus:outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                     />
@@ -243,6 +245,7 @@ export function Checkout() {
                     <input 
                       type="text" 
                       placeholder="Last Name" 
+                      autoComplete="family-name"
                       {...register("lastName")}
                       className={`w-full border p-4 focus:outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                     />
@@ -253,6 +256,7 @@ export function Checkout() {
                   <input 
                     type="text" 
                     placeholder="Address" 
+                    autoComplete="street-address"
                     {...register("address")}
                     className={`w-full border p-4 focus:outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                   />
@@ -263,6 +267,7 @@ export function Checkout() {
                     <input 
                       type="text" 
                       placeholder="City" 
+                      autoComplete="address-level2"
                       {...register("city")}
                       className={`w-full border p-4 focus:outline-none transition-colors ${errors.city ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                     />
@@ -272,6 +277,7 @@ export function Checkout() {
                     <input 
                       type="text" 
                       placeholder="State" 
+                      autoComplete="address-level1"
                       {...register("state")}
                       className={`w-full border p-4 focus:outline-none transition-colors ${errors.state ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                     />
@@ -283,6 +289,7 @@ export function Checkout() {
                     <input 
                       type="text" 
                       placeholder="Postal Code" 
+                      autoComplete="postal-code"
                       {...register("postalCode")}
                       className={`w-full border p-4 focus:outline-none transition-colors ${errors.postalCode ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                     />
@@ -292,6 +299,7 @@ export function Checkout() {
                     <input 
                       type="text" 
                       placeholder="Country" 
+                      autoComplete="country-name"
                       {...register("country")}
                       className={`w-full border p-4 focus:outline-none transition-colors ${errors.country ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
                     />
@@ -369,19 +377,33 @@ export function Checkout() {
                   </label>
                 </div>
 
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => setStep("address")}
-                    className="w-1/3 border-2 border-[#0A0A0A] text-[#0A0A0A] py-4 font-bold tracking-widest uppercase hover:bg-[#F5F1E8] transition-colors rounded-sm"
-                  >
-                    Back
-                  </button>
-                  <button 
-                    onClick={handlePayment}
-                    className="w-2/3 bg-[#0A0A0A] text-white py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors rounded-sm"
-                  >
-                    Pay ₹{currentTotal.toLocaleString()}
-                  </button>
+                <div className="flex flex-col gap-6">
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => setStep("address")}
+                      className="w-1/3 border-2 border-[#0A0A0A] text-[#0A0A0A] py-4 font-bold tracking-widest uppercase hover:bg-[#F5F1E8] transition-colors rounded-sm"
+                    >
+                      Back
+                    </button>
+                    <button 
+                      onClick={handlePayment}
+                      className="w-2/3 bg-[#0A0A0A] text-white py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors"
+                    >
+                      Pay ₹{currentTotal.toLocaleString()}
+                    </button>
+                  </div>
+                  
+                  {/* Trust Badges */}
+                  <div className="flex items-center justify-center gap-6 pt-6 border-t border-gray-100 text-gray-400">
+                    <div className="flex items-center gap-2 text-xs">
+                      <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      SSL Secure Checkout
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <CreditCard className="w-4 h-4" />
+                      Verified Merchant
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

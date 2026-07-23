@@ -6,11 +6,11 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import api from "../../lib/axios";
 import { useAuthStore } from "../../store/useAuthStore";
+import { motion } from "motion/react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  remember: z.boolean().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -23,9 +23,6 @@ export function Login() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      remember: false
-    }
   });
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -37,7 +34,7 @@ export function Login() {
         password: data.password
       });
       login(response.data);
-      navigate("/");
+      navigate("/account");
     } catch (error: any) {
       setErrorMsg(error.response?.data?.message || "Invalid email or password");
     } finally {
@@ -46,61 +43,62 @@ export function Login() {
   };
 
   return (
-    <div className="pt-32 pb-24 min-h-screen bg-[#F5F1E8] flex items-center justify-center">
-      <div className="max-w-md w-full px-4 sm:px-6">
-        
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-black font-['Playfair_Display'] tracking-[0.2em] uppercase mb-4 text-[#3B121A]">Login</h1>
-          <p className="text-[#0A0A0A] font-medium text-sm">Enter your details to access your account.</p>
+    <div className="pt-32 pb-32 min-h-screen bg-background flex flex-col justify-center">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md mx-auto px-6"
+      >
+        <div className="mb-16">
+          <h1 className="text-4xl md:text-5xl font-medium tracking-tighter uppercase mb-4">Sign In</h1>
+          <p className="text-muted-foreground font-light text-sm">Access your VANCY account.</p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
           {errorMsg && (
-            <div className="bg-red-50 text-red-600 p-3 text-sm border border-red-200">
+            <div className="text-red-500 text-xs uppercase tracking-widest font-medium border-l border-red-500 pl-3">
               {errorMsg}
             </div>
           )}
+          
           <div>
             <input 
               type="email" 
               placeholder="Email Address" 
               {...register("email")}
-              className={`w-full border-b-2 py-3 px-0 focus:outline-none transition-colors bg-transparent text-sm ${errors.email ? 'border-red-500 placeholder-red-300' : 'border-[#0A0A0A] focus:border-[#C9A961] placeholder-[#0A0A0A]/60'}`}
+              className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.email ? 'border-red-500' : 'border-border focus:border-foreground'}`}
             />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            {errors.email && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.email.message}</p>}
           </div>
+          
           <div>
             <input 
               type="password" 
               placeholder="Password" 
               {...register("password")}
-              className={`w-full border-b-2 py-3 px-0 focus:outline-none transition-colors bg-transparent text-sm ${errors.password ? 'border-red-500 placeholder-red-300' : 'border-[#0A0A0A] focus:border-[#C9A961] placeholder-[#0A0A0A]/60'}`}
+              className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.password ? 'border-red-500' : 'border-border focus:border-foreground'}`}
             />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+            {errors.password && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.password.message}</p>}
           </div>
           
-          <div className="flex justify-between items-center text-xs">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" {...register("remember")} className="w-3 h-3 text-[#0A0A0A] focus:ring-[#0A0A0A] accent-[#0A0A0A]" />
-              <span className="text-[#0A0A0A] font-bold tracking-widest uppercase">Remember me</span>
-            </label>
-            <Link to="#" className="text-gray-500 hover:text-[#0A0A0A] transition-colors font-bold tracking-widest uppercase">Forgot Password?</Link>
+          <div className="flex justify-between items-center text-xs font-medium uppercase tracking-widest pt-4">
+            <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">Forgot Password?</Link>
           </div>
 
           <button 
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#0A0A0A] text-white py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors mt-8 flex justify-center items-center h-14 rounded-sm"
+            className="w-full bg-foreground text-background py-5 text-sm font-medium uppercase tracking-widest hover:bg-foreground/90 transition-colors mt-8 flex justify-center items-center"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
           </button>
         </form>
 
-        <div className="mt-12 text-center text-sm text-[#0A0A0A] font-bold tracking-widest uppercase">
-          <p>Don't have an account? <Link to="/register" className="text-[#C9A961] hover:text-[#0A0A0A] transition-colors ml-1">Create one</Link></p>
+        <div className="mt-16 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          <p>Don't have an account? <Link to="/register" className="text-foreground border-b border-foreground pb-0.5 ml-2 hover:opacity-70 transition-opacity">Create one</Link></p>
         </div>
-
-      </div>
+      </motion.div>
     </div>
   );
 }

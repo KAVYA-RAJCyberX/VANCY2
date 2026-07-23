@@ -15,6 +15,8 @@ const Account = lazy(() => import("./pages/Account").then((module) => ({ default
 const Sale = lazy(() => import("./pages/Sale").then((module) => ({ default: module.Sale })));
 const Wishlist = lazy(() => import("./pages/Wishlist").then((module) => ({ default: module.Wishlist })));
 const Luxury = lazy(() => import("./pages/Luxury").then((module) => ({ default: module.Luxury })));
+const Lookbook = lazy(() => import("./pages/Lookbook").then((m) => ({ default: m.Lookbook })));
+const Journal = lazy(() => import("./pages/Journal").then((m) => ({ default: m.Journal })));
 
 // Static Pages
 const About = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.About })));
@@ -24,11 +26,12 @@ const Terms = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m
 const Privacy = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Privacy })));
 const FAQ = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.FAQ })));
 
-
-// Loading fallback component
+// Loading fallback component (Premium Minimal Loader)
 const PageLoader = () => (
-  <div className="flex h-[50vh] w-full items-center justify-center bg-[#F5F1E8]">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#C9A961] border-t-transparent" />
+  <div className="flex h-screen w-full items-center justify-center bg-background">
+    <div className="h-px w-32 bg-border relative overflow-hidden">
+      <div className="absolute top-0 left-0 h-full w-full bg-foreground transform -translate-x-full animate-[loading_1.5s_infinite_ease-in-out]"></div>
+    </div>
   </div>
 );
 
@@ -39,16 +42,18 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Suspense fallback={<PageLoader />}><Home /></Suspense> },
       { path: "category/:id", element: <Suspense fallback={<PageLoader />}><Category /></Suspense> },
+      { path: "collections", element: <Suspense fallback={<PageLoader />}><Category /></Suspense> },
       { path: "product/:id", element: <Suspense fallback={<PageLoader />}><ProductDetail /></Suspense> },
-      { path: "luxury/product/:id", element: <Suspense fallback={<PageLoader />}><ProductDetail isLuxuryRoute={true} /></Suspense> },
       { path: "cart", element: <Suspense fallback={<PageLoader />}><Cart /></Suspense> },
       { path: "checkout", element: <Suspense fallback={<PageLoader />}><Checkout /></Suspense> },
       { path: "login", element: <Suspense fallback={<PageLoader />}><Login /></Suspense> },
       { path: "register", element: <Suspense fallback={<PageLoader />}><Register /></Suspense> },
       { path: "account", element: <Suspense fallback={<PageLoader />}><Account /></Suspense> },
-      { path: "category/sale", element: <Suspense fallback={<PageLoader />}><Sale /></Suspense> },
+      { path: "sale", element: <Suspense fallback={<PageLoader />}><Sale /></Suspense> },
       { path: "wishlist", element: <Suspense fallback={<PageLoader />}><Wishlist /></Suspense> },
       { path: "luxury", element: <Suspense fallback={<PageLoader />}><Luxury /></Suspense> },
+      { path: "lookbook", element: <Suspense fallback={<PageLoader />}><Lookbook /></Suspense> },
+      { path: "journal", element: <Suspense fallback={<PageLoader />}><Journal /></Suspense> },
       
       // Static Pages
       { path: "about", element: <Suspense fallback={<PageLoader />}><About /></Suspense> },

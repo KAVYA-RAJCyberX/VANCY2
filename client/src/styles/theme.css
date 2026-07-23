@@ -2,53 +2,53 @@
 
 :root {
   --font-size: 16px;
-  --background: #F5F1E8;
-  --foreground: #0A0A0A;
-  --card: #ffffff;
-  --card-foreground: #0A0A0A;
-  --popover: #F5F1E8;
-  --popover-foreground: #0A0A0A;
-  --primary: #0A0A0A;
+  --background: #F8F8F5;
+  --foreground: #111111;
+  --card: #FFFFFF;
+  --card-foreground: #111111;
+  --popover: #F8F8F5;
+  --popover-foreground: #111111;
+  --primary: #111111;
   --primary-foreground: #FFFFFF;
-  --secondary: #C9A961;
-  --secondary-foreground: #0A0A0A;
-  --muted: #EBE6DB;
-  --muted-foreground: #71717A;
-  --accent: #C9A961;
+  --secondary: #FFFFFF;
+  --secondary-foreground: #555555;
+  --muted: #E5E5E5;
+  --muted-foreground: #8A8A8A;
+  --accent: #2C3527; /* Deep Olive */
   --accent-foreground: #FFFFFF;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(10, 10, 10, 0.1);
+  --border: rgba(17, 17, 17, 0.1);
   --input: transparent;
   --input-background: #ffffff;
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #C9A961;
+  --ring: #2C3527;
   --radius: 0;
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter Tight', sans-serif;
+  --font-serif: 'Inter Tight', sans-serif; /* Unify to one font */
 }
 
 .dark {
-  --background: #0A0A0A;
-  --foreground: #F5F1E8;
-  --card: #121212;
-  --card-foreground: #F5F1E8;
-  --popover: #0A0A0A;
-  --popover-foreground: #F5F1E8;
-  --primary: #F5F1E8;
-  --primary-foreground: #0A0A0A;
-  --secondary: #C9A961;
-  --secondary-foreground: #0A0A0A;
-  --muted: #1F1F1F;
-  --muted-foreground: #A1A1AA;
-  --accent: #C9A961;
-  --accent-foreground: #0A0A0A;
-  --border: rgba(245, 241, 232, 0.1);
+  --background: #111111;
+  --foreground: #F8F8F5;
+  --card: #1A1A1A;
+  --card-foreground: #F8F8F5;
+  --popover: #111111;
+  --popover-foreground: #F8F8F5;
+  --primary: #F8F8F5;
+  --primary-foreground: #111111;
+  --secondary: #1A1A1A;
+  --secondary-foreground: #A1A1AA;
+  --muted: #2A2A2A;
+  --muted-foreground: #8A8A8A;
+  --accent: #4A5542;
+  --accent-foreground: #FFFFFF;
+  --border: rgba(248, 248, 245, 0.1);
   --input: transparent;
-  --input-background: #121212;
-  --ring: #C9A961;
+  --input-background: #1A1A1A;
+  --ring: #4A5542;
 }
 
 @theme inline {
@@ -88,6 +88,9 @@
 
   body {
     @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.02em;
   }
 
   html {
@@ -95,31 +98,32 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+    @apply font-sans;
+    letter-spacing: -0.04em;
   }
 
   h1 {
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-medium);
-    line-height: 1.2;
+    line-height: 1;
   }
 
   h2 {
     font-size: var(--text-xl);
     font-weight: var(--font-weight-medium);
-    line-height: 1.3;
+    line-height: 1.1;
   }
 
   h3 {
     font-size: var(--text-lg);
     font-weight: var(--font-weight-medium);
-    line-height: 1.4;
+    line-height: 1.2;
   }
 
   h4 {
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    line-height: 1.3;
   }
 
   label {
@@ -139,4 +143,10 @@
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
   }
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }

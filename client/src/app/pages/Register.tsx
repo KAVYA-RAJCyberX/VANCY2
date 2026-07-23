@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import api from "../../lib/axios";
 import { useAuthStore } from "../../store/useAuthStore";
+import { motion } from "motion/react";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -26,7 +27,7 @@ export function Register() {
   const login = useAuthStore((state) => state.login);
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerSchema)
+    resolver: zodResolver(registerSchema),
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
@@ -39,84 +40,87 @@ export function Register() {
         password: data.password
       });
       login(response.data);
-      navigate("/");
+      navigate("/account");
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.message || "Error creating account");
+      setErrorMsg(error.response?.data?.message || "An error occurred during registration");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="pt-32 pb-24 min-h-screen bg-[#F5F1E8] flex items-center justify-center">
-      <div className="max-w-md w-full px-4 sm:px-6">
-        
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-black font-['Playfair_Display'] tracking-[0.2em] uppercase mb-4 text-[#3B121A]">Register</h1>
-          <p className="text-[#0A0A0A] font-medium text-sm">Create an account for faster checkout.</p>
+    <div className="pt-32 pb-32 min-h-screen bg-background flex flex-col justify-center">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md mx-auto px-6"
+      >
+        <div className="mb-16">
+          <h1 className="text-4xl md:text-5xl font-medium tracking-tighter uppercase mb-4">Create Account</h1>
+          <p className="text-muted-foreground font-light text-sm">Join the VANCY editorial experience.</p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
           {errorMsg && (
-            <div className="bg-red-50 text-red-600 p-3 text-sm border border-red-200">
+            <div className="text-red-500 text-xs uppercase tracking-widest font-medium border-l border-red-500 pl-3">
               {errorMsg}
             </div>
           )}
           
           <div>
-              <input 
-                type="text" 
-                placeholder="Full Name" 
-                {...register("name")}
-                className={`w-full border-b-2 py-3 px-0 focus:outline-none transition-colors bg-transparent text-sm ${errors.name ? 'border-red-500 placeholder-red-300' : 'border-[#0A0A0A] focus:border-[#C9A961] placeholder-[#0A0A0A]/60'}`}
-              />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+            <input 
+              type="text" 
+              placeholder="Full Name" 
+              {...register("name")}
+              className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.name ? 'border-red-500' : 'border-border focus:border-foreground'}`}
+            />
+            {errors.name && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.name.message}</p>}
           </div>
 
           <div>
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                {...register("email")}
-                className={`w-full border-b-2 py-3 px-0 focus:outline-none transition-colors bg-transparent text-sm ${errors.email ? 'border-red-500 placeholder-red-300' : 'border-[#0A0A0A] focus:border-[#C9A961] placeholder-[#0A0A0A]/60'}`}
-              />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+            <input 
+              type="email" 
+              placeholder="Email Address" 
+              {...register("email")}
+              className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.email ? 'border-red-500' : 'border-border focus:border-foreground'}`}
+            />
+            {errors.email && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.email.message}</p>}
           </div>
           
           <div>
-              <input 
-                type="password" 
-                placeholder="Password" 
-                {...register("password")}
-                className={`w-full border-b-2 py-3 px-0 focus:outline-none transition-colors bg-transparent text-sm ${errors.password ? 'border-red-500 placeholder-red-300' : 'border-[#0A0A0A] focus:border-[#C9A961] placeholder-[#0A0A0A]/60'}`}
-              />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
+            <input 
+              type="password" 
+              placeholder="Password" 
+              {...register("password")}
+              className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.password ? 'border-red-500' : 'border-border focus:border-foreground'}`}
+            />
+            {errors.password && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.password.message}</p>}
           </div>
 
           <div>
-              <input 
-                type="password" 
-                placeholder="Confirm Password" 
-                {...register("confirmPassword")}
-                className={`w-full border-b-2 py-3 px-0 focus:outline-none transition-colors bg-transparent text-sm ${errors.confirmPassword ? 'border-red-500 placeholder-red-300' : 'border-[#0A0A0A] focus:border-[#C9A961] placeholder-[#0A0A0A]/60'}`}
-              />
-            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>}
+            <input 
+              type="password" 
+              placeholder="Confirm Password" 
+              {...register("confirmPassword")}
+              className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.confirmPassword ? 'border-red-500' : 'border-border focus:border-foreground'}`}
+            />
+            {errors.confirmPassword && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.confirmPassword.message}</p>}
           </div>
-
-            <button 
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#0A0A0A] text-white py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors mt-8 flex justify-center items-center h-14 rounded-sm"
-            >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
+          
+          <button 
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-foreground text-background py-5 text-sm font-medium uppercase tracking-widest hover:bg-foreground/90 transition-colors mt-8 flex justify-center items-center"
+          >
+            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Register"}
           </button>
         </form>
 
-        <div className="mt-12 text-center text-sm text-[#0A0A0A] font-bold tracking-widest uppercase">
-          <p>Already have an account? <Link to="/login" className="text-[#C9A961] hover:text-[#0A0A0A] transition-colors ml-1">Sign In</Link></p>
+        <div className="mt-16 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
+          <p>Already have an account? <Link to="/login" className="text-foreground border-b border-foreground pb-0.5 ml-2 hover:opacity-70 transition-opacity">Sign In</Link></p>
         </div>
-
-      </div>
+      </motion.div>
     </div>
   );
 }

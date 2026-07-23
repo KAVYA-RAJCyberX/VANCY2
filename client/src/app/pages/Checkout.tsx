@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useCartStore } from "../../store/useCartStore";
 import api from "../../lib/axios";
+import { motion } from "motion/react";
 
 const addressSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -91,7 +92,6 @@ export function Checkout() {
     }
 
     try {
-      // Create Razorpay Order
       const { data: order } = await api.post("/payments/razorpay", { amount: currentTotal });
 
       const options = {
@@ -99,18 +99,16 @@ export function Checkout() {
         amount: order.amount,
         currency: order.currency,
         name: "VANCY",
-        description: "Luxury Menswear",
+        description: "Timeless Essentials",
         order_id: order.id,
         handler: async function (response: any) {
           try {
-            // Verify payment
             await api.post("/payments/razorpay/verify", {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
 
-            // Create Order in DB
             const orderData = {
               orderItems: items.map(item => ({
                 product: item.id,
@@ -153,10 +151,10 @@ export function Checkout() {
         prefill: {
           name: `${addressData?.firstName} ${addressData?.lastName}`,
           email: addressData?.email,
-          contact: "9999999999", // Mock contact
+          contact: "9999999999",
         },
         theme: {
-          color: "#0A0A0A",
+          color: "#111111",
         },
       };
 
@@ -171,281 +169,263 @@ export function Checkout() {
 
   if (step === "success") {
     return (
-      <div className="pt-32 pb-24 min-h-screen bg-[#F5F1E8] flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center bg-white p-12 shadow-sm rounded-lg">
-          <CheckCircle2 className="w-20 h-20 text-[#C9A961] mx-auto mb-6" />
-          <h1 className="text-3xl font-bold tracking-widest uppercase mb-4">Order Placed</h1>
-          <p className="text-gray-600 mb-8">Your order #{orderId || "VAN-83921"} has been confirmed. We'll send you a shipping confirmation email soon.</p>
-          <Link to="/" className="inline-block bg-[#0A0A0A] text-white px-8 py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors border hover:border-[#0A0A0A]">
-            Continue Shopping
-          </Link>
-        </div>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}
+        className="pt-40 pb-24 min-h-screen bg-background flex flex-col items-center text-center px-6"
+      >
+        <CheckCircle2 className="w-16 h-16 text-foreground mb-12" strokeWidth={1} />
+        <h1 className="text-5xl md:text-7xl font-medium tracking-tighter uppercase mb-6">Confirmed</h1>
+        <p className="text-muted-foreground font-light text-lg max-w-md mb-16 leading-relaxed">
+          Your order #{orderId || "VAN-83921"} has been received. We'll send you a shipping confirmation shortly.
+        </p>
+        <Link to="/category/all" className="inline-block border border-foreground text-foreground px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-foreground hover:text-background transition-all duration-500">
+          Continue Exploring
+        </Link>
+      </motion.div>
     );
   }
 
   if (items.length === 0 && step !== "success") {
     return (
-      <div className="pt-32 pb-24 min-h-screen bg-[#F5F1E8] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-black font-['Playfair_Display'] tracking-widest uppercase mb-4 text-[#3B121A]">Checkout</h1>
-          <p className="mb-6 text-[#0A0A0A]">Your cart is empty. You cannot proceed to checkout.</p>
-          <Link to="/" className="inline-block bg-[#0A0A0A] text-white px-8 py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors rounded-sm">
-            Back to Shop
-          </Link>
-        </div>
+      <div className="pt-40 pb-24 min-h-screen bg-background flex flex-col items-center justify-center text-center px-6">
+        <h1 className="text-5xl md:text-7xl font-medium tracking-tighter uppercase mb-6">Checkout</h1>
+        <p className="text-muted-foreground font-light mb-16 text-lg">Your bag is empty.</p>
+        <Link to="/category/all" className="inline-block border border-foreground text-foreground px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-foreground hover:text-background transition-all duration-500">
+          Return to Shop
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="pt-32 pb-24 min-h-screen bg-[#F5F1E8]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row gap-12">
+    <div className="pt-32 pb-32 min-h-screen bg-background">
+      <div className="container mx-auto px-6 lg:px-12 max-w-6xl">
+        <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
           
           {/* Left Column: Form */}
-          <div className="lg:w-2/3">
+          <div className="lg:w-3/5">
+            <h1 className="text-4xl md:text-5xl font-medium tracking-tighter uppercase mb-16">Checkout</h1>
+
             {/* Progress */}
-            <div className="flex gap-4 mb-12">
-              <div className={`flex-1 pb-2 border-b-2 text-sm font-bold tracking-widest uppercase ${step === "address" ? "border-[#0A0A0A] text-[#0A0A0A]" : "border-gray-300 text-gray-400"}`}>
+            <div className="flex gap-8 mb-16">
+              <div className={`flex-1 pb-4 border-b text-xs font-medium tracking-widest uppercase transition-colors ${step === "address" ? "border-foreground text-foreground" : "border-border text-muted-foreground"}`}>
                 1. Shipping
               </div>
-              <div className={`flex-1 pb-2 border-b-2 text-sm font-bold tracking-widest uppercase ${step === "payment" ? "border-[#0A0A0A] text-[#0A0A0A]" : "border-gray-300 text-gray-400"}`}>
+              <div className={`flex-1 pb-4 border-b text-xs font-medium tracking-widest uppercase transition-colors ${step === "payment" ? "border-foreground text-foreground" : "border-border text-muted-foreground"}`}>
                 2. Payment
               </div>
             </div>
 
-            {step === "address" && (
-              <form onSubmit={handleSubmit(onAddressSubmit)} className="bg-white p-8 shadow-sm">
-                <h2 className="text-xl font-bold tracking-widest uppercase mb-6">Contact Information</h2>
-                <div className="mb-8">
-                  <input 
-                    type="email" 
-                    placeholder="Email Address" 
-                    autoComplete="email"
-                    {...register("email")}
-                    className={`w-full border p-4 focus:outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                  />
-                  {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
-                </div>
-                
-                <h2 className="text-xl font-bold tracking-widest uppercase mb-6">Shipping Address</h2>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <input 
-                      type="text" 
-                      placeholder="First Name" 
-                      autoComplete="given-name"
-                      {...register("firstName")}
-                      className={`w-full border p-4 focus:outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                    />
-                    {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName.message}</p>}
-                  </div>
-                  <div>
-                    <input 
-                      type="text" 
-                      placeholder="Last Name" 
-                      autoComplete="family-name"
-                      {...register("lastName")}
-                      className={`w-full border p-4 focus:outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                    />
-                    {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName.message}</p>}
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <input 
-                    type="text" 
-                    placeholder="Address" 
-                    autoComplete="street-address"
-                    {...register("address")}
-                    className={`w-full border p-4 focus:outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                  />
-                  {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <input 
-                      type="text" 
-                      placeholder="City" 
-                      autoComplete="address-level2"
-                      {...register("city")}
-                      className={`w-full border p-4 focus:outline-none transition-colors ${errors.city ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                    />
-                    {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city.message}</p>}
-                  </div>
-                  <div>
-                    <input 
-                      type="text" 
-                      placeholder="State" 
-                      autoComplete="address-level1"
-                      {...register("state")}
-                      className={`w-full border p-4 focus:outline-none transition-colors ${errors.state ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                    />
-                    {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state.message}</p>}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div>
-                    <input 
-                      type="text" 
-                      placeholder="Postal Code" 
-                      autoComplete="postal-code"
-                      {...register("postalCode")}
-                      className={`w-full border p-4 focus:outline-none transition-colors ${errors.postalCode ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                    />
-                    {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode.message}</p>}
-                  </div>
-                  <div>
-                    <input 
-                      type="text" 
-                      placeholder="Country" 
-                      autoComplete="country-name"
-                      {...register("country")}
-                      className={`w-full border p-4 focus:outline-none transition-colors ${errors.country ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} 
-                    />
-                    {errors.country && <p className="text-red-500 text-xs mt-1">{errors.country.message}</p>}
-                  </div>
-                </div>
-
-                <button 
-                  type="submit"
-                  className="w-full bg-[#0A0A0A] text-white py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors rounded-sm"
+            <AnimatePresence mode="wait">
+              {step === "address" && (
+                <motion.form 
+                  key="address"
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.5 }}
+                  onSubmit={handleSubmit(onAddressSubmit)} 
                 >
-                  Continue to Payment
-                </button>
-              </form>
-            )}
-
-            {step === "payment" && (
-              <div className="bg-white p-8 shadow-sm">
-                <h2 className="text-xl font-bold tracking-widest uppercase mb-6">Payment Method</h2>
-                
-                <div className="space-y-4 mb-8">
-                  {/* UPI Option */}
-                  <label className={`block border p-4 cursor-pointer transition-colors ${paymentMethod === 'upi' ? 'border-black bg-gray-50' : 'border-gray-200'}`}>
-                    <div className="flex items-center gap-4">
+                  <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Contact Information</h2>
+                  <div className="mb-12">
+                    <input 
+                      type="email" 
+                      placeholder="Email Address" 
+                      autoComplete="email"
+                      {...register("email")}
+                      className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                    />
+                    {errors.email && <p className="text-red-500 text-xs mt-2">{errors.email.message}</p>}
+                  </div>
+                  
+                  <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Shipping Address</h2>
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div>
                       <input 
-                        type="radio" 
-                        name="payment" 
-                        checked={paymentMethod === 'upi'} 
-                        onChange={() => setPaymentMethod('upi')}
-                        className="w-4 h-4 text-black focus:ring-black"
+                        type="text" 
+                        placeholder="First Name" 
+                        autoComplete="given-name"
+                        {...register("firstName")}
+                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                       />
-                      <Smartphone className="w-6 h-6" />
-                      <span className="font-medium tracking-widest uppercase text-sm">UPI / QR</span>
                     </div>
-                    {paymentMethod === 'upi' && (
-                      <div className="mt-4 pl-8">
-                        <input type="text" placeholder="Enter UPI ID (e.g., name@upi)" className="w-full border border-gray-200 p-3 text-sm focus:outline-none focus:border-black" />
-                        <p className="text-xs text-gray-500 mt-2">A payment request will be sent to your UPI app.</p>
+                    <div>
+                      <input 
+                        type="text" 
+                        placeholder="Last Name" 
+                        autoComplete="family-name"
+                        {...register("lastName")}
+                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-6">
+                    <input 
+                      type="text" 
+                      placeholder="Address" 
+                      autoComplete="street-address"
+                      {...register("address")}
+                      className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <input 
+                        type="text" 
+                        placeholder="City" 
+                        autoComplete="address-level2"
+                        {...register("city")}
+                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.city ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                      />
+                    </div>
+                    <div>
+                      <input 
+                        type="text" 
+                        placeholder="State" 
+                        autoComplete="address-level1"
+                        {...register("state")}
+                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.state ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6 mb-16">
+                    <div>
+                      <input 
+                        type="text" 
+                        placeholder="Postal Code" 
+                        autoComplete="postal-code"
+                        {...register("postalCode")}
+                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.postalCode ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                      />
+                    </div>
+                    <div>
+                      <input 
+                        type="text" 
+                        placeholder="Country" 
+                        autoComplete="country-name"
+                        {...register("country")}
+                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.country ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                      />
+                    </div>
+                  </div>
+
+                  <button 
+                    type="submit"
+                    className="w-full bg-foreground text-background py-5 font-medium tracking-widest uppercase hover:bg-foreground/90 transition-colors"
+                  >
+                    Continue to Payment
+                  </button>
+                </motion.form>
+              )}
+
+              {step === "payment" && (
+                <motion.div 
+                  key="payment"
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.5 }}
+                >
+                  <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Payment Method</h2>
+                  
+                  <div className="space-y-4 mb-16">
+                    <label className={`block border p-6 cursor-pointer transition-colors ${paymentMethod === 'upi' ? 'border-foreground bg-foreground/5' : 'border-border hover:border-foreground/30'}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Smartphone className="w-5 h-5 text-foreground" strokeWidth={1.5} />
+                          <span className="font-medium tracking-wide text-sm">UPI / QR</span>
+                        </div>
+                        <input 
+                          type="radio" 
+                          name="payment" 
+                          checked={paymentMethod === 'upi'} 
+                          onChange={() => setPaymentMethod('upi')}
+                          className="w-4 h-4 accent-foreground"
+                        />
                       </div>
-                    )}
-                  </label>
+                    </label>
 
-                  {/* Card Option */}
-                  <label className={`block border p-4 cursor-pointer transition-colors ${paymentMethod === 'card' ? 'border-black bg-gray-50' : 'border-gray-200'}`}>
-                    <div className="flex items-center gap-4">
-                      <input 
-                        type="radio" 
-                        name="payment" 
-                        checked={paymentMethod === 'card'} 
-                        onChange={() => setPaymentMethod('card')}
-                        className="w-4 h-4 text-black focus:ring-black"
-                      />
-                      <CreditCard className="w-6 h-6" />
-                      <span className="font-medium tracking-widest uppercase text-sm">Credit / Debit Card</span>
-                    </div>
-                    {paymentMethod === 'card' && (
-                      <div className="mt-4 pl-8 space-y-3">
-                        <p className="text-xs text-gray-500 mb-2">You will be redirected to securely enter your card details.</p>
+                    <label className={`block border p-6 cursor-pointer transition-colors ${paymentMethod === 'card' ? 'border-foreground bg-foreground/5' : 'border-border hover:border-foreground/30'}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <CreditCard className="w-5 h-5 text-foreground" strokeWidth={1.5} />
+                          <span className="font-medium tracking-wide text-sm">Credit / Debit Card</span>
+                        </div>
+                        <input 
+                          type="radio" 
+                          name="payment" 
+                          checked={paymentMethod === 'card'} 
+                          onChange={() => setPaymentMethod('card')}
+                          className="w-4 h-4 accent-foreground"
+                        />
                       </div>
-                    )}
-                  </label>
+                    </label>
 
-                  {/* COD Option */}
-                  <label className={`block border p-4 cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-black bg-gray-50' : 'border-gray-200'}`}>
-                    <div className="flex items-center gap-4">
-                      <input 
-                        type="radio" 
-                        name="payment" 
-                        checked={paymentMethod === 'cod'} 
-                        onChange={() => setPaymentMethod('cod')}
-                        className="w-4 h-4 text-black focus:ring-black"
-                      />
-                      <span className="font-medium tracking-widest uppercase text-sm">Cash on Delivery (COD)</span>
-                    </div>
-                  </label>
-                </div>
+                    <label className={`block border p-6 cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-foreground bg-foreground/5' : 'border-border hover:border-foreground/30'}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <span className="font-medium tracking-wide text-sm">Cash on Delivery</span>
+                        </div>
+                        <input 
+                          type="radio" 
+                          name="payment" 
+                          checked={paymentMethod === 'cod'} 
+                          onChange={() => setPaymentMethod('cod')}
+                          className="w-4 h-4 accent-foreground"
+                        />
+                      </div>
+                    </label>
+                  </div>
 
-                <div className="flex flex-col gap-6">
-                  <div className="flex gap-4">
-                    <button 
-                      onClick={() => setStep("address")}
-                      className="w-1/3 border-2 border-[#0A0A0A] text-[#0A0A0A] py-4 font-bold tracking-widest uppercase hover:bg-[#F5F1E8] transition-colors rounded-sm"
-                    >
-                      Back
-                    </button>
+                  <div className="flex flex-col gap-4">
                     <button 
                       onClick={handlePayment}
-                      className="w-2/3 bg-[#0A0A0A] text-white py-4 font-bold tracking-widest uppercase hover:bg-[#C9A961] hover:text-[#0A0A0A] transition-colors"
+                      className="w-full bg-foreground text-background py-5 font-medium tracking-widest uppercase hover:bg-foreground/90 transition-colors"
                     >
                       Pay ₹{currentTotal.toLocaleString()}
                     </button>
+                    <button 
+                      onClick={() => setStep("address")}
+                      className="w-full bg-transparent border border-foreground text-foreground py-5 font-medium tracking-widest uppercase hover:bg-foreground hover:text-background transition-colors"
+                    >
+                      Back to Shipping
+                    </button>
                   </div>
-                  
-                  {/* Trust Badges */}
-                  <div className="flex items-center justify-center gap-6 pt-6 border-t border-gray-100 text-gray-400">
-                    <div className="flex items-center gap-2 text-xs">
-                      <CheckCircle2 className="w-4 h-4 text-green-600" />
-                      SSL Secure Checkout
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <CreditCard className="w-4 h-4" />
-                      Verified Merchant
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Right Column: Order Summary */}
-          <div className="lg:w-1/3">
-            <div className="bg-white p-8 shadow-sm sticky top-32">
-              <h2 className="text-lg font-bold tracking-widest uppercase mb-6 border-b border-gray-100 pb-4">Order Summary</h2>
+          <div className="lg:w-2/5">
+            <div className="sticky top-32">
+              <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Order Summary</h2>
               
-              <div className="space-y-4 mb-6">
+              <div className="flex flex-col gap-6 mb-12">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start">
-                    <div className="flex gap-4">
-                      <div className="w-16 h-20 bg-gray-100 flex-shrink-0">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold uppercase mb-1">{item.name}</h4>
-                        <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
-                        {item.size && <p className="text-xs text-gray-500">Size: {item.size}</p>}
-                      </div>
+                  <div key={item.id} className="flex gap-6">
+                    <div className="w-20 aspect-[3/4] bg-muted overflow-hidden flex-shrink-0">
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
                     </div>
-                    <span className="text-sm font-bold text-[#C9A961]">₹{(item.price * item.quantity).toLocaleString()}</span>
+                    <div className="flex-1 flex flex-col justify-between pt-1">
+                      <div>
+                        <h4 className="text-sm font-medium mb-1">{item.name}</h4>
+                        <p className="text-xs text-muted-foreground">Qty: {item.quantity} / Size: {item.size}</p>
+                      </div>
+                      <span className="text-sm font-medium">₹{(item.price * item.quantity).toLocaleString()}</span>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-gray-100 pt-4 space-y-3 mb-6">
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Subtotal</span>
-                  <span>₹{currentTotal.toLocaleString()}</span>
+              <div className="border-t border-border pt-8 space-y-4 mb-8">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-medium">₹{currentTotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>Shipping</span>
-                  <span>Free</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span className="font-medium text-foreground">Complimentary</span>
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
-                <span className="text-base font-bold tracking-widest uppercase">Total</span>
-                <span className="text-xl font-bold">₹{currentTotal.toLocaleString()}</span>
+              <div className="border-t border-border pt-8 flex justify-between items-center">
+                <span className="text-sm font-medium tracking-widest uppercase">Total</span>
+                <span className="text-2xl font-medium">₹{currentTotal.toLocaleString()}</span>
               </div>
             </div>
           </div>

@@ -37,67 +37,67 @@ export function SizeGuideModal({ type, onClose }: SizeGuideModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-md flex items-center justify-center p-4 lg:p-0"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: 20, opacity: 0, scale: 0.95 }}
-        animate={{ y: 0, opacity: 1, scale: 1 }}
-        exit={{ y: 20, opacity: 0, scale: 0.95 }}
-        className="w-full max-w-2xl bg-white shadow-2xl relative max-h-[90vh] flex flex-col"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 20, opacity: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-2xl bg-background border border-border relative max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
           onClick={onClose} 
-          className="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors"
+          className="absolute top-6 right-6 text-muted-foreground hover:text-foreground transition-colors"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5" strokeWidth={1} />
         </button>
 
-        <div className="p-8 pb-4">
-          <h2 className="text-2xl font-black font-['Playfair_Display'] tracking-widest uppercase mb-2">
+        <div className="p-8 lg:p-12 pb-8 border-b border-border">
+          <h2 className="text-2xl font-medium tracking-tighter uppercase mb-2">
             Size Guide
           </h2>
-          <p className="text-gray-500 text-sm">
+          <p className="text-muted-foreground text-xs uppercase tracking-widest">
             Measurements for {type === 'polo' ? 'Polo Shirts' : 'Joggers'}
           </p>
         </div>
 
-        <div className="p-8 pt-0 overflow-y-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-[#F5F1E8] text-[#0A0A0A] font-bold uppercase tracking-wider text-xs">
+        <div className="p-8 lg:p-12 pt-0 overflow-y-auto">
+          <table className="w-full text-sm text-left mt-8">
+            <thead className="text-foreground font-medium uppercase tracking-widest text-xs border-b border-border">
               <tr>
-                <th className="px-4 py-3">Size</th>
+                <th className="py-4 font-medium">Size</th>
                 {type === 'polo' ? (
                   <>
-                    <th className="px-4 py-3">Chest</th>
-                    <th className="px-4 py-3">Length</th>
-                    <th className="px-4 py-3">Sleeve</th>
+                    <th className="py-4 font-medium">Chest</th>
+                    <th className="py-4 font-medium">Length</th>
+                    <th className="py-4 font-medium">Sleeve</th>
                   </>
                 ) : (
                   <>
-                    <th className="px-4 py-3">Waist</th>
-                    <th className="px-4 py-3">Inseam</th>
-                    <th className="px-4 py-3">Hip</th>
+                    <th className="py-4 font-medium">Waist</th>
+                    <th className="py-4 font-medium">Inseam</th>
+                    <th className="py-4 font-medium">Hip</th>
                   </>
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {(type === 'polo' ? poloSizes : joggerSizes).map((row, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-bold">{row.size}</td>
-                  <td className="px-4 py-3">{type === 'polo' ? (row as any).chest : (row as any).waist}</td>
-                  <td className="px-4 py-3">{type === 'polo' ? (row as any).length : (row as any).inseam}</td>
-                  <td className="px-4 py-3">{type === 'polo' ? (row as any).sleeve : (row as any).hip}</td>
+                <tr key={i} className="hover:bg-muted/30 transition-colors">
+                  <td className="py-4 font-medium">{row.size}</td>
+                  <td className="py-4 text-muted-foreground">{type === 'polo' ? (row as any).chest : (row as any).waist}</td>
+                  <td className="py-4 text-muted-foreground">{type === 'polo' ? (row as any).length : (row as any).inseam}</td>
+                  <td className="py-4 text-muted-foreground">{type === 'polo' ? (row as any).sleeve : (row as any).hip}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <div className="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-500 space-y-2">
-            <p><strong>Note:</strong> Measurements are approximate and may vary slightly due to the handcrafted nature of our garments.</p>
-            <p>For between sizes, we recommend sizing up for a more relaxed fit.</p>
+          <div className="mt-12 pt-8 border-t border-border text-xs text-muted-foreground space-y-2 uppercase tracking-widest">
+            <p>Measurements are approximate. Between sizes? Size up for an editorial fit.</p>
           </div>
         </div>
       </motion.div>

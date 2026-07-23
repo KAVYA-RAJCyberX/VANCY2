@@ -2,10 +2,10 @@ import { Link } from "react-router";
 
 function StaticPageLayout({ title, children }: { title: string, children: React.ReactNode }) {
   return (
-    <div className="min-h-screen pt-32 pb-16 bg-[#F5F1E8]">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <h1 className="text-4xl font-black font-['Playfair_Display'] tracking-widest uppercase mb-12 text-center text-[#3B121A]">{title}</h1>
-        <div className="bg-white p-8 md:p-12 shadow-sm">
+    <div className="min-h-screen pt-32 pb-32 bg-background text-foreground">
+      <div className="container mx-auto px-6 lg:px-12 max-w-4xl">
+        <h1 className="text-4xl md:text-6xl font-medium tracking-tighter uppercase mb-16">{title}</h1>
+        <div className="prose max-w-none text-muted-foreground">
           {children}
         </div>
       </div>
@@ -15,41 +15,59 @@ function StaticPageLayout({ title, children }: { title: string, children: React.
 
 export function About() {
   return (
-    <StaticPageLayout title="About VANCY">
-      <div className="prose max-w-none text-gray-700 space-y-6">
-        <p className="text-lg leading-relaxed">
-          VANCY was founded on a singular principle: uncompromising menswear luxury. We believe that true luxury is quiet, crafted with meticulous attention to detail, and designed to stand the test of time.
-        </p>
-        <p className="leading-relaxed">
-          Our journey began when our founders realized a gap in the market for premium, perfectly tailored polo shirts that bridged the gap between casual comfort and formal elegance. After years of sourcing the finest fabrics from centuries-old mills in Biella, Italy, VANCY was born.
-        </p>
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A] pt-4">Our Craftsmanship</h3>
-        <p className="leading-relaxed">
-          We reject mass production. Every VANCY piece is crafted in small, capped runs to ensure exclusivity and unparalleled quality control. From our signature mother-of-pearl buttons to the hand-finished seams, every element is considered.
-        </p>
+    <div className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background">
+      <div className="container mx-auto px-6 lg:px-12 pt-32 pb-32 max-w-5xl">
+        <h1 className="text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-medium tracking-tighter uppercase mb-24">
+          Designed<br/>Without<br/>Compromise.
+        </h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-24">
+          <div className="aspect-[4/5] bg-muted overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=1500&auto=format&fit=crop" alt="Craftsmanship" className="w-full h-full object-cover mix-blend-multiply" />
+          </div>
+          <div className="flex flex-col justify-center">
+            <p className="text-lg md:text-2xl font-light leading-relaxed mb-8">
+              VANCY was founded on a singular principle: true luxury is quiet. We believe in creating garments that don't need to shout to be noticed.
+            </p>
+            <p className="text-muted-foreground font-light leading-relaxed mb-8">
+              Every element of our essentials is heavily considered. We source our fabrics from the finest mills globally, ensuring that each piece not only looks impeccable but ages beautifully over time.
+            </p>
+            <Link to="/collections" className="w-fit text-sm font-medium uppercase tracking-widest border-b border-foreground pb-1 hover:text-muted-foreground hover:border-muted-foreground transition-all">
+              Discover Collections
+            </Link>
+          </div>
+        </div>
       </div>
-    </StaticPageLayout>
+    </div>
   );
 }
 
 export function Contact() {
   return (
-    <StaticPageLayout title="Contact Us">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-gray-700">
+    <StaticPageLayout title="Contact">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-16 text-muted-foreground font-light">
         <div>
-          <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A] mb-4">Get in Touch</h3>
-          <p className="mb-6">We are here to assist you with styling advice, bespoke requests, or inquiries about your order.</p>
-          <div className="space-y-4">
-            <p><strong>Email:</strong> concierge@vancy.com</p>
-            <p><strong>Phone:</strong> +91 98765 43210</p>
-            <p><strong>Hours:</strong> Mon-Sat, 10:00 AM - 7:00 PM (IST)</p>
+          <p className="mb-12 leading-relaxed">For styling advice, bespoke requests, or inquiries about your order, our concierge is at your service.</p>
+          <div className="space-y-6 text-sm">
+            <div>
+              <span className="block font-medium text-foreground uppercase tracking-widest mb-1">Email</span>
+              <a href="mailto:concierge@vancy.com" className="hover:text-foreground transition-colors">concierge@vancy.com</a>
+            </div>
+            <div>
+              <span className="block font-medium text-foreground uppercase tracking-widest mb-1">Phone</span>
+              <p>+91 98765 43210</p>
+            </div>
+            <div>
+              <span className="block font-medium text-foreground uppercase tracking-widest mb-1">Hours</span>
+              <p>Mon-Sat, 10:00 AM - 7:00 PM (IST)</p>
+            </div>
           </div>
         </div>
-        <form className="flex flex-col gap-4">
-          <input type="text" placeholder="Name" className="p-3 border border-gray-300 rounded-sm focus:outline-none focus:border-[#C9A961]" />
-          <input type="email" placeholder="Email" className="p-3 border border-gray-300 rounded-sm focus:outline-none focus:border-[#C9A961]" />
-          <textarea placeholder="Message" rows={4} className="p-3 border border-gray-300 rounded-sm focus:outline-none focus:border-[#C9A961]"></textarea>
-          <button type="button" className="bg-[#0A0A0A] text-white py-3 font-bold uppercase tracking-widest hover:bg-[#C9A961] transition-colors">Send Message</button>
+        <form className="flex flex-col gap-8">
+          <input type="text" placeholder="Name" className="w-full bg-transparent border-b border-border py-4 focus:outline-none focus:border-foreground transition-colors" />
+          <input type="email" placeholder="Email" className="w-full bg-transparent border-b border-border py-4 focus:outline-none focus:border-foreground transition-colors" />
+          <textarea placeholder="Message" rows={4} className="w-full bg-transparent border-b border-border py-4 focus:outline-none focus:border-foreground transition-colors resize-none"></textarea>
+          <button type="button" className="w-full bg-foreground text-background py-5 text-sm font-medium uppercase tracking-widest hover:bg-foreground/90 transition-colors">Send Message</button>
         </form>
       </div>
     </StaticPageLayout>
@@ -59,19 +77,19 @@ export function Contact() {
 export function Shipping() {
   return (
     <StaticPageLayout title="Shipping & Returns">
-      <div className="prose max-w-none text-gray-700 space-y-6">
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A]">White-Glove Delivery</h3>
-        <p>
-          All VANCY orders are shipped via complimentary expedited delivery. Orders placed before 2 PM IST are processed the same business day. Delivery typically takes 2-4 business days within India.
-        </p>
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A] pt-4">Signature Packaging</h3>
-        <p>
-          Your order will arrive in our signature hardbox packaging, designed to protect your garments and provide a premium unboxing experience.
-        </p>
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A] pt-4">Returns & Exchanges</h3>
-        <p>
-          We accept returns and exchanges within 14 days of delivery. Items must be unworn, unwashed, and in their original condition with all tags attached. Please contact our concierge to initiate a return.
-        </p>
+      <div className="space-y-12 font-light leading-relaxed">
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">White-Glove Delivery</h3>
+          <p>All orders are shipped via complimentary expedited delivery. Orders placed before 2 PM IST are processed the same business day. Delivery typically takes 2-4 business days.</p>
+        </div>
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">Signature Packaging</h3>
+          <p>Your order will arrive in our signature hardbox packaging, designed to protect your garments and provide a premium unboxing experience.</p>
+        </div>
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">Returns & Exchanges</h3>
+          <p>We accept returns and exchanges within 14 days of delivery. Items must be unworn, unwashed, and in their original condition with all tags attached.</p>
+        </div>
       </div>
     </StaticPageLayout>
   );
@@ -79,20 +97,14 @@ export function Shipping() {
 
 export function Terms() {
   return (
-    <StaticPageLayout title="Terms of Service">
-      <div className="prose max-w-none text-gray-700 space-y-6">
-        <p>Last updated: June 2024</p>
-        <p>
-          Please read these terms and conditions carefully before using our service. By accessing or using the VANCY website, you agree to be bound by these terms.
-        </p>
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A]">Intellectual Property</h3>
-        <p>
-          The Service and its original content, features, and functionality are and will remain the exclusive property of VANCY and its licensors.
-        </p>
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A]">Purchases</h3>
-        <p>
-          If you wish to purchase any product or service made available through the Service ("Purchase"), you may be asked to supply certain information relevant to your Purchase.
-        </p>
+    <StaticPageLayout title="Terms">
+      <div className="space-y-8 font-light leading-relaxed">
+        <p>Last updated: June 2026</p>
+        <p>By accessing or using the VANCY website, you agree to be bound by these terms.</p>
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">Intellectual Property</h3>
+          <p>The Service and its original content are and will remain the exclusive property of VANCY and its licensors.</p>
+        </div>
       </div>
     </StaticPageLayout>
   );
@@ -100,20 +112,14 @@ export function Terms() {
 
 export function Privacy() {
   return (
-    <StaticPageLayout title="Privacy Policy">
-      <div className="prose max-w-none text-gray-700 space-y-6">
-        <p>Last updated: June 2024</p>
-        <p>
-          Your privacy is important to us. It is VANCY's policy to respect your privacy regarding any information we may collect from you across our website.
-        </p>
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A]">Information We Collect</h3>
-        <p>
-          We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent.
-        </p>
-        <h3 className="text-xl font-bold font-['Playfair_Display'] text-[#0A0A0A]">How We Use Information</h3>
-        <p>
-          We use the information we collect in various ways, including to provide, operate, and maintain our website; improve, personalize, and expand our website; and understand and analyze how you use our website.
-        </p>
+    <StaticPageLayout title="Privacy">
+      <div className="space-y-8 font-light leading-relaxed">
+        <p>Last updated: June 2026</p>
+        <p>We only ask for personal information when we truly need it to provide a service to you. We collect it by fair and lawful means, with your knowledge and consent.</p>
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">How We Use Information</h3>
+          <p>We use the information we collect to operate our website, improve your experience, and understand how you interact with our brand.</p>
+        </div>
       </div>
     </StaticPageLayout>
   );
@@ -121,19 +127,19 @@ export function Privacy() {
 
 export function FAQ() {
   return (
-    <StaticPageLayout title="Frequently Asked Questions">
-      <div className="space-y-6 text-gray-700">
-        <div className="border-b border-gray-200 pb-4">
-          <h4 className="font-bold text-[#0A0A0A] mb-2">How do I determine my size?</h4>
-          <p>Please refer to our detailed Size Guide available on every product page. If you are between sizes, we recommend sizing up for a more relaxed fit.</p>
+    <StaticPageLayout title="FAQ">
+      <div className="space-y-8 font-light">
+        <div className="border-b border-border pb-8">
+          <h4 className="text-lg font-medium text-foreground mb-4">How do I determine my size?</h4>
+          <p className="leading-relaxed">Please refer to our detailed Size Guide available on every product page. Our fits are tailored, so if you are between sizes, we recommend sizing up for a more relaxed editorial fit.</p>
         </div>
-        <div className="border-b border-gray-200 pb-4">
-          <h4 className="font-bold text-[#0A0A0A] mb-2">What is the difference between VANCY and VANCY Privé?</h4>
-          <p>VANCY Privé is our most exclusive tier, featuring strictly limited production runs, rare fabrics (like Cashmere Silk), and artisan hand-finishing.</p>
+        <div className="border-b border-border pb-8">
+          <h4 className="text-lg font-medium text-foreground mb-4">What is the difference between VANCY and VANCY Privé?</h4>
+          <p className="leading-relaxed">VANCY Privé is our most exclusive tier, featuring strictly limited production runs, rare fabrics, and artisan hand-finishing.</p>
         </div>
-        <div className="border-b border-gray-200 pb-4">
-          <h4 className="font-bold text-[#0A0A0A] mb-2">Do you offer international shipping?</h4>
-          <p>Currently, we ship exclusively within India. We plan to expand to international markets in the near future.</p>
+        <div className="border-b border-border pb-8">
+          <h4 className="text-lg font-medium text-foreground mb-4">Do you offer international shipping?</h4>
+          <p className="leading-relaxed">Currently, we ship exclusively within India. We plan to expand to select international markets in the near future.</p>
         </div>
       </div>
     </StaticPageLayout>

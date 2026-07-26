@@ -6,7 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useQuery } from '@tanstack/react-query';
 import api from '../../lib/axios';
 import { VancyV } from '../components/ui/Icons';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 
 gsap.registerPlugin(ScrollTrigger);
 

@@ -34,7 +34,7 @@ export function Register() {
     setIsLoading(true);
     setErrorMsg("");
     try {
-      const response = await api.post("/users", {
+      const response = await api.post("/auth/register", {
         name: data.name,
         email: data.email,
         password: data.password

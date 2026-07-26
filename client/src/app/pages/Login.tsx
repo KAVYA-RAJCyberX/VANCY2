@@ -29,7 +29,7 @@ export function Login() {
     setIsLoading(true);
     setErrorMsg("");
     try {
-      const response = await api.post("/users/login", {
+      const response = await api.post("/auth/login", {
         email: data.email,
         password: data.password
       });

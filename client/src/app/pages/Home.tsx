@@ -5,12 +5,14 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useQuery } from '@tanstack/react-query';
 import api from '../../lib/axios';
+import { VancyV } from '../components/ui/Icons';
+import { Button } from '../components/ui/Button';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function Home() {
   const heroTextRef = useRef<HTMLDivElement>(null);
-  const heroImgRef = useRef<HTMLImageElement>(null);
+  const heroImgRef = useRef<HTMLDivElement>(null);
   const collectionRef = useRef<HTMLDivElement>(null);
   const lookbookRef = useRef<HTMLDivElement>(null);
 
@@ -70,29 +72,34 @@ export function Home() {
     <div className="flex flex-col w-full bg-background selection:bg-black selection:text-white">
       
       {/* Hero Section */}
-      <section className="relative w-full h-screen min-h-[800px] flex items-center justify-center overflow-hidden bg-[#EAE8E3]">
-        <img 
-          ref={heroImgRef}
-          src="https://images.unsplash.com/photo-1596755094514-f87e32f85e98?q=80&w=2500&auto=format&fit=crop"
-          alt="Editorial Fashion Campaign"
-          className="absolute inset-0 w-full h-full object-cover object-top mix-blend-multiply opacity-90"
-        />
-        <div className="relative z-10 w-full px-6 lg:px-12 flex flex-col justify-end h-full pb-20">
+      <section className="relative w-full h-screen min-h-[800px] flex items-center justify-center overflow-hidden bg-[#FDFBF7]">
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none z-0">
+          <img src="/images/logo/leaf-logo.png" alt="Vancy Logo Background" className="w-[80vw] h-[80vw] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
+        </div>
+        <div ref={heroImgRef} className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+          <img 
+            src="/images/landing-page/hero-bg.jpg"
+            alt="Editorial Fashion Campaign"
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-80 dark:opacity-0 transition-opacity duration-[1500ms] ease-in-out"
+          />
+          <img 
+            src="/images/landing-page/dark-hero-bg.png"
+            alt="Editorial Fashion Campaign Dark"
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 dark:opacity-80 transition-opacity duration-[1500ms] ease-in-out"
+          />
+        </div>
+        <div className="relative z-10 w-full px-6 lg:px-12 flex flex-col justify-end h-full pb-24">
           <div ref={heroTextRef}>
-            <h1 className="hero-text text-[clamp(4rem,10vw,10rem)] leading-[0.85] font-medium tracking-tighter text-foreground uppercase max-w-5xl">
+            <h1 className="hero-text text-[clamp(4rem,10vw,10rem)] leading-[0.85] font-medium tracking-[0.05em] text-foreground uppercase max-w-5xl">
               Timeless<br/>Essentials
             </h1>
-            <p className="hero-text text-lg md:text-2xl mt-8 max-w-md font-light text-foreground/80 leading-relaxed">
+            <p className="hero-text text-sm md:text-lg mt-8 max-w-md font-medium text-foreground/80 leading-loose uppercase tracking-widest">
               Refined simplicity. Crafted for everyday living without compromise.
             </p>
             <div className="hero-text mt-12">
-              <Link 
-                to="/collections" 
-                className="inline-flex items-center gap-4 text-sm font-medium uppercase tracking-widest group"
-              >
+              <Button href="/collections" withArrow variant="default">
                 Explore Collection
-                <span className="w-12 h-[1px] bg-foreground group-hover:w-20 transition-all duration-500"></span>
-              </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -124,19 +131,22 @@ export function Home() {
                 to={`/product/${product.slug}`} 
                 className={`collection-item group flex flex-col ${idx === 1 ? 'md:mt-24' : ''}`}
               >
-                <div className="aspect-[3/4] overflow-hidden bg-muted mb-6">
+                <div className="aspect-[3/4] overflow-hidden bg-muted mb-6 relative">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-[0.04] transition-opacity duration-700 pointer-events-none z-10">
+                    <img src="/images/logo/leaf-logo.png" alt="Vancy Logo Hover" className="w-[80%] h-[80%] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
+                  </div>
                   <img 
                     src={product.images[0]} 
                     alt={product.name} 
-                    className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] relative z-0"
                   />
                 </div>
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start uppercase tracking-widest">
                   <div>
-                    <h3 className="text-lg font-medium group-hover:translate-x-1 transition-transform duration-300">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{product.fabricDescription}</p>
+                    <h3 className="text-sm font-medium group-hover:text-accent transition-colors duration-300">{product.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-2 font-light">{product.fabricDescription}</p>
                   </div>
-                  <span className="text-sm font-medium">₹{product.price}</span>
+                  <span className="text-sm font-medium text-muted-foreground">₹{product.price}</span>
                 </div>
               </Link>
             ))
@@ -154,48 +164,23 @@ export function Home() {
             <p className="text-lg md:text-xl text-white/70 max-w-md font-light leading-relaxed mb-12">
               We believe in fewer, better things. Each piece in our collection is meticulously designed to outlast trends and become a foundational element of your wardrobe.
             </p>
-            <Link 
-              to="/about" 
-              className="inline-flex items-center gap-4 text-sm font-medium uppercase tracking-widest group text-white"
+            <Button 
+              href="/about" 
+              variant="default"
+              withArrow
+              className="text-white hover:text-accent"
             >
               Our Philosophy
-              <span className="w-12 h-[1px] bg-white group-hover:w-20 transition-all duration-500"></span>
-            </Link>
+            </Button>
           </div>
-          <div className="order-1 lg:order-2 aspect-[4/5] relative lookbook-img">
+          <div className="order-1 lg:order-2 aspect-[4/5] relative lookbook-img flex items-center justify-center bg-white/5 rounded-3xl overflow-hidden p-8">
             <img 
-              src="https://images.unsplash.com/photo-1617391753733-8a39d89163d8?q=80&w=2000&auto=format&fit=crop" 
-              alt="Editorial Shot" 
-              className="w-full h-full object-cover opacity-80"
+              src="/images/landing-page/quiet-confidence.png" 
+              alt="Quiet Confidence" 
+              className="w-full h-full object-contain opacity-90"
             />
           </div>
         </div>
-      </section>
-
-      {/* Category Panels */}
-      <section className="min-h-screen flex flex-col md:flex-row">
-        <Link to="/category/men" className="flex-1 relative group overflow-hidden h-[50vh] md:h-screen">
-          <img 
-            src="https://images.unsplash.com/photo-1620799140188-3b2a02fd9a77?q=80&w=2000&auto=format&fit=crop" 
-            alt="Men" 
-            className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000 ease-out"
-          />
-          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-700"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h2 className="text-white text-5xl md:text-7xl font-medium tracking-tighter uppercase">Men</h2>
-          </div>
-        </Link>
-        <Link to="/category/essentials" className="flex-1 relative group overflow-hidden h-[50vh] md:h-screen">
-          <img 
-            src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?q=80&w=2000&auto=format&fit=crop" 
-            alt="Essentials" 
-            className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000 ease-out"
-          />
-          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-700"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <h2 className="text-white text-5xl md:text-7xl font-medium tracking-tighter uppercase">Essentials</h2>
-          </div>
-        </Link>
       </section>
 
     </div>

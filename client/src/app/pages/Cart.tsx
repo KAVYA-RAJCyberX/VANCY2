@@ -4,6 +4,7 @@ import { Plus, Minus, X, ArrowRight, Truck } from "lucide-react";
 import { useCartStore } from "../../store/useCartStore";
 import { useToastStore } from "../../store/useToastStore";
 import { motion, AnimatePresence } from "motion/react";
+import api from "../../lib/axios";
 
 export function Cart() {
   const { items, removeItem, updateQuantity, totalPrice } = useCartStore();
@@ -16,13 +17,26 @@ export function Cart() {
   const progress = Math.min((subtotal / freeShippingThreshold) * 100, 100);
   const remaining = freeShippingThreshold - subtotal;
 
-  const handleApplyPromo = (e: React.FormEvent) => {
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+
+  const handleApplyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (promoCode.toUpperCase() === 'VANCY10') {
-      setDiscount(subtotal * 0.1);
-      addToast({ type: 'success', message: 'Promo code applied!' });
-    } else {
-      addToast({ type: 'error', message: 'Invalid promo code' });
+    if (!promoCode) return;
+
+    setIsApplyingPromo(true);
+    try {
+      const response = await api.post('/coupons/validate', {
+        code: promoCode,
+        cartTotal: subtotal
+      });
+      
+      setDiscount(response.data.discount);
+      addToast({ type: 'success', message: response.data.message });
+    } catch (error: any) {
+      setDiscount(0);
+      addToast({ type: 'error', message: error.response?.data?.message || 'Failed to validate promo code' });
+    } finally {
+      setIsApplyingPromo(false);
     }
   };
 
@@ -138,8 +152,8 @@ export function Cart() {
                       placeholder="Promo Code"
                       className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-muted-foreground/50 uppercase"
                     />
-                    <button type="submit" className="text-xs font-medium uppercase tracking-widest hover:text-muted-foreground transition-colors">
-                      Apply
+                    <button type="submit" disabled={isApplyingPromo} className="text-xs font-medium uppercase tracking-widest hover:text-muted-foreground transition-colors">
+                      {isApplyingPromo ? 'Applying...' : 'Apply'}
                     </button>
                   </form>
                 </div>

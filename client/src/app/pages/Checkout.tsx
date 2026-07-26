@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useCartStore } from "../../store/useCartStore";
 import api from "../../lib/axios";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 
 const addressSchema = z.object({
   email: z.string().email("Invalid email address"),

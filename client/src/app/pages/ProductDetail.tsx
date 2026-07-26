@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
-import { Plus, Minus, ChevronDown, Heart } from "lucide-react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { Plus, Minus, ChevronDown, Heart, ArrowLeft } from "lucide-react";
+import { Link, useParams, useSearchParams, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/axios";
 import { useCartStore } from "../../store/useCartStore";
 import { useToastStore } from "../../store/useToastStore";
+import { useWishlistStore } from "../../store/useWishlistStore";
 
 const COLOR_MAP: Record<string, string> = {
   black: '#111111',
@@ -44,7 +45,9 @@ export function ProductDetail() {
   const [openAccordion, setOpenAccordion] = useState("details");
   const [hoveredColor, setHoveredColor] = useState<string | null>(null);
   
+  const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
+  const { addItem: addWishlistItem, isInWishlist } = useWishlistStore();
 
   // Derive unique colors and sizes from variants
   const availableColors = useMemo(() => {
@@ -140,6 +143,7 @@ export function ProductDetail() {
   }
 
   const selectedVariantStock = selectedSize ? getVariantStock(selectedColor, selectedSize) : null;
+  const inWishlist = isInWishlist(product._id);
 
   return (
     <div className="pt-24 pb-32 min-h-screen bg-background text-foreground">
@@ -182,6 +186,12 @@ export function ProductDetail() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
+                <Link 
+                  to="/category/all" 
+                  className="flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors mb-6 w-fit"
+                >
+                  <ArrowLeft className="w-3 h-3" /> Back to Shop
+                </Link>
                 <nav className="flex text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8 gap-2">
                   <Link to="/" className="hover:text-foreground transition-colors">Archive</Link>
                   <span>—</span>
@@ -300,18 +310,30 @@ export function ProductDetail() {
                   </div>
                 </div>
 
-                {/* Add to Bag */}
-                <div className="mb-16">
+                {/* Add to Bag and Wishlist */}
+                <div className="mb-16 flex gap-4">
                   <button 
                     onClick={handleAddToCart}
                     disabled={selectedVariantStock !== null && selectedVariantStock <= 0}
-                    className={`w-full py-5 text-sm font-medium tracking-widest uppercase transition-colors ${
+                    className={`flex-1 py-5 text-sm font-medium tracking-widest uppercase transition-colors ${
                       selectedVariantStock !== null && selectedVariantStock <= 0
                         ? 'bg-muted text-muted-foreground cursor-not-allowed'
                         : 'bg-foreground text-background hover:bg-foreground/90'
                     }`}
                   >
                     {selectedVariantStock !== null && selectedVariantStock <= 0 ? 'Sold Out' : 'Add to Bag'}
+                  </button>
+                  <button 
+                    onClick={() => addWishlistItem({
+                      id: product._id,
+                      name: product.name,
+                      price: product.price,
+                      image: galleryImages[0] || product.images[0]
+                    })}
+                    className="w-16 flex items-center justify-center border border-border text-foreground hover:border-foreground transition-colors"
+                    aria-label="Add to Wishlist"
+                  >
+                    <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-foreground text-foreground' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />
                   </button>
                 </div>
 

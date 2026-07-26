@@ -51,7 +51,7 @@ export const useWishlistStore = create<WishlistState>()(
           const { sessionId, items } = get();
           const wasInWishlist = items.some(i => i.id === item.id);
           
-          await api.post('/wishlist', {
+          await api.post('/wishlist/toggle', {
             productId: item.id,
             sessionId
           });

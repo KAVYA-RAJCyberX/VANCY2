@@ -11,7 +11,7 @@ import { SearchModal } from "./SearchModal";
 import { VancyV, VancyLeaf, VancyClose, VancyMenu, VancyMinus, VancyPlus } from "./ui/Icons";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
-import { Button } from "./ui/Button";
+import { Button } from "./ui/button";
 
 // Botanical Stem Scroll Progress Component
 function ScrollProgress() {

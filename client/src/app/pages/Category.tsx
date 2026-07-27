@@ -136,7 +136,7 @@ export function Category() {
 
         {/* 2 or 3 Column Grid for large cards */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="aspect-[3/4] bg-muted mb-6"></div>
@@ -146,7 +146,7 @@ export function Category() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
             {products.map((product: any, idx: number) => (
               <Link 
                 key={product._id}
@@ -179,7 +179,7 @@ export function Category() {
                         image: product.images[0]
                       });
                     }}
-                    className="absolute top-4 right-4 z-10 p-2 text-foreground hover:scale-110 transition-transform"
+                    className="absolute top-4 right-4 z-10 p-2 text-foreground hover:scale-110 transition-transform md:opacity-0 md:group-hover:opacity-100 opacity-100 min-w-[44px] min-h-[44px] flex items-center justify-center bg-background/50 backdrop-blur-md rounded-full sm:bg-transparent sm:backdrop-blur-none sm:rounded-none"
                     aria-label="Toggle Wishlist"
                   >
                     <Heart className={`w-5 h-5 transition-colors ${isInWishlist(product._id) ? 'fill-foreground text-foreground' : 'text-foreground/70 hover:text-foreground'}`} strokeWidth={isInWishlist(product._id) ? 0 : 1.5} />

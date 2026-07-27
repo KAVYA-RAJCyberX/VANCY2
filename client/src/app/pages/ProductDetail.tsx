@@ -160,12 +160,13 @@ export function ProductDetail() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="grid grid-cols-1 gap-4"
+                className="flex lg:grid lg:grid-cols-1 gap-4 overflow-x-auto snap-x snap-mandatory w-full hide-scrollbar"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {galleryImages.map((img: string, idx: number) => (
                   <div 
                     key={`${selectedColor}-${idx}`}
-                    className="w-full aspect-[3/4] bg-muted overflow-hidden"
+                    className="min-w-[85vw] lg:min-w-full w-full aspect-[3/4] bg-muted overflow-hidden snap-center flex-shrink-0"
                   >
                     <img 
                       src={img} 
@@ -297,7 +298,7 @@ export function ProductDetail() {
                         <button 
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`min-w-[4rem] px-4 py-3 text-sm font-medium tracking-wider transition-all duration-300 border ${
+                          className={`min-w-[4rem] min-h-[44px] px-4 py-3 text-sm font-medium tracking-wider transition-all duration-300 border flex items-center justify-center ${
                             selectedSize === size 
                             ? 'border-foreground bg-foreground text-background'
                             : 'border-border bg-transparent text-foreground hover:border-foreground/50'

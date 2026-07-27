@@ -10,7 +10,7 @@ import { ToastContainer } from "./Toast";
 import { SearchModal } from "./SearchModal";
 import { VancyV, VancyLeaf, VancyClose, VancyMenu, VancyMinus, VancyPlus } from "./ui/Icons";
 import { useTheme } from "next-themes";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Search, ShoppingBag, User, Heart } from "lucide-react";
 import { Button } from "./ui/button";
 
 // Botanical Stem Scroll Progress Component
@@ -187,8 +187,8 @@ export function Layout() {
       >
         <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
           
-          <button className="lg:hidden text-foreground hover:text-accent transition-colors" onClick={() => setMobileMenuOpen(true)}>
-            <VancyMenu className="w-5 h-5" strokeWidth={1} />
+          <button className="lg:hidden text-foreground hover:text-accent transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]" onClick={() => setMobileMenuOpen(true)}>
+            <VancyMenu className="w-6 h-6" strokeWidth={1} />
           </button>
           
           <nav className="hidden lg:flex gap-10 flex-1 items-center">
@@ -205,37 +205,84 @@ export function Layout() {
 
           {/* Logo Section */}
           <Link to="/" className="flex-1 lg:flex-none flex justify-center items-center gap-3 relative z-10 group">
-            <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-14 h-14 object-contain" />
-            <span className="text-2xl font-medium tracking-[0.2em] uppercase mt-1 hidden sm:block">VANCY</span>
+            <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-12 h-12 md:w-14 md:h-14 object-contain" />
+            <span className="text-xl md:text-2xl font-medium tracking-[0.2em] uppercase mt-1 hidden sm:block">VANCY</span>
           </Link>
           
-          <div className="flex items-center gap-8 flex-1 justify-end">
+          <div className="flex items-center gap-2 md:gap-8 flex-1 justify-end">
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-              className="text-foreground hover:text-accent transition-colors"
+              className="text-foreground hover:text-accent transition-colors hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]"
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </button>
-            <button onClick={() => setSearchOpen(true)} className="text-sm font-medium tracking-widest uppercase relative group hidden sm:block">
-              Search
-              <span className="absolute left-1/2 -bottom-2 w-1 h-1 rounded-full bg-accent opacity-0 group-hover:opacity-100 transform -translate-x-1/2 transition-opacity duration-300"></span>
+            <button onClick={() => setSearchOpen(true)} className="text-foreground hover:text-accent flex items-center justify-center min-w-[44px] min-h-[44px]">
+              <Search className="w-5 h-5" strokeWidth={1.5} />
             </button>
-            <Link to={user ? "/account" : "/login"} className="text-sm font-medium tracking-widest uppercase relative group hidden sm:block">
-              Profile
-              <span className="absolute left-1/2 -bottom-2 w-1 h-1 rounded-full bg-accent opacity-0 group-hover:opacity-100 transform -translate-x-1/2 transition-opacity duration-300"></span>
+            <Link to={user ? "/account" : "/login"} className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]">
+              <User className="w-5 h-5" strokeWidth={1.5} />
             </Link>
-            <Link to="/wishlist" className="text-sm font-medium tracking-widest uppercase relative group hidden sm:block">
-              Wishlist {wishlistItems.length > 0 && <span className="text-accent ml-1">{wishlistItems.length}</span>}
-              <span className="absolute left-1/2 -bottom-2 w-1 h-1 rounded-full bg-accent opacity-0 group-hover:opacity-100 transform -translate-x-1/2 transition-opacity duration-300"></span>
+            <Link to="/wishlist" className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[44px] min-h-[44px] relative">
+              <Heart className="w-5 h-5" strokeWidth={1.5} />
+              {wishlistItems.length > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent"></span>}
             </Link>
-            <button onClick={() => setCartOpen(true)} className="text-sm font-medium tracking-widest uppercase relative group">
-              Bag {totalItems > 0 && <span className="text-accent ml-1">{totalItems}</span>}
-              <span className="absolute left-1/2 -bottom-2 w-1 h-1 rounded-full bg-accent opacity-0 group-hover:opacity-100 transform -translate-x-1/2 transition-opacity duration-300"></span>
+            <button onClick={() => setCartOpen(true)} className="text-foreground hover:text-accent flex items-center justify-center min-w-[44px] min-h-[44px] relative">
+              <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+              {totalItems > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent"></span>}
             </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 bg-foreground/10 backdrop-blur-md z-[60] lg:hidden"
+            />
+            <motion.div 
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed inset-y-0 left-0 w-full max-w-[320px] bg-background shadow-2xl z-[70] flex flex-col border-r border-border lg:hidden"
+            >
+              <div className="p-6 flex justify-between items-center border-b border-border/50">
+                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
+                  <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-8 h-8 object-contain" />
+                  <span className="text-sm font-medium tracking-[0.2em] uppercase mt-1">VANCY</span>
+                </Link>
+                <button onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-accent transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  <VancyClose className="w-5 h-5" strokeWidth={1} />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+                <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Shop All</Link>
+                <Link to="/category/polo-shirts" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Polo Shirts</Link>
+                <Link to="/category/joggers" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Joggers</Link>
+                <Link to="/journal" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Journal</Link>
+                <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">About</Link>
+              </div>
+              <div className="p-8 border-t border-border/50 flex flex-col gap-6">
+                <Link to={user ? "/account" : "/login"} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-sm font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground">
+                  <User className="w-5 h-5" strokeWidth={1.5} /> Account
+                </Link>
+                <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-sm font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground">
+                  <Heart className="w-5 h-5" strokeWidth={1.5} /> Wishlist {wishlistItems.length > 0 && `(${wishlistItems.length})`}
+                </Link>
+                <button 
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
+                  className="flex items-center gap-4 text-sm font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground text-left"
+                >
+                  {theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />} Theme
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Mini Cart Slide-over */}
       <AnimatePresence>

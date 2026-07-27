@@ -1,6 +1,6 @@
 import { useAuthStore } from "../../store/useAuthStore";
 import { Link, useNavigate } from "react-router";
-import { LogOut, Package, MapPin, Heart, Settings } from "lucide-react";
+import { LogOut, Package, MapPin, Heart, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../lib/axios";
@@ -36,6 +36,15 @@ export function Account() {
   };
 
   const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'wishlist' | 'settings'>('orders');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const toggleOrderDetails = (orderId: string) => {
+    if (expandedOrderId === orderId) {
+      setExpandedOrderId(null);
+    } else {
+      setExpandedOrderId(orderId);
+    }
+  };
 
   return (
     <div className="pt-32 pb-32 min-h-screen bg-background text-foreground">
@@ -106,7 +115,9 @@ export function Account() {
                     </div>
                   ) : (
                     <div className="space-y-12">
-                      {orders.map((order: any) => (
+                      {orders.map((order: any) => {
+                        const isExpanded = expandedOrderId === order._id;
+                        return (
                         <div key={order._id} className="border border-border p-8">
                           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border pb-6 mb-6">
                             <div>
@@ -116,26 +127,30 @@ export function Account() {
                             </div>
                             <div className="flex flex-col items-end gap-3">
                               <span className="text-xs font-medium tracking-widest uppercase text-foreground">
-                                {order.isDelivered ? 'Delivered' : 'Processing'}
+                                {order.isDelivered ? 'Delivered' : (order.isPaid || order.paymentMethod === 'COD' ? 'Processing' : 'Payment Pending')}
                               </span>
-                              <button className="text-xs font-medium uppercase tracking-widest border-b border-foreground pb-0.5 hover:text-muted-foreground transition-colors">
-                                View Details
+                              <button 
+                                onClick={() => toggleOrderDetails(order._id)}
+                                className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest border-b border-foreground pb-0.5 hover:text-muted-foreground transition-colors"
+                              >
+                                {isExpanded ? 'Hide Details' : 'View Details'}
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                               </button>
                             </div>
                           </div>
                           
-                          <div className="pt-2">
+                          <div className="pt-2 mb-2">
                             <div className="relative flex justify-between items-center w-full max-w-sm">
                               <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-border -translate-y-1/2 z-0"></div>
-                              <div className={`absolute top-1/2 left-0 h-[1px] -translate-y-1/2 z-0 transition-all ${order.isDelivered ? 'w-full bg-foreground' : 'w-1/2 bg-foreground'}`}></div>
+                              <div className={`absolute top-1/2 left-0 h-[1px] -translate-y-1/2 z-0 transition-all ${order.isDelivered ? 'w-full bg-foreground' : ((order.isPaid || order.paymentMethod === 'COD') ? 'w-1/2 bg-foreground' : 'w-0')}`}></div>
                               
                               <div className="relative z-10 flex flex-col items-center gap-3">
                                 <div className="w-3 h-3 rounded-full bg-foreground ring-4 ring-background"></div>
                                 <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Placed</span>
                               </div>
                               <div className="relative z-10 flex flex-col items-center gap-3">
-                                <div className={`w-3 h-3 rounded-full ring-4 ring-background ${order.isDelivered ? 'bg-foreground' : 'bg-foreground'}`}></div>
-                                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Shipped</span>
+                                <div className={`w-3 h-3 rounded-full ring-4 ring-background ${order.isPaid || order.paymentMethod === 'COD' || order.isDelivered ? 'bg-foreground' : 'bg-muted'}`}></div>
+                                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Processing</span>
                               </div>
                               <div className="relative z-10 flex flex-col items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ring-4 ring-background ${order.isDelivered ? 'bg-foreground' : 'bg-muted'}`}></div>
@@ -144,8 +159,61 @@ export function Account() {
                             </div>
                           </div>
                           
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div 
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="border-t border-border mt-8 pt-8 flex flex-col lg:flex-row gap-12">
+                                  {/* Items */}
+                                  <div className="flex-1">
+                                    <h4 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-6">Items Ordered</h4>
+                                    <div className="flex flex-col gap-6">
+                                      {order.orderItems.map((item: any) => (
+                                        <div key={item._id || item.product} className="flex gap-4">
+                                          <div className="w-16 aspect-[3/4] bg-muted overflow-hidden flex-shrink-0">
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
+                                          </div>
+                                          <div className="flex-1 flex flex-col justify-between py-1">
+                                            <div>
+                                              <h5 className="text-sm font-medium">{item.name}</h5>
+                                              <p className="text-xs text-muted-foreground mt-1">Qty: {item.qty} | Size: {item.size} | Color: {item.color}</p>
+                                            </div>
+                                            <span className="text-sm font-medium">₹{item.price.toLocaleString()}</span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Order Info */}
+                                  <div className="flex-1 flex flex-col sm:flex-row gap-12">
+                                    <div className="flex-1">
+                                      <h4 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-6">Shipping Address</h4>
+                                      <div className="text-sm font-light leading-relaxed">
+                                        <p>{order.shippingAddress.street}</p>
+                                        <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}</p>
+                                        <p>{order.shippingAddress.country}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-6">Payment</h4>
+                                      <div className="text-sm font-light leading-relaxed">
+                                        <p className="mb-1">Method: {order.paymentMethod}</p>
+                                        <p className="mb-1">Status: {order.isPaid ? `Paid on ${new Date(order.paidAt).toLocaleDateString()}` : 'Pending'}</p>
+                                        <p className="mt-4 font-medium">Total: ₹{order.totalPrice.toLocaleString()}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                      ))}
+                      )})}
                     </div>
                   )}
                 </motion.div>

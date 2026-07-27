@@ -227,6 +227,7 @@ export function Checkout() {
                   <div className="mb-12">
                     <input 
                       type="email" 
+                      inputMode="email"
                       placeholder="Email Address" 
                       autoComplete="email"
                       {...register("email")}
@@ -289,6 +290,7 @@ export function Checkout() {
                     <div>
                       <input 
                         type="text" 
+                        inputMode="numeric"
                         placeholder="Postal Code" 
                         autoComplete="postal-code"
                         {...register("postalCode")}

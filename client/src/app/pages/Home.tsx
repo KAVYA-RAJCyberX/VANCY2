@@ -37,20 +37,6 @@ export function Home() {
         { y: 0, opacity: 1, duration: 1.2, stagger: 0.2, ease: "power4.out", delay: 0.5 }
       );
 
-      // Scroll Animations
-      if (collectionRef.current) {
-        gsap.fromTo(".collection-item",
-          { y: 100, opacity: 0 },
-          {
-            y: 0, opacity: 1, duration: 1.2, stagger: 0.2, ease: "power4.out",
-            scrollTrigger: {
-              trigger: collectionRef.current,
-              start: "top 80%",
-            }
-          }
-        );
-      }
-
       if (lookbookRef.current) {
         gsap.fromTo(".lookbook-img",
           { scale: 0.9, opacity: 0 },
@@ -67,6 +53,29 @@ export function Home() {
 
     return () => ctx.revert();
   }, []);
+
+  useEffect(() => {
+    if (products.length > 0 && collectionRef.current) {
+      const ctx = gsap.context(() => {
+        gsap.fromTo(".collection-item",
+          { y: 100, opacity: 0 },
+          {
+            y: 0, opacity: 1, duration: 1.2, stagger: 0.2, ease: "power4.out",
+            scrollTrigger: {
+              trigger: collectionRef.current,
+              start: "top 80%",
+            }
+          }
+        );
+        
+        // Refresh ScrollTrigger to recalculate layout after products are rendered
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+        }, 100);
+      });
+      return () => ctx.revert();
+    }
+  }, [products]);
 
   return (
     <div className="flex flex-col w-full bg-background selection:bg-black selection:text-white">
@@ -89,15 +98,15 @@ export function Home() {
           />
         </div>
         <div className="relative z-10 w-full px-6 lg:px-12 flex flex-col justify-end h-full pb-24">
-          <div ref={heroTextRef}>
-            <h1 className="hero-text text-[clamp(4rem,10vw,10rem)] leading-[0.85] font-medium tracking-[0.05em] text-foreground uppercase max-w-5xl">
+          <div ref={heroTextRef} className="pt-20 md:pt-0">
+            <h1 className="hero-text text-[clamp(2.75rem,12vw,10rem)] leading-[0.85] font-medium tracking-[0.05em] text-foreground uppercase max-w-5xl">
               Timeless<br/>Essentials
             </h1>
             <p className="hero-text text-sm md:text-lg mt-8 max-w-md font-medium text-foreground/80 leading-loose uppercase tracking-widest">
               Refined simplicity. Crafted for everyday living without compromise.
             </p>
-            <div className="hero-text mt-12">
-              <Button href="/collections" withArrow variant="default">
+            <div className="hero-text mt-12 mb-8 md:mb-0">
+              <Button href="/collections" withArrow variant="default" className="min-h-[44px]">
                 Explore Collection
               </Button>
             </div>
@@ -142,8 +151,8 @@ export function Home() {
                   />
                 </div>
                 <div className="flex justify-between items-start uppercase tracking-widest">
-                  <div>
-                    <h3 className="text-sm font-medium group-hover:text-accent transition-colors duration-300">{product.name}</h3>
+                  <div className="flex-1 pr-4">
+                    <h3 className="text-sm font-medium group-hover:text-accent transition-colors duration-300 line-clamp-2 break-words">{product.name}</h3>
                     <p className="text-xs text-muted-foreground mt-2 font-light">{product.fabricDescription}</p>
                   </div>
                   <span className="text-sm font-medium text-muted-foreground">₹{product.price}</span>
@@ -168,7 +177,7 @@ export function Home() {
               href="/about" 
               variant="default"
               withArrow
-              className="text-white hover:text-accent"
+              className="text-white hover:text-accent min-h-[44px]"
             >
               Our Philosophy
             </Button>

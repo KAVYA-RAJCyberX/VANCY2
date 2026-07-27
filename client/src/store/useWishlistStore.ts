@@ -17,6 +17,7 @@ interface WishlistState {
   fetchWishlist: () => Promise<void>;
   addItem: (item: WishlistItem) => Promise<void>; // toggles on the backend
   isInWishlist: (productId: string) => boolean;
+  clearWishlist: () => void;
 }
 
 const generateSessionId = () => Math.random().toString(36).substring(2, 15);
@@ -77,6 +78,8 @@ export const useWishlistStore = create<WishlistState>()(
       isInWishlist: (productId: string) => {
         return get().items.some(i => i.id === productId);
       },
+
+      clearWishlist: () => set({ items: [], sessionId: generateSessionId() }),
     }),
     {
       name: 'vancy-wishlist-storage',

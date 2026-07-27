@@ -120,7 +120,7 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], sessionId: generateSessionId() }),
       totalItems: () => get().items.reduce((total, item) => total + item.quantity, 0),
       totalPrice: () => get().items.reduce((total, item) => total + item.price * item.quantity, 0),
     }),

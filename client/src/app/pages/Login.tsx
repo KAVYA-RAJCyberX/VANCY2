@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import api from "../../lib/axios";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useCartStore } from "../../store/useCartStore";
+import { useWishlistStore } from "../../store/useWishlistStore";
 import { motion } from "motion/react";
 
 const loginSchema = z.object({
@@ -20,6 +22,10 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const login = useAuthStore((state) => state.login);
+  const cartSessionId = useCartStore((state) => state.sessionId);
+  const wishlistSessionId = useWishlistStore((state) => state.sessionId);
+  const fetchCart = useCartStore((state) => state.fetchCart);
+  const fetchWishlist = useWishlistStore((state) => state.fetchWishlist);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -33,7 +39,19 @@ export function Login() {
         email: data.email,
         password: data.password
       });
+      
+      // Store user token before subsequent requests
       login(response.data);
+      
+      // Merge guest cart and wishlist
+      await Promise.all([
+        api.post("/cart/merge", { sessionId: cartSessionId }).catch(console.error),
+        api.post("/wishlist/merge", { sessionId: wishlistSessionId }).catch(console.error)
+      ]);
+
+      // Refetch them
+      await Promise.all([fetchCart(), fetchWishlist()]);
+
       navigate("/account");
     } catch (error: any) {
       setErrorMsg(error.response?.data?.message || "Invalid email or password");

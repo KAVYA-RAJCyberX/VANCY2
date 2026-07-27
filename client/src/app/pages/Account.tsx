@@ -1,4 +1,6 @@
 import { useAuthStore } from "../../store/useAuthStore";
+import { useCartStore } from "../../store/useCartStore";
+import { useWishlistStore } from "../../store/useWishlistStore";
 import { Link, useNavigate } from "react-router";
 import { LogOut, Package, MapPin, Heart, Settings, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -8,6 +10,10 @@ import { motion, AnimatePresence } from "motion/react";
 
 export function Account() {
   const { user, logout } = useAuthStore();
+  const clearCart = useCartStore((state) => state.clearCart);
+  const addCartItem = useCartStore((state) => state.addItem);
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const clearWishlist = useWishlistStore((state) => state.clearWishlist);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,9 +34,23 @@ export function Account() {
     enabled: !!user
   });
 
+  const { data: profile, refetch: refetchProfile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await api.get('/auth/profile', {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      return data;
+    },
+    enabled: !!user
+  });
+
   if (!user) return null;
 
   const handleLogout = () => {
+    clearCart();
+    clearWishlist();
     logout();
     navigate("/");
   };
@@ -38,11 +58,62 @@ export function Account() {
   const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'wishlist' | 'settings'>('orders');
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<any>(null);
+  const [addressForm, setAddressForm] = useState({
+    street: '', city: '', state: '', postalCode: '', country: ''
+  });
+
   const toggleOrderDetails = (orderId: string) => {
     if (expandedOrderId === orderId) {
       setExpandedOrderId(null);
     } else {
       setExpandedOrderId(orderId);
+    }
+  };
+
+  const handleEditAddress = (address: any) => {
+    setEditingAddress(address);
+    setAddressForm({
+      street: address.street, city: address.city, state: address.state, postalCode: address.postalCode, country: address.country
+    });
+    setShowAddressForm(true);
+  };
+
+  const handleAddAddress = () => {
+    setEditingAddress(null);
+    setAddressForm({ street: '', city: '', state: '', postalCode: '', country: '' });
+    setShowAddressForm(true);
+  };
+
+  const handleSaveAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingAddress) {
+        await api.put(`/profile/addresses/${editingAddress._id}`, addressForm, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+      } else {
+        await api.post(`/profile/addresses`, addressForm, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
+      }
+      setShowAddressForm(false);
+      setEditingAddress(null);
+      refetchProfile();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleRemoveAddress = async (id: string) => {
+    try {
+      await api.delete(`/profile/addresses/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      refetchProfile();
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -223,25 +294,58 @@ export function Account() {
                 <motion.div key="addresses" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
                   <div className="flex justify-between items-center mb-8">
                     <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground">Saved Addresses</h2>
-                    <button className="text-xs font-medium uppercase tracking-widest border-b border-foreground pb-0.5 hover:text-muted-foreground transition-colors">
-                      Add New
-                    </button>
+                    {!showAddressForm && (
+                      <button 
+                        onClick={handleAddAddress}
+                        className="text-xs font-medium uppercase tracking-widest border-b border-foreground pb-0.5 hover:text-muted-foreground transition-colors"
+                      >
+                        Add New
+                      </button>
+                    )}
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="border border-border p-8 relative">
-                      <span className="absolute top-6 right-6 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Primary</span>
-                      <h4 className="font-medium uppercase tracking-widest text-sm mb-4">{user.name}</h4>
-                      <div className="text-sm font-light text-muted-foreground leading-relaxed mb-6">
-                        <p>123 Luxury Avenue</p>
-                        <p>Bandra West, Mumbai 400050</p>
-                        <p>India</p>
+                  
+                  {showAddressForm ? (
+                    <form onSubmit={handleSaveAddress} className="border border-border p-8 mb-8">
+                      <h3 className="text-xs font-medium tracking-widest uppercase mb-6">{editingAddress ? 'Edit Address' : 'New Address'}</h3>
+                      <div className="space-y-4">
+                        <input type="text" placeholder="Street Address" required value={addressForm.street} onChange={(e) => setAddressForm({...addressForm, street: e.target.value})} className="w-full bg-transparent border-b border-border py-3 text-sm focus:outline-none focus:border-foreground transition-colors" />
+                        <div className="grid grid-cols-2 gap-4">
+                          <input type="text" placeholder="City" required value={addressForm.city} onChange={(e) => setAddressForm({...addressForm, city: e.target.value})} className="w-full bg-transparent border-b border-border py-3 text-sm focus:outline-none focus:border-foreground transition-colors" />
+                          <input type="text" placeholder="State" required value={addressForm.state} onChange={(e) => setAddressForm({...addressForm, state: e.target.value})} className="w-full bg-transparent border-b border-border py-3 text-sm focus:outline-none focus:border-foreground transition-colors" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <input type="text" placeholder="Postal Code" required value={addressForm.postalCode} onChange={(e) => setAddressForm({...addressForm, postalCode: e.target.value})} className="w-full bg-transparent border-b border-border py-3 text-sm focus:outline-none focus:border-foreground transition-colors" />
+                          <input type="text" placeholder="Country" required value={addressForm.country} onChange={(e) => setAddressForm({...addressForm, country: e.target.value})} className="w-full bg-transparent border-b border-border py-3 text-sm focus:outline-none focus:border-foreground transition-colors" />
+                        </div>
+                        <div className="flex gap-4 pt-4">
+                          <button type="submit" className="bg-foreground text-background px-6 py-3 text-xs font-medium uppercase tracking-widest hover:bg-foreground/90 transition-colors">Save Address</button>
+                          <button type="button" onClick={() => setShowAddressForm(false)} className="border border-foreground px-6 py-3 text-xs font-medium uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors">Cancel</button>
+                        </div>
                       </div>
-                      <div className="flex gap-6">
-                        <button className="text-xs font-medium uppercase tracking-widest hover:text-muted-foreground transition-colors">Edit</button>
-                        <button className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">Remove</button>
-                      </div>
+                    </form>
+                  ) : profile?.savedAddresses?.length === 0 ? (
+                    <div className="py-12 border-t border-border">
+                      <p className="text-lg font-light">You have no saved addresses.</p>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {profile?.savedAddresses?.map((address: any, idx: number) => (
+                        <div key={address._id} className="border border-border p-8 relative">
+                          {idx === 0 && <span className="absolute top-6 right-6 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Primary</span>}
+                          <h4 className="font-medium uppercase tracking-widest text-sm mb-4">{user.name}</h4>
+                          <div className="text-sm font-light text-muted-foreground leading-relaxed mb-6">
+                            <p>{address.street}</p>
+                            <p>{address.city}, {address.state} {address.postalCode}</p>
+                            <p>{address.country}</p>
+                          </div>
+                          <div className="flex gap-6">
+                            <button onClick={() => handleEditAddress(address)} className="text-xs font-medium uppercase tracking-widest hover:text-muted-foreground transition-colors">Edit</button>
+                            <button onClick={() => handleRemoveAddress(address._id)} className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">Remove</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -267,12 +371,36 @@ export function Account() {
               {activeTab === 'wishlist' && (
                 <motion.div key="wishlist" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
                   <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Curated Selection</h2>
-                  <div className="py-12 border-t border-border">
-                    <p className="text-lg font-light mb-8">Your wishlist is currently empty.</p>
-                    <Link to="/category/all" className="border-b border-foreground text-sm font-medium tracking-widest uppercase pb-1 hover:text-muted-foreground hover:border-muted-foreground transition-all">
-                      Discover Essentials
-                    </Link>
-                  </div>
+                  {wishlistItems.length === 0 ? (
+                    <div className="py-12 border-t border-border">
+                      <p className="text-lg font-light mb-8">Your wishlist is currently empty.</p>
+                      <Link to="/category/all" className="border-b border-foreground text-sm font-medium tracking-widest uppercase pb-1 hover:text-muted-foreground hover:border-muted-foreground transition-all">
+                        Discover Essentials
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                      {wishlistItems.map((item) => (
+                        <div key={item.id} className="group relative">
+                          <Link to={`/product/${item.id}`} className="block aspect-[3/4] bg-muted mb-4 overflow-hidden relative">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
+                          </Link>
+                          <div>
+                            <Link to={`/product/${item.id}`}>
+                              <h3 className="text-sm font-medium line-clamp-1">{item.name}</h3>
+                            </Link>
+                            <p className="text-sm text-muted-foreground mt-1">₹{item.price.toLocaleString()}</p>
+                            <button 
+                              onClick={() => addCartItem({ ...item, quantity: 1, size: 'N/A', color: 'N/A' })}
+                              className="mt-4 text-[10px] font-medium uppercase tracking-widest border-b border-foreground pb-0.5 hover:text-muted-foreground transition-colors"
+                            >
+                              Move to Bag
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

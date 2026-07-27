@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getCart, addToCart, updateCartItem, removeFromCart, mergeCart } = require('../controllers/cartController');
+const { getCart, addToCart, updateCartItem, removeFromCart, mergeCart, clearCart } = require('../controllers/cartController');
 const { protect } = require('../middlewares/authMiddleware');
 
 router.get('/', (req, res, next) => {
@@ -37,5 +37,13 @@ router.delete('/:itemId', (req, res, next) => {
 });
 
 router.post('/merge', protect, mergeCart);
+
+router.delete('/clear', (req, res, next) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    protect(req, res, () => clearCart(req, res));
+  } else {
+    clearCart(req, res);
+  }
+});
 
 module.exports = router;

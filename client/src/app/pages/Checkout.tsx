@@ -77,6 +77,10 @@ export function Checkout() {
         };
         const { data } = await api.post("/orders", orderData);
         setOrderId(data._id);
+        
+        const sessionId = useCartStore.getState().sessionId;
+        await api.delete(`/cart/clear?sessionId=${sessionId}`);
+        
         clearCart();
         setStep("success");
       } catch (error) {
@@ -142,6 +146,10 @@ export function Checkout() {
 
             const { data: savedOrder } = await api.post("/orders", orderData);
             setOrderId(savedOrder._id);
+            
+            const sessionId = useCartStore.getState().sessionId;
+            await api.delete(`/cart/clear?sessionId=${sessionId}`);
+            
             clearCart();
             setStep("success");
           } catch (error) {

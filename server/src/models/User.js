@@ -20,6 +20,18 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: false
   },
+  role: {
+    type: String,
+    enum: ['customer', 'support-staff', 'manager', 'super-admin'],
+    default: 'customer'
+  },
+  twoFactorSecret: {
+    type: String
+  },
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
   savedAddresses: [{
     street: String,
     city: String,

@@ -26,6 +26,19 @@ const Terms = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m
 const Privacy = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Privacy })));
 const FAQ = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.FAQ })));
 
+// Admin Pages
+const AdminLogin = lazy(() => import("./pages/admin/AdminLogin").then((m) => ({ default: m.AdminLogin })));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard").then((m) => ({ default: m.Dashboard })));
+const AdminOrders = lazy(() => import("./pages/admin/Orders").then((m) => ({ default: m.Orders })));
+const Inventory = lazy(() => import("./pages/admin/Inventory").then((m) => ({ default: m.Inventory })));
+const AdminProducts = lazy(() => import("./pages/admin/Products").then((m) => ({ default: m.Products })));
+const Customers = lazy(() => import("./pages/admin/Customers").then((m) => ({ default: m.Customers })));
+const Discounts = lazy(() => import("./pages/admin/Discounts").then((m) => ({ default: m.Discounts })));
+const Analytics = lazy(() => import("./pages/admin/Analytics").then((m) => ({ default: m.Analytics })));
+const Staff = lazy(() => import("./pages/admin/Staff").then((m) => ({ default: m.Staff })));
+const Settings = lazy(() => import("./pages/admin/Settings").then((m) => ({ default: m.Settings })));
+import { AdminLayout } from "./components/AdminLayout";
+
 // Loading fallback component (Premium Minimal Loader)
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -36,6 +49,27 @@ const PageLoader = () => (
 );
 
 export const router = createBrowserRouter([
+  {
+    path: "/admin",
+    children: [
+      { path: "login", element: <Suspense fallback={<PageLoader />}><AdminLogin /></Suspense> },
+      {
+        path: "",
+        element: <Suspense fallback={<PageLoader />}><AdminLayout /></Suspense>,
+        children: [
+          { index: true, element: <Suspense fallback={<PageLoader />}><Dashboard /></Suspense> },
+          { path: "orders", element: <Suspense fallback={<PageLoader />}><AdminOrders /></Suspense> },
+          { path: "inventory", element: <Suspense fallback={<PageLoader />}><Inventory /></Suspense> },
+          { path: "products", element: <Suspense fallback={<PageLoader />}><AdminProducts /></Suspense> },
+          { path: "customers", element: <Suspense fallback={<PageLoader />}><Customers /></Suspense> },
+          { path: "discounts", element: <Suspense fallback={<PageLoader />}><Discounts /></Suspense> },
+          { path: "analytics", element: <Suspense fallback={<PageLoader />}><Analytics /></Suspense> },
+          { path: "staff", element: <Suspense fallback={<PageLoader />}><Staff /></Suspense> },
+          { path: "settings", element: <Suspense fallback={<PageLoader />}><Settings /></Suspense> },
+        ]
+      }
+    ]
+  },
   {
     path: "/",
     Component: Layout,

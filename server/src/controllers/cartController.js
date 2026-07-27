@@ -149,3 +149,25 @@ exports.mergeCart = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+// Clear cart
+exports.clearCart = async (req, res) => {
+  try {
+    const { sessionId } = req.query;
+
+    let cart;
+    if (req.user) {
+      cart = await Cart.findOne({ user: req.user._id });
+    } else if (sessionId) {
+      cart = await Cart.findOne({ sessionId });
+    }
+
+    if (cart) {
+      cart.items = [];
+      await cart.save();
+    }
+
+    res.status(200).json({ message: 'Cart cleared' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

@@ -14,6 +14,7 @@ export function Account() {
   const addCartItem = useCartStore((state) => state.addItem);
   const wishlistItems = useWishlistStore((state) => state.items);
   const clearWishlist = useWishlistStore((state) => state.clearWishlist);
+  const toggleWishlist = useWishlistStore((state) => state.addItem);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,9 +27,7 @@ export function Account() {
     queryKey: ['my-orders'],
     queryFn: async () => {
       if (!user) return [];
-      const { data } = await api.get('/orders/myorders', {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
+      const { data } = await api.get('/orders/myorders');
       return data;
     },
     enabled: !!user
@@ -38,9 +37,7 @@ export function Account() {
     queryKey: ['profile'],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await api.get('/auth/profile', {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
+      const { data } = await api.get('/auth/profile');
       return data;
     },
     enabled: !!user
@@ -90,13 +87,9 @@ export function Account() {
     e.preventDefault();
     try {
       if (editingAddress) {
-        await api.put(`/profile/addresses/${editingAddress._id}`, addressForm, {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
+        await api.put(`/auth/profile/addresses/${editingAddress._id}`, addressForm);
       } else {
-        await api.post(`/profile/addresses`, addressForm, {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
+        await api.post(`/auth/profile/addresses`, addressForm);
       }
       setShowAddressForm(false);
       setEditingAddress(null);
@@ -108,9 +101,7 @@ export function Account() {
 
   const handleRemoveAddress = async (id: string) => {
     try {
-      await api.delete(`/profile/addresses/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
+      await api.delete(`/auth/profile/addresses/${id}`);
       refetchProfile();
     } catch (error) {
       console.error(error);
@@ -391,7 +382,10 @@ export function Account() {
                             </Link>
                             <p className="text-sm text-muted-foreground mt-1">₹{item.price.toLocaleString()}</p>
                             <button 
-                              onClick={() => addCartItem({ ...item, quantity: 1, size: 'N/A', color: 'N/A' })}
+                              onClick={() => {
+                                addCartItem({ ...item, quantity: 1, size: 'N/A', color: 'N/A' });
+                                toggleWishlist(item);
+                              }}
                               className="mt-4 text-[10px] font-medium uppercase tracking-widest border-b border-foreground pb-0.5 hover:text-muted-foreground transition-colors"
                             >
                               Move to Bag

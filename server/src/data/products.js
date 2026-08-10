@@ -192,7 +192,27 @@ const products = [
       { size: 'XL', color: 'Sand', stock: 4 },
     ]
   },
-
+  {
+    name: 'Forest Green Ribbed-Cuff Jogger',
+    slug: 'forest-green-ribbed-cuff-jogger',
+    description: 'Bold forest green in a structured silhouette. Ribbed cuffs with contrast inner tape, welt pockets, and a flat-drawcord waist for a premium look.',
+    images: ['/images/joggers/green/green.png'],
+    fabricDescription: 'Organic Cotton Loopback Terry',
+    fabric: 'Loopback Terry',
+    category: 'Joggers',
+    price: 1990,
+    rating: 4.8,
+    numReviews: 11,
+    isNewArrival: true,
+    sizeChartType: 'jogger',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: ['Forest Green'],
+    variants: [
+      { size: 'S', color: 'Forest Green', stock: 5 },
+      { size: 'M', color: 'Forest Green', stock: 12 },
+      { size: 'L', color: 'Forest Green', stock: 9 },
+    ]
+  },
   {
     name: 'Navy Signature Jogger',
     slug: 'navy-signature-jogger',

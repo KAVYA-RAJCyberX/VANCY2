@@ -23,7 +23,7 @@ export function Account() {
     }
   }, [user, navigate]);
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [], isLoading, isError: isOrdersError } = useQuery({
     queryKey: ['my-orders'],
     queryFn: async () => {
       if (!user) return [];
@@ -168,6 +168,8 @@ export function Account() {
                   
                   {isLoading ? (
                     <div className="py-12 text-muted-foreground font-light">Loading orders...</div>
+                  ) : isOrdersError ? (
+                    <div className="py-12 text-red-500 font-light">Failed to load orders. Please try again later.</div>
                   ) : orders.length === 0 ? (
                     <div className="py-12 border-t border-border">
                       <p className="text-lg font-light mb-8">You have no recent orders.</p>

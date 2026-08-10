@@ -13,7 +13,7 @@ export function Sale() {
     queryKey: ['products'],
     queryFn: async () => {
       const { data } = await api.get('/products');
-      return data;
+      return Array.isArray(data) ? data : (data?.products || []);
     },
   });
 

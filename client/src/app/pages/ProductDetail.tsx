@@ -331,10 +331,10 @@ export function ProductDetail() {
                       price: product.price,
                       image: galleryImages[0] || product.images[0]
                     })}
-                    className="w-16 flex items-center justify-center border border-border text-foreground hover:border-foreground transition-colors"
-                    aria-label="Add to Wishlist"
+                    className={`w-16 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'border-red-500 bg-red-50' : 'border-border hover:border-foreground text-foreground'}`}
+                    aria-label={inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
                   >
-                    <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-foreground text-foreground' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />
+                    <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-red-500 text-red-500' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />
                   </button>
                 </div>
 

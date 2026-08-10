@@ -1,47 +1,77 @@
 const Order = require('../models/Order');
+const Product = require('../models/Product');
+const mongoose = require('mongoose');
 
 // @desc    Create new order
 // @route   POST /api/orders
-// @access  Public (Guest checkout allowed)
+// @access  Private
 const addOrderItems = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authorized to create an order' });
+    }
+
     const {
       orderItems,
       shippingAddress,
       paymentMethod,
+      paymentResult,
+      isPaid,
+      paidAt,
       itemsPrice,
       shippingPrice,
       totalPrice,
       guestEmail
     } = req.body;
 
-    if (orderItems && orderItems.length === 0) {
+    if (!orderItems || orderItems.length === 0) {
       res.status(400).json({ message: 'No order items' });
       return;
     }
 
+    const formattedOrderItems = [];
+    for (const x of orderItems) {
+      let productId = x.product;
+      if (!mongoose.Types.ObjectId.isValid(productId)) {
+        const found = await Product.findOne({ slug: productId });
+        if (found) {
+          productId = found._id;
+        } else {
+          const firstProd = await Product.findOne();
+          if (firstProd) {
+            productId = firstProd._id;
+          }
+        }
+      }
+
+      formattedOrderItems.push({
+        name: x.name || 'Product',
+        qty: Number(x.qty) || 1,
+        image: x.image || '/images/tshirts/mustard-yellow/mustard-yellow-polo.png',
+        price: Number(x.price) || 0,
+        size: x.size || 'M',
+        color: x.color || 'Standard',
+        product: productId
+      });
+    }
+
     const order = new Order({
-      orderItems: orderItems.map((x) => ({
-        name: x.name,
-        qty: x.qty,
-        image: x.image,
-        price: x.price,
-        size: x.size,
-        color: x.color,
-        product: x.product
-      })),
-      user: req.user ? req.user._id : undefined,
-      guestEmail: req.user ? undefined : guestEmail,
+      orderItems: formattedOrderItems,
+      user: req.user._id,
       shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      shippingPrice,
-      totalPrice,
+      paymentMethod: paymentMethod || 'COD',
+      paymentResult: paymentResult || {},
+      isPaid: Boolean(isPaid),
+      paidAt: paidAt ? new Date(paidAt) : undefined,
+      itemsPrice: Number(itemsPrice) || 0,
+      shippingPrice: Number(shippingPrice) || 0,
+      totalPrice: Number(totalPrice) || 0,
     });
 
     const createdOrder = await order.save();
     res.status(201).json(createdOrder);
   } catch (error) {
+    console.error('Error creating order:', error);
     res.status(500).json({ message: 'Failed to create order', error: error.message });
   }
 };

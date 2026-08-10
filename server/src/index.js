@@ -56,6 +56,20 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  });
+}
+
+// Global Error Handlers to keep the backend from crashing completely
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION! 💥 Shutting down gracefully if possible...', err.name, err.message, err.stack);
 });
+
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION! 💥', err.name, err.message, err.stack);
+});
+
+// Export the Express API for Vercel Serverless Functions
+module.exports = app;

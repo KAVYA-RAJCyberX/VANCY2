@@ -21,6 +21,8 @@ export function Category() {
 
   let displayHeading = "Collection";
   let queryCategory = "";
+  let isNewArrivalQuery = false;
+  let isSaleQuery = isSale;
 
   if (id === 'polo-shirts') {
     displayHeading = "Timeless polo";
@@ -28,22 +30,29 @@ export function Category() {
   } else if (id === 'joggers') {
     displayHeading = "Legacy jogger";
     queryCategory = "jogger";
+  } else if (id === 'new') {
+    displayHeading = "New Arrivals";
+    isNewArrivalQuery = true;
+  } else if (id === 'sale') {
+    displayHeading = "Sale";
+    isSaleQuery = true;
   } else if (id && id !== 'all') {
     displayHeading = id.charAt(0).toUpperCase() + id.slice(1).replace('-', ' ');
     queryCategory = id;
   }
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products', queryCategory, sort, size, isSale],
+    queryKey: ['products', queryCategory, sort, size, isSaleQuery, isNewArrivalQuery, id],
     queryFn: async () => {
       const params: any = {};
       if (queryCategory) params.category = queryCategory;
       if (sort) params.sort = sort;
       if (size) params.size = size;
-      if (isSale) params.isSale = true;
+      if (isSaleQuery) params.isSale = true;
+      if (isNewArrivalQuery) params.isNewArrival = true;
 
       const { data } = await api.get('/products', { params });
-      return data;
+      return Array.isArray(data) ? data : (data?.products || []);
     },
   });
 

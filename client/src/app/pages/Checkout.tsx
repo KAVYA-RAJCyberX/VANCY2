@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useCartStore } from "../../store/useCartStore";
+import { useAuthStore } from "../../store/useAuthStore";
 import api from "../../lib/axios";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -28,6 +29,7 @@ export function Checkout() {
   const [orderId, setOrderId] = useState<string | null>(null);
   
   const { items, totalPrice, clearCart } = useCartStore();
+  const user = useAuthStore((state) => state.user);
 
   const { register, handleSubmit, formState: { errors } } = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
@@ -58,8 +60,8 @@ export function Checkout() {
             qty: item.quantity,
             image: item.image,
             price: item.price,
-            size: item.size || 'N/A',
-            color: item.color || 'N/A'
+            size: item.size || 'M',
+            color: item.color || 'Standard'
           })),
           shippingAddress: {
             street: addressData?.address,
@@ -79,27 +81,73 @@ export function Checkout() {
         setOrderId(data._id);
         
         const sessionId = useCartStore.getState().sessionId;
-        await api.delete(`/cart/clear?sessionId=${sessionId}`);
+        await api.delete(`/cart/clear?sessionId=${sessionId}`).catch(() => {});
         
         clearCart();
         setStep("success");
-      } catch (error) {
-        alert("Error creating order");
+      } catch (error: any) {
+        console.error("Error creating COD order:", error);
+        alert(error?.response?.data?.message || "Error creating order. Please check item details.");
       }
-      return;
-    }
-
-    const res = await loadRazorpayScript();
-    if (!res) {
-      alert("Razorpay SDK failed to load. Are you online?");
       return;
     }
 
     try {
       const { data: order } = await api.post("/payments/razorpay", { amount: currentTotal });
 
+      // If mock order generated (in dev environment without real Razorpay keys)
+      if (order.id && order.id.startsWith("order_mock_")) {
+        const orderData = {
+          orderItems: items.map(item => ({
+            product: item.id,
+            name: item.name,
+            qty: item.quantity,
+            image: item.image,
+            price: item.price,
+            size: item.size || 'M',
+            color: item.color || 'Standard'
+          })),
+          shippingAddress: {
+            street: addressData?.address,
+            city: addressData?.city,
+            state: addressData?.state,
+            postalCode: addressData?.postalCode,
+            country: addressData?.country
+          },
+          guestEmail: addressData?.email,
+          paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Card',
+          paymentResult: {
+            razorpayOrderId: order.id,
+            razorpayPaymentId: `pay_mock_${Date.now()}`,
+            razorpaySignature: 'mock_signature',
+            status: "success",
+          },
+          itemsPrice: currentTotal,
+          shippingPrice: 0,
+          totalPrice: currentTotal,
+          isPaid: true,
+          paidAt: new Date().toISOString()
+        };
+
+        const { data: savedOrder } = await api.post("/orders", orderData);
+        setOrderId(savedOrder._id);
+        
+        const sessionId = useCartStore.getState().sessionId;
+        await api.delete(`/cart/clear?sessionId=${sessionId}`).catch(() => {});
+        
+        clearCart();
+        setStep("success");
+        return;
+      }
+
+      const res = await loadRazorpayScript();
+      if (!res) {
+        alert("Razorpay SDK failed to load. Are you online?");
+        return;
+      }
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_xxxxxx",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "test_key_id",
         amount: order.amount,
         currency: order.currency,
         name: "VANCY",
@@ -120,8 +168,8 @@ export function Checkout() {
                 qty: item.quantity,
                 image: item.image,
                 price: item.price,
-                size: item.size || 'N/A',
-                color: item.color || 'N/A'
+                size: item.size || 'M',
+                color: item.color || 'Standard'
               })),
               shippingAddress: {
                 street: addressData?.address,
@@ -133,9 +181,10 @@ export function Checkout() {
               guestEmail: addressData?.email,
               paymentMethod: "Razorpay",
               paymentResult: {
-                id: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
                 status: "success",
-                update_time: new Date().toISOString(),
               },
               itemsPrice: currentTotal,
               shippingPrice: 0,
@@ -148,12 +197,13 @@ export function Checkout() {
             setOrderId(savedOrder._id);
             
             const sessionId = useCartStore.getState().sessionId;
-            await api.delete(`/cart/clear?sessionId=${sessionId}`);
+            await api.delete(`/cart/clear?sessionId=${sessionId}`).catch(() => {});
             
             clearCart();
             setStep("success");
-          } catch (error) {
-            alert("Payment Verification Failed");
+          } catch (error: any) {
+            console.error("Payment verification error:", error);
+            alert(error?.response?.data?.message || "Payment Verification Failed");
           }
         },
         prefill: {
@@ -168,8 +218,9 @@ export function Checkout() {
 
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
-    } catch (error) {
-      alert("Error initiating payment");
+    } catch (error: any) {
+      console.error("Error initiating payment:", error);
+      alert(error?.response?.data?.message || "Error initiating payment");
     }
   };
 
@@ -201,6 +252,23 @@ export function Checkout() {
         <Link to="/category/all" className="inline-block border border-foreground text-foreground px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-foreground hover:text-background transition-all duration-500">
           Return to Shop
         </Link>
+      </div>
+    );
+  }
+
+  if (!user && step !== "success") {
+    return (
+      <div className="pt-40 pb-24 min-h-screen bg-background flex flex-col items-center justify-center text-center px-6">
+        <h1 className="text-5xl md:text-7xl font-medium tracking-tighter uppercase mb-6">Checkout</h1>
+        <p className="text-muted-foreground font-light mb-16 text-lg">Please log in or sign up to continue with your purchase.</p>
+        <div className="flex gap-4">
+          <Link to="/login" className="inline-block bg-foreground text-background px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-foreground/90 transition-all duration-500">
+            Log In
+          </Link>
+          <Link to="/register" className="inline-block border border-foreground text-foreground px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-foreground hover:text-background transition-all duration-500">
+            Sign Up
+          </Link>
+        </div>
       </div>
     );
   }

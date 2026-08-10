@@ -16,7 +16,7 @@ export function Luxury() {
     queryKey: ['luxury-products'],
     queryFn: async () => {
       const { data } = await api.get('/products?isLuxury=true&sort=-price');
-      return data;
+      return Array.isArray(data) ? data : (data?.products || []);
     },
   });
 

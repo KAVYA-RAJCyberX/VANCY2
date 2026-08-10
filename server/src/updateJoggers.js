@@ -9,26 +9,19 @@ const updateJoggers = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected');
 
-    // Update Charcoal
+    // Update Sand
     await Product.updateOne(
-      { slug: 'charcoal-tapered-jogger' },
-      { $set: { images: ['/images/joggers/Charcoal/Charcoal Tapered Jogger.png'] } }
+      { slug: 'sand-relaxed-fit-jogger' },
+      { $set: { images: ['/images/joggers/sand/sand relaxed.png'] } }
     );
-    console.log('Updated Charcoal Jogger');
+    console.log('Updated Sand Jogger');
 
-    // Update Navy Signature
+    // Update Stone Gray
     await Product.updateOne(
-      { slug: 'navy-signature-jogger' },
-      { $set: { images: ['/images/joggers/navy/Navy Signature Jogger.png', '/images/joggers/navy/Navy Signature Jogger-near.png'] } }
+      { slug: 'stone-gray-french-terry-jogger' },
+      { $set: { images: ['/images/joggers/grey/stone grey.png'] } }
     );
-    console.log('Updated Navy Signature Jogger');
-
-    // Update Obsidian Black
-    await Product.updateOne(
-      { slug: 'obsidian-black-slim-jogger' },
-      { $set: { images: ['/images/joggers/black/Obsidian Black Slim Jogger.png', '/images/joggers/black/Obsidian Black Slim Jogger-near.png'] } }
-    );
-    console.log('Updated Obsidian Black Jogger');
+    console.log('Updated Stone Gray Jogger');
 
     console.log('Jogger images updated successfully!');
     process.exit(0);

@@ -10,16 +10,18 @@ const seedAdmin = async () => {
   let admin = await User.findOne({ email: adminEmail });
 
   if (admin) {
-    console.log('Admin user already exists. Updating role to super-admin just in case...');
+    console.log('Admin user already exists. Updating role to super-admin and resetting password to 123...');
     admin.role = 'super-admin';
     admin.isAdmin = true;
+    admin.password = '123';
+    admin.twoFactorEnabled = false; // Reset 2FA so user can log in
     await admin.save();
     console.log('Admin account ready.');
   } else {
     admin = await User.create({
       name: 'Vancy Super Admin',
       email: adminEmail,
-      password: '123456789', // This will be hashed automatically by the User schema pre-save hook
+      password: '123', // This will be hashed automatically by the User schema pre-save hook
       role: 'super-admin',
       isAdmin: true,
       twoFactorEnabled: false // Forces the QR code to appear on first login
@@ -30,7 +32,7 @@ const seedAdmin = async () => {
   console.log(`\n--- ADMIN CREDENTIALS ---`);
   console.log(`URL: http://localhost:5173/admin/login`);
   console.log(`Email: ${adminEmail}`);
-  console.log(`Password: 123456789\n`);
+  console.log(`Password: 123\n`);
 
   process.exit(0);
 };

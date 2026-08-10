@@ -8,8 +8,11 @@ import {
   Percent, 
   BarChart3, 
   UserCog, 
-  Settings 
+  Settings,
+  LogOut
 } from "lucide-react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 
 const navItems = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -25,6 +28,19 @@ const navItems = [
 
 export function AdminLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('admin_access_token');
+    if (!token) {
+      navigate('/admin/login');
+    }
+  }, [navigate, location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_access_token');
+    navigate('/admin/login');
+  };
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans text-sm text-gray-900">
@@ -65,7 +81,9 @@ export function AdminLayout() {
           <div className="text-xs text-gray-400 mb-2">Logged in as</div>
           <div className="flex items-center justify-between">
             <span className="font-medium truncate">Admin User</span>
-            <button className="text-xs hover:text-red-400 uppercase tracking-widest">Logout</button>
+            <button onClick={handleLogout} className="text-xs hover:text-red-400 uppercase tracking-widest flex items-center">
+              <LogOut className="w-3 h-3 mr-1" /> Logout
+            </button>
           </div>
         </div>
       </aside>

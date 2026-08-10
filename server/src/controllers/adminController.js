@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
+const Coupon = require('../models/Coupon');
 
 // Helper to log admin actions
 const logAction = async (adminId, actionType, collectionName, documentId, beforeValue, afterValue, req) => {
@@ -139,6 +140,50 @@ const getAuditLogs = async (req, res) => {
   }
 };
 
+// @desc    Get Detailed Analytics
+// @route   GET /api/admin/analytics
+const getDetailedAnalytics = async (req, res) => {
+  try {
+    // Simple 30-day analytics aggregation
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const orders = await Order.find({ createdAt: { $gte: thirtyDaysAgo } });
+    
+    // Group by day
+    const salesByDay = {};
+    orders.forEach(order => {
+      const dateStr = order.createdAt.toISOString().split('T')[0];
+      if (!salesByDay[dateStr]) salesByDay[dateStr] = 0;
+      salesByDay[dateStr] += order.totalPrice;
+    });
+
+    const chartData = Object.keys(salesByDay).sort().map(date => ({
+      date,
+      sales: salesByDay[date]
+    }));
+
+    res.json({
+      totalRevenue30d: chartData.reduce((acc, curr) => acc + curr.sales, 0),
+      totalOrders30d: orders.length,
+      chartData
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Get All Coupons
+// @route   GET /api/admin/coupons
+const getAdminCoupons = async (req, res) => {
+  try {
+    const coupons = await Coupon.find().sort({ createdAt: -1 });
+    res.json(coupons);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAdminOrders,
@@ -146,5 +191,7 @@ module.exports = {
   getAdminCustomers,
   getAdminStaff,
   updateStaffRole,
-  getAuditLogs
+  getAuditLogs,
+  getDetailedAnalytics,
+  getAdminCoupons
 };

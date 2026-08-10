@@ -40,16 +40,18 @@ export const useCartStore = create<CartState>()(
           const { sessionId } = get();
           const { data } = await api.get(`/cart?sessionId=${sessionId}`);
           if (data && data.items) {
-            const formattedItems = data.items.map((i: any) => ({
-              id: i.product._id || i.product,
-              _id: i._id,
-              name: i.name,
-              price: i.price,
-              image: i.image,
-              quantity: i.quantity,
-              size: i.size,
-              color: i.color
-            }));
+            const formattedItems = data.items
+              .filter((i: any) => i.product) // Filter out items where the referenced product was deleted
+              .map((i: any) => ({
+                id: i.product._id || i.product,
+                _id: i._id,
+                name: i.name,
+                price: i.price,
+                image: i.image,
+                quantity: i.quantity,
+                size: i.size,
+                color: i.color
+              }));
             set({ items: formattedItems });
           }
         } catch (error) {

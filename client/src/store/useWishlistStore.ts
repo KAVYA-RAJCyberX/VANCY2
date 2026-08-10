@@ -33,13 +33,15 @@ export const useWishlistStore = create<WishlistState>()(
           const { sessionId } = get();
           const { data } = await api.get(`/wishlist?sessionId=${sessionId}`);
           if (data && data.products) {
-            const formattedItems = data.products.map((p: any) => ({
-              id: p._id,
-              name: p.name,
-              price: p.price,
-              image: p.images?.[0] || '',
-              originalPrice: p.originalPrice
-            }));
+            const formattedItems = data.products
+              .filter((p: any) => p) // Filter out items where the referenced product was deleted
+              .map((p: any) => ({
+                id: p._id,
+                name: p.name,
+                price: p.price,
+                image: p.images?.[0] || '',
+                originalPrice: p.originalPrice
+              }));
             set({ items: formattedItems });
           }
         } catch (error) {

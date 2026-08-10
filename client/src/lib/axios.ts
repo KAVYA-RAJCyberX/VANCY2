@@ -9,6 +9,16 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   try {
+    const isAdminRoute = config.url?.startsWith('/admin');
+    
+    if (isAdminRoute) {
+      const adminToken = localStorage.getItem('admin_access_token');
+      if (adminToken && config.headers) {
+        config.headers.Authorization = `Bearer ${adminToken}`;
+        return config; // Early return to avoid overwriting
+      }
+    }
+
     const authStorage = localStorage.getItem('vancy-auth-storage');
     if (authStorage) {
       const parsed = JSON.parse(authStorage);

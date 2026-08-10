@@ -8,7 +8,9 @@ const {
   getAdminCustomers,
   getAdminStaff,
   updateStaffRole,
-  getAuditLogs
+  getAuditLogs,
+  getDetailedAnalytics,
+  getAdminCoupons
 } = require('../controllers/adminController');
 
 // All routes require a valid admin JWT
@@ -28,5 +30,9 @@ router.get('/customers', requireRole(['support-staff', 'manager', 'super-admin']
 router.get('/staff', requireRole(['super-admin']), getAdminStaff);
 router.put('/staff/:id/role', requireRole(['super-admin']), updateStaffRole);
 router.get('/audit-logs', requireRole(['super-admin']), getAuditLogs);
+
+// Analytics & Coupons
+router.get('/analytics', requireRole(['manager', 'super-admin']), getDetailedAnalytics);
+router.get('/coupons', requireRole(['manager', 'super-admin']), getAdminCoupons);
 
 module.exports = router;

@@ -35,11 +35,43 @@ const getDashboardStats = async (req, res) => {
     // Assuming a threshold of 5 for low stock
     const lowStockProducts = await Product.find({ 'variants.stock': { $lt: 5 } }).select('name variants');
 
+    // Recent orders
+    const recentOrders = await Order.find({}).populate('user', 'name email').sort({ createdAt: -1 }).limit(5);
+
+    // 7-day revenue chart data
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const recentWeekOrders = await Order.find({ createdAt: { $gte: sevenDaysAgo } });
+    
+    // Create an array for the last 7 days initialized to 0
+    const chartDataMap = {};
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateString = d.toISOString().split('T')[0];
+      chartDataMap[dateString] = 0;
+    }
+
+    recentWeekOrders.forEach(order => {
+      const dateString = order.createdAt.toISOString().split('T')[0];
+      if (chartDataMap[dateString] !== undefined) {
+        chartDataMap[dateString] += order.totalPrice;
+      }
+    });
+
+    const chartData = Object.keys(chartDataMap).map(date => ({
+      name: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+      revenue: chartDataMap[date]
+    }));
+
     res.json({
       salesToday: totalSalesToday,
       ordersToday: todayOrders.length,
       pendingOrders: pendingOrdersCount,
-      lowStockCount: lowStockProducts.length
+      lowStockCount: lowStockProducts.length,
+      recentOrders,
+      chartData
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

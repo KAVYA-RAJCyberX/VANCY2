@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Save } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
+import api from "../../../lib/axios";
 
 export function Settings() {
   const [storeName, setStoreName] = useState("VANCY");
@@ -8,25 +9,42 @@ export function Settings() {
   const [shippingFee, setShippingFee] = useState("150");
   const [isSaved, setIsSaved] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
-    // Load from local storage if exists
-    const stored = localStorage.getItem('vancy_admin_settings');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setStoreName(parsed.storeName || "VANCY");
-      setContactEmail(parsed.contactEmail || "support@vancy.com");
-      setTaxRate(parsed.taxRate || "18");
-      setShippingFee(parsed.shippingFee || "150");
-    }
+    const fetchSettings = async () => {
+      try {
+        const { data } = await api.get('/admin/settings');
+        if (data.storeName) setStoreName(data.storeName);
+        if (data.contactEmail) setContactEmail(data.contactEmail);
+        if (data.taxRate) setTaxRate(data.taxRate);
+        if (data.shippingFee) setShippingFee(data.shippingFee);
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
   }, []);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const settings = { storeName, contactEmail, taxRate, shippingFee };
-    localStorage.setItem('vancy_admin_settings', JSON.stringify(settings));
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 3000);
+    setIsSaving(true);
+    try {
+      const settings = { storeName, contactEmail, taxRate, shippingFee };
+      await api.put('/admin/settings', settings);
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch (err) {
+      alert("Failed to save settings");
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (isLoading) return <div className="p-6">Loading settings...</div>;
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -86,8 +104,13 @@ export function Settings() {
         </div>
 
         <div className="pt-4 border-t border-gray-100 flex justify-end">
-          <button type="submit" className="bg-gray-900 text-white px-6 py-3 rounded text-sm font-medium uppercase tracking-widest flex items-center hover:bg-gray-800 transition-colors">
-            <Save className="w-4 h-4 mr-2" /> Save Settings
+          <button 
+            type="submit" 
+            disabled={isSaving}
+            className="bg-gray-900 text-white px-6 py-3 rounded text-sm font-medium uppercase tracking-widest flex items-center hover:bg-gray-800 transition-colors disabled:opacity-70"
+          >
+            {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />} 
+            {isSaving ? "Saving..." : "Save Settings"}
           </button>
         </div>
       </form>

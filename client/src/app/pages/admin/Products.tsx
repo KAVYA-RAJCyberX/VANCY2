@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import api from "../../../lib/axios";
-import { Package, Edit, Trash2, BarChart2, X, Star } from "lucide-react";
+import { Package, Edit, Trash2, BarChart2, X, Star, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -9,6 +9,14 @@ export function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -32,20 +40,131 @@ export function Products() {
     return <div className="p-6 text-red-500">Error: {error}</div>;
   }
 
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = categoryFilter ? product.category === categoryFilter : true;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, search, categoryFilter]);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(start, start + itemsPerPage);
+  }, [filteredProducts, currentPage]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
+
+  const toggleSelectAll = () => {
+    if (selectedProductIds.length === paginatedProducts.length) {
+      setSelectedProductIds([]);
+    } else {
+      setSelectedProductIds(paginatedProducts.map(p => p._id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    if (selectedProductIds.includes(id)) {
+      setSelectedProductIds(selectedProductIds.filter(pid => pid !== id));
+    } else {
+      setSelectedProductIds([...selectedProductIds, id]);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        setIsDeleting(true);
+        await api.delete(`/admin/products/${id}`);
+        setProducts(products.filter(p => p._id !== id));
+        setSelectedProductIds(selectedProductIds.filter(pid => pid !== id));
+      } catch (err: any) {
+        alert(err.response?.data?.message || "Failed to delete product");
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (window.confirm(`Are you sure you want to delete ${selectedProductIds.length} products?`)) {
+      try {
+        setIsDeleting(true);
+        // Assuming bulk delete endpoint or looping
+        await Promise.all(selectedProductIds.map(id => api.delete(`/admin/products/${id}`)));
+        setProducts(products.filter(p => !selectedProductIds.includes(p._id)));
+        setSelectedProductIds([]);
+      } catch (err: any) {
+        alert("Failed to delete some or all products");
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold tracking-tight">Products</h2>
-        <button className="bg-gray-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors">
-          Add New Product
-        </button>
+        <div className="flex gap-2">
+          {selectedProductIds.length > 0 && (
+            <button 
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm font-medium hover:bg-red-100 transition-colors border border-red-100"
+            >
+              Delete Selected ({selectedProductIds.length})
+            </button>
+          )}
+          <button className="bg-gray-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors">
+            Add New Product
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full sm:w-96">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+            className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-black focus:border-black"
+          />
+        </div>
+        
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter className="h-4 w-4 text-gray-400" />
+          <select
+            value={categoryFilter}
+            onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
+            className="border border-gray-200 rounded-lg text-sm py-2 pl-3 pr-8 focus:ring-black focus:border-black capitalize"
+          >
+            <option value="">All Categories</option>
+            {uniqueCategories.map((c: any) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
       </div>
       
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto pr-24 lg:pr-32">
+        <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="bg-gray-50 border-b border-gray-100 text-gray-900 uppercase tracking-wider text-xs">
               <tr>
+                <th className="px-6 py-4">
+                  <input 
+                    type="checkbox" 
+                    checked={paginatedProducts.length > 0 && selectedProductIds.length === paginatedProducts.length}
+                    onChange={toggleSelectAll}
+                    className="rounded border-gray-300 text-gray-900 focus:ring-black"
+                  />
+                </th>
                 <th className="px-6 py-4 font-medium">Product</th>
                 <th className="px-6 py-4 font-medium">Category</th>
                 <th className="px-6 py-4 font-medium">Price</th>
@@ -54,10 +173,18 @@ export function Products() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {products.map((product) => {
+              {paginatedProducts.map((product) => {
                 const totalStock = product.variants ? product.variants.reduce((acc: number, v: any) => acc + v.stock, 0) : 0;
                 return (
-                  <tr key={product._id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={product._id} className={`hover:bg-gray-50 transition-colors ${selectedProductIds.includes(product._id) ? 'bg-gray-50' : ''}`}>
+                    <td className="px-6 py-4">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedProductIds.includes(product._id)}
+                        onChange={() => toggleSelect(product._id)}
+                        className="rounded border-gray-300 text-gray-900 focus:ring-black"
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden">
@@ -85,21 +212,58 @@ export function Products() {
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => setSelectedProductId(product._id)} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors" title="Insights"><BarChart2 className="w-4 h-4" /></button>
                         <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
-                        <button className="p-2 text-gray-400 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        <button 
+                          onClick={() => handleDelete(product._id)} 
+                          disabled={isDeleting}
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
                 );
               })}
-              {products.length === 0 && (
+              {paginatedProducts.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">No products found.</td>
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No products found.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white px-4 py-3 border border-gray-100 rounded-xl shadow-sm sm:px-6">
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredProducts.length)}</span> of <span className="font-medium">{filteredProducts.length}</span> results
+              </p>
+            </div>
+            <div>
+              <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {selectedProductId && (

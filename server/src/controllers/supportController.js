@@ -57,7 +57,7 @@ const replyToTicket = async (req, res) => {
 
     if (ticket) {
       // If customer is replying, ensure they own it. Admins bypass this.
-      const isAdmin = req.admin && req.admin.role === 'admin';
+      const isAdmin = req.user && ['support-staff', 'manager', 'super-admin'].includes(req.user.role);
       
       if (!isAdmin && ticket.user.toString() !== req.user._id.toString()) {
         return res.status(403).json({ message: 'Not authorized to access this ticket' });
@@ -67,7 +67,7 @@ const replyToTicket = async (req, res) => {
       
       ticket.thread.push({
         sender,
-        senderRole: isAdmin ? req.admin.role : undefined,
+        senderRole: isAdmin ? req.user.role : undefined,
         message,
         images: images || [],
         timestamp: new Date()
@@ -75,7 +75,7 @@ const replyToTicket = async (req, res) => {
       
       if (isAdmin && ticket.status === 'raised') {
         ticket.status = 'replied';
-        ticket.statusHistory.push({ status: 'replied', changedBy: req.admin._id, timestamp: new Date() });
+        ticket.statusHistory.push({ status: 'replied', changedBy: req.user._id, timestamp: new Date() });
       } else if (!isAdmin && (ticket.status === 'resolved' || ticket.status === 'closed')) {
         ticket.status = 'reopened';
         ticket.statusHistory.push({ status: 'reopened', timestamp: new Date() });
@@ -118,7 +118,7 @@ const updateTicketStatus = async (req, res) => {
         ticket.status = req.body.status;
         ticket.statusHistory.push({
           status: req.body.status,
-          changedBy: req.admin._id,
+          changedBy: req.user._id,
           timestamp: new Date()
         });
       }

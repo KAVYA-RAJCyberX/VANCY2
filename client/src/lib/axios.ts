@@ -14,7 +14,7 @@ api.interceptors.request.use((config) => {
     
     if (isAdminRoute) {
       const adminToken = localStorage.getItem('admin_access_token');
-      if (adminToken && config.headers) {
+      if (adminToken && config.headers && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${adminToken}`;
         return config; // Early return to avoid overwriting
       }
@@ -24,7 +24,7 @@ api.interceptors.request.use((config) => {
     if (authStorage) {
       const parsed = JSON.parse(authStorage);
       const token = parsed.state?.user?.token;
-      if (token && config.headers) {
+      if (token && config.headers && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }

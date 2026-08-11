@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import api from "../../../lib/axios";
 import { DollarSign, ShoppingBag, AlertTriangle, Clock } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from "recharts";
@@ -25,6 +26,7 @@ export function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -64,7 +66,10 @@ export function Dashboard() {
       
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Today's Sales */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div 
+          onClick={() => navigate('/admin/orders')}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-widest">Today's Sales</h3>
             <div className="p-2 bg-green-50 rounded-lg">
@@ -76,7 +81,10 @@ export function Dashboard() {
         </div>
 
         {/* Today's Orders */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div 
+          onClick={() => navigate('/admin/orders')}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-widest">Today's Orders</h3>
             <div className="p-2 bg-blue-50 rounded-lg">
@@ -88,7 +96,10 @@ export function Dashboard() {
         </div>
 
         {/* Pending Orders */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div 
+          onClick={() => navigate('/admin/orders?status=Processing')}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-widest">Pending Action</h3>
             <div className="p-2 bg-amber-50 rounded-lg">
@@ -100,7 +111,10 @@ export function Dashboard() {
         </div>
 
         {/* Low Stock Alerts */}
-        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+        <div 
+          onClick={() => navigate('/admin/inventory?filter=low')}
+          className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer"
+        >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-widest">Low Stock</h3>
             <div className="p-2 bg-red-50 rounded-lg">
@@ -158,10 +172,14 @@ export function Dashboard() {
             {stats?.recentOrders && stats.recentOrders.length > 0 ? (
               <div className="space-y-4">
                 {stats.recentOrders.map((order) => (
-                  <div key={order._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <div 
+                    key={order._id} 
+                    onClick={() => navigate(`/admin/orders?highlight=${order._id}`)}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors"
+                  >
                     <div>
                       <p className="text-sm font-medium text-gray-900">
-                        {order.user?.name || order.guestEmail || 'Guest'}
+                        {order.user?.name || order.user?.email || order.guestEmail || 'Guest'}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {new Date(order.createdAt).toLocaleDateString()} &middot; {order._id.substring(order._id.length - 6).toUpperCase()}

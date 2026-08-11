@@ -161,4 +161,53 @@ const removeAddress = async (req, res) => {
   }
 };
 
-module.exports = { authUser, registerUser, logoutUser, getUserProfile, addAddress, updateAddress, removeAddress };
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+// @access  Private
+const updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
+
+      const updatedUser = await user.save();
+
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        isAdmin: updatedUser.isAdmin,
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Request data export or deletion (DPDP)
+// @route   POST /api/auth/profile/dpdp-request
+// @access  Private
+const requestDataExportDelete = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const { type, notes } = req.body;
+    
+    // In a real system, this would queue a job, send an email to DPO, or flag the user record
+    console.log(`[DPDP REQUEST] User ${user.email} requested ${type}. Notes: ${notes}`);
+
+    res.status(200).json({ message: 'Your request has been submitted and will be processed within 30 days.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { authUser, registerUser, logoutUser, getUserProfile, updateUserProfile, addAddress, updateAddress, removeAddress, requestDataExportDelete };

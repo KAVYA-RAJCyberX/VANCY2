@@ -9,6 +9,9 @@ import {
   BarChart3, 
   UserCog, 
   Settings,
+  RefreshCcw,
+  MessageSquare,
+  Star,
   LogOut
 } from "lucide-react";
 import { useEffect } from "react";
@@ -21,6 +24,9 @@ const navItems = [
   { name: 'Products', path: '/admin/products', icon: Tags },
   { name: 'Customers', path: '/admin/customers', icon: Users },
   { name: 'Discounts', path: '/admin/discounts', icon: Percent },
+  { name: 'Returns', path: '/admin/returns', icon: RefreshCcw },
+  { name: 'Support', path: '/admin/support', icon: MessageSquare },
+  { name: 'Reviews', path: '/admin/reviews', icon: Star },
   { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
   { name: 'Staff', path: '/admin/staff', icon: UserCog },
   { name: 'Settings', path: '/admin/settings', icon: Settings },

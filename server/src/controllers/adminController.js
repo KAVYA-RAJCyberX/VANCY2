@@ -3,6 +3,8 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const Coupon = require('../models/Coupon');
+const Review = require('../models/Review');
+const SupportTicket = require('../models/SupportTicket');
 
 // Helper to log admin actions
 const logAction = async (adminId, actionType, collectionName, documentId, beforeValue, afterValue, req) => {
@@ -216,6 +218,43 @@ const getAdminCoupons = async (req, res) => {
   }
 };
 
+// @desc    Get Product Insights (Cross-Reference)
+// @route   GET /api/admin/products/:id/cross-reference
+const getProductInsights = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    
+    // Find all orders containing this product
+    const orders = await Order.find({ 'orderItems.product': productId })
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+      
+    // Find all support tickets related to this product
+    const tickets = await SupportTicket.find({ productId })
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+      
+    // Find all reviews for this product
+    const reviews = await Review.find({ product: productId })
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+      
+    res.json({
+      orders,
+      tickets,
+      reviews,
+      stats: {
+        totalOrders: orders.length,
+        totalTickets: tickets.length,
+        totalReviews: reviews.length,
+        averageRating: reviews.length > 0 ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length : 0
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAdminOrders,
@@ -225,5 +264,6 @@ module.exports = {
   updateStaffRole,
   getAuditLogs,
   getDetailedAnalytics,
-  getAdminCoupons
+  getAdminCoupons,
+  getProductInsights
 };

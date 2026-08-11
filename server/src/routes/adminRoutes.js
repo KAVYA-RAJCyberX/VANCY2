@@ -10,7 +10,8 @@ const {
   updateStaffRole,
   getAuditLogs,
   getDetailedAnalytics,
-  getAdminCoupons
+  getAdminCoupons,
+  getProductInsights
 } = require('../controllers/adminController');
 
 // All routes require a valid admin JWT
@@ -34,5 +35,8 @@ router.get('/audit-logs', requireRole(['super-admin']), getAuditLogs);
 // Analytics & Coupons
 router.get('/analytics', requireRole(['manager', 'super-admin']), getDetailedAnalytics);
 router.get('/coupons', requireRole(['manager', 'super-admin']), getAdminCoupons);
+
+// Product Insights (Cross-Reference)
+router.get('/products/:id/cross-reference', requireRole(['support-staff', 'manager', 'super-admin']), getProductInsights);
 
 module.exports = router;

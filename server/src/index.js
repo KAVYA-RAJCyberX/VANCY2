@@ -32,6 +32,8 @@ const addressRoutes = require('./routes/addressRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const newsletterRoutes = require('./routes/newsletterRoutes');
 const couponRoutes = require('./routes/couponRoutes');
+const returnRoutes = require('./routes/returnRoutes');
+const supportRoutes = require('./routes/supportRoutes');
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
@@ -45,6 +47,8 @@ app.use('/api/addresses', addressRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/returns', returnRoutes);
+app.use('/api/support', supportRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

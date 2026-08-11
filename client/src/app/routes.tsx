@@ -37,6 +37,9 @@ const Discounts = lazy(() => import("./pages/admin/Discounts").then((m) => ({ de
 const Analytics = lazy(() => import("./pages/admin/Analytics").then((m) => ({ default: m.Analytics })));
 const Staff = lazy(() => import("./pages/admin/Staff").then((m) => ({ default: m.Staff })));
 const Settings = lazy(() => import("./pages/admin/Settings").then((m) => ({ default: m.Settings })));
+const AdminReturns = lazy(() => import("./pages/admin/Returns").then((m) => ({ default: m.Returns })));
+const AdminSupport = lazy(() => import("./pages/admin/Support").then((m) => ({ default: m.Support })));
+const AdminReviews = lazy(() => import("./pages/admin/Reviews").then((m) => ({ default: m.Reviews })));
 import { AdminLayout } from "./components/AdminLayout";
 
 // Loading fallback component (Premium Minimal Loader)
@@ -63,6 +66,9 @@ export const router = createBrowserRouter([
           { path: "products", element: <Suspense fallback={<PageLoader />}><AdminProducts /></Suspense> },
           { path: "customers", element: <Suspense fallback={<PageLoader />}><Customers /></Suspense> },
           { path: "discounts", element: <Suspense fallback={<PageLoader />}><Discounts /></Suspense> },
+          { path: "returns", element: <Suspense fallback={<PageLoader />}><AdminReturns /></Suspense> },
+          { path: "support", element: <Suspense fallback={<PageLoader />}><AdminSupport /></Suspense> },
+          { path: "reviews", element: <Suspense fallback={<PageLoader />}><AdminReviews /></Suspense> },
           { path: "analytics", element: <Suspense fallback={<PageLoader />}><Analytics /></Suspense> },
           { path: "staff", element: <Suspense fallback={<PageLoader />}><Staff /></Suspense> },
           { path: "settings", element: <Suspense fallback={<PageLoader />}><Settings /></Suspense> },

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { X, Package, Truck, CheckCircle, XCircle, RotateCcw, MapPin, CreditCard } from "lucide-react";
-import api from "../../../../lib/axios";
+import api from "../../../lib/axios";
 import { useState } from "react";
 
 interface OrderDetailsPanelProps {

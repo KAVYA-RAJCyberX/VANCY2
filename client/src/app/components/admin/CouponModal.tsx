@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check } from "lucide-react";
-import api from "../../../../lib/axios";
+import api from "../../../lib/axios";
 
 interface CouponModalProps {
   isOpen: boolean;

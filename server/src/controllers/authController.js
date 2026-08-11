@@ -10,12 +10,13 @@ const authUser = async (req, res) => {
     
     const user = await User.findOne({ email });
     if (user && (await user.matchPassword(password))) {
-      generateToken(res, user._id);
+      const token = generateToken(res, user._id);
       res.json({
         _id: user._id,
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        token: token,
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -41,12 +42,13 @@ const registerUser = async (req, res) => {
     const user = await User.create({ name, email, password });
 
     if (user) {
-      generateToken(res, user._id);
+      const token = generateToken(res, user._id);
       res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin,
+        token: token,
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });

@@ -12,7 +12,7 @@ export function Support() {
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ['admin-tickets'],
     queryFn: async () => {
-      const { data } = await api.get('/support', {
+      const { data } = await api.get('/admin/support', {
         headers: { Authorization: `Bearer ${localStorage.getItem('admin_access_token')}` }
       });
       return data;
@@ -35,7 +35,7 @@ export function Support() {
       if (status) payload.status = status;
       if (assignedTo !== undefined) payload.assignedTo = assignedTo;
 
-      const { data } = await api.put(`/support/${id}/status`, payload, {
+      const { data } = await api.put(`/admin/support/${id}/status`, payload, {
         headers: { Authorization: `Bearer ${localStorage.getItem('admin_access_token')}` }
       });
       return data;
@@ -47,7 +47,7 @@ export function Support() {
 
   const replyMutation = useMutation({
     mutationFn: async ({ id, message }: { id: string, message: string }) => {
-      const { data } = await api.post(`/support/${id}/reply`, { message }, {
+      const { data } = await api.post(`/admin/support/${id}/reply`, { message }, {
         headers: { Authorization: `Bearer ${localStorage.getItem('admin_access_token')}` }
       });
       return data;

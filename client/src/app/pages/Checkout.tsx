@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
 import { CheckCircle2, CreditCard, Smartphone } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -27,13 +27,49 @@ export function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "cod">("upi");
   const [addressData, setAddressData] = useState<AddressFormValues | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [useNewAddress, setUseNewAddress] = useState<boolean>(true);
   
   const { items, totalPrice, clearCart } = useCartStore();
   const user = useAuthStore((state) => state.user);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<AddressFormValues>({
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
   });
+
+  useEffect(() => {
+    if (user) {
+      api.get("/auth/profile").then((res) => {
+        if (res.data.savedAddresses && res.data.savedAddresses.length > 0) {
+          setSavedAddresses(res.data.savedAddresses);
+          setUseNewAddress(false);
+          // Set form values to the first saved address for convenience
+          const addr = res.data.savedAddresses[0];
+          setValue("firstName", user.name?.split(' ')[0] || '');
+          setValue("lastName", user.name?.split(' ').slice(1).join(' ') || '');
+          setValue("email", user.email);
+          setValue("address", addr.street);
+          setValue("city", addr.city);
+          setValue("state", addr.state);
+          setValue("postalCode", addr.postalCode);
+          setValue("country", addr.country);
+        } else {
+          setValue("firstName", user.name?.split(' ')[0] || '');
+          setValue("lastName", user.name?.split(' ').slice(1).join(' ') || '');
+          setValue("email", user.email);
+        }
+      }).catch(err => console.error("Failed to fetch profile", err));
+    }
+  }, [user, setValue]);
+
+  const selectSavedAddress = (addr: any) => {
+    setUseNewAddress(false);
+    setValue("address", addr.street);
+    setValue("city", addr.city);
+    setValue("state", addr.state);
+    setValue("postalCode", addr.postalCode);
+    setValue("country", addr.country);
+  };
 
   const onAddressSubmit = (data: AddressFormValues) => {
     setAddressData(data);
@@ -313,7 +349,53 @@ export function Checkout() {
                   </div>
                   
                   <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Shipping Address</h2>
-                  <div className="grid grid-cols-2 gap-6 mb-6">
+                  
+                  {savedAddresses.length > 0 && (
+                    <div className="mb-10 space-y-4">
+                      <div className="flex gap-4 mb-4">
+                        <button 
+                          type="button"
+                          onClick={() => setUseNewAddress(false)}
+                          className={`flex-1 py-3 text-xs font-medium uppercase tracking-widest border transition-colors ${!useNewAddress ? 'bg-foreground text-background border-foreground' : 'bg-transparent text-foreground border-border hover:border-foreground'}`}
+                        >
+                          Saved Addresses
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setUseNewAddress(true);
+                            setValue("address", "");
+                            setValue("city", "");
+                            setValue("state", "");
+                            setValue("postalCode", "");
+                            setValue("country", "");
+                          }}
+                          className={`flex-1 py-3 text-xs font-medium uppercase tracking-widest border transition-colors ${useNewAddress ? 'bg-foreground text-background border-foreground' : 'bg-transparent text-foreground border-border hover:border-foreground'}`}
+                        >
+                          New Address
+                        </button>
+                      </div>
+
+                      {!useNewAddress && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {savedAddresses.map((addr: any, idx: number) => (
+                            <div 
+                              key={idx} 
+                              onClick={() => selectSavedAddress(addr)}
+                              className="border border-border p-4 cursor-pointer hover:border-foreground transition-colors group relative"
+                            >
+                              <p className="text-sm font-medium mb-1">{addr.street}</p>
+                              <p className="text-xs text-muted-foreground">{addr.city}, {addr.state} {addr.postalCode}</p>
+                              <p className="text-xs text-muted-foreground">{addr.country}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className={`transition-opacity duration-300 ${!useNewAddress && savedAddresses.length > 0 ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                    <div className="grid grid-cols-2 gap-6 mb-6">
                     <div>
                       <input 
                         type="text" 
@@ -382,6 +464,7 @@ export function Checkout() {
                         className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.country ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                       />
                     </div>
+                  </div>
                   </div>
 
                   <button 

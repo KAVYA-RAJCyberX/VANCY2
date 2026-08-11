@@ -13,6 +13,7 @@ const {
   getAdminCoupons,
   getProductInsights
 } = require('../controllers/adminController');
+const { getTickets, updateTicketStatus, replyToTicket } = require('../controllers/supportController');
 
 // All routes require a valid admin JWT
 router.use(protectAdmin);
@@ -38,5 +39,10 @@ router.get('/coupons', requireRole(['manager', 'super-admin']), getAdminCoupons)
 
 // Product Insights (Cross-Reference)
 router.get('/products/:id/cross-reference', requireRole(['support-staff', 'manager', 'super-admin']), getProductInsights);
+
+// Support Tickets
+router.get('/support', requireRole(['support-staff', 'manager', 'super-admin']), getTickets);
+router.put('/support/:id/status', requireRole(['support-staff', 'manager', 'super-admin']), updateTicketStatus);
+router.post('/support/:id/reply', requireRole(['support-staff', 'manager', 'super-admin']), replyToTicket);
 
 module.exports = router;

@@ -8,6 +8,7 @@ import { useWishlistStore } from "../../store/useWishlistStore";
 import { useToastStore } from "../../store/useToastStore";
 import { ToastContainer } from "./Toast";
 import { SearchModal } from "./SearchModal";
+import { NotificationsDropdown } from "./NotificationsDropdown";
 import { VancyV, VancyLeaf, VancyClose, VancyMenu, VancyMinus, VancyPlus } from "./ui/Icons";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Search, ShoppingBag, User, Heart } from "lucide-react";
@@ -223,6 +224,7 @@ export function Layout() {
             <Link to={user ? "/account" : "/login"} className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]">
               <User className="w-5 h-5" strokeWidth={1.5} />
             </Link>
+            <NotificationsDropdown />
             <Link to="/wishlist" className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[44px] min-h-[44px] relative">
               <Heart className="w-5 h-5" strokeWidth={1.5} />
               {wishlistItems.length > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent"></span>}

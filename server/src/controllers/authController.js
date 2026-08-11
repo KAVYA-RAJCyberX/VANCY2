@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const generateToken = require('../utils/generateToken');
 
 // @desc    Auth user & get token
@@ -42,6 +43,15 @@ const registerUser = async (req, res) => {
     const user = await User.create({ name, email, password });
 
     if (user) {
+      // Create Welcome Notification
+      await Notification.create({
+        user: user._id,
+        title: 'Welcome to Vancy Legacy!',
+        message: 'Thank you for joining. Use code WELCOME-10 for 10% off your first order!',
+        type: 'welcome',
+        actionUrl: '/shop'
+      });
+
       const token = generateToken(res, user._id);
       res.status(201).json({
         _id: user._id,

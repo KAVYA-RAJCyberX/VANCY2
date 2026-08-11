@@ -69,6 +69,31 @@ const addOrderItems = async (req, res) => {
     });
 
     const createdOrder = await order.save();
+
+    // Auto-save shipping address if not already present
+    if (req.user && shippingAddress && shippingAddress.street) {
+      const user = await require('../models/User').findById(req.user._id);
+      if (user) {
+        const exists = user.savedAddresses.some(
+          addr => addr.street === shippingAddress.street && addr.city === shippingAddress.city
+        );
+        if (!exists) {
+          user.savedAddresses.push({
+            street: shippingAddress.street,
+            city: shippingAddress.city,
+            state: shippingAddress.state,
+            postalCode: shippingAddress.postalCode,
+            country: shippingAddress.country
+          });
+          // Keep max 6 addresses
+          if (user.savedAddresses.length > 6) {
+            user.savedAddresses.shift();
+          }
+          await user.save();
+        }
+      }
+    }
+
     res.status(201).json(createdOrder);
   } catch (error) {
     console.error('Error creating order:', error);

@@ -3,9 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
+const initCronJobs = require('./utils/cronJobs');
 
 // Connect Database
 connectDB();
+
+// Initialize Background Jobs
+initCronJobs();
 
 const app = express();
 
@@ -34,6 +38,7 @@ const newsletterRoutes = require('./routes/newsletterRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const returnRoutes = require('./routes/returnRoutes');
 const supportRoutes = require('./routes/supportRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
@@ -49,6 +54,7 @@ app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

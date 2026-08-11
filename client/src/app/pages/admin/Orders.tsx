@@ -22,7 +22,8 @@ export function Orders() {
 
   const handleStatusUpdate = async (id: string, isDelivered: boolean) => {
     try {
-      await api.put(`/admin/orders/${id}/status`, { isDelivered });
+      const status = isDelivered ? 'Delivered' : 'Pending';
+      await api.put(`/admin/orders/${id}/status`, { status });
       setOrders(orders.map(o => o._id === id ? { ...o, isDelivered } : o));
     } catch (err) {
       console.error(err);

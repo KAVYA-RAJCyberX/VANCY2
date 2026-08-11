@@ -112,6 +112,21 @@ const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
+    if (status === 'Delivered' && order.user && beforeStatus !== 'Delivered') {
+      const Notification = require('../models/Notification');
+      try {
+        await Notification.create({
+          user: order.user,
+          title: 'Your Order has been Delivered!',
+          message: 'We hope you love your purchase. Please take a moment to leave a review.',
+          type: 'review',
+          actionUrl: '/account' // Or '/shop' depending on where reviews are placed
+        });
+      } catch (err) {
+        console.error('Failed to create delivery notification:', err);
+      }
+    }
+
     await logAction(req.user._id, 'UPDATE_ORDER_STATUS', 'Order', order._id, { status: beforeStatus }, { status, note }, req);
 
     res.json(order);

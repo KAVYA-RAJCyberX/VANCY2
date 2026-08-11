@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import api from "../../../lib/axios";
+import api from "../../lib/axios";
 import { useNavigate } from "react-router";
-import { useAuthStore } from "../../../store/useAuthStore";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false);

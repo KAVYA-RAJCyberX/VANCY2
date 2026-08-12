@@ -92,11 +92,27 @@ export function ProductFormModal({ isOpen, onClose, product, onSaved }: Props) {
   const set = (field: keyof ProductFormData, value: any) => setForm(f => ({ ...f, [field]: value }));
 
   // Image URL handlers
-  const setImage = (idx: number, val: string) => {
-    const imgs = [...form.images];
-    imgs[idx] = val;
-    set("images", imgs);
+  const handleImageUpload = (idx: number, file: File) => {
+    if (!file) return;
+    
+    // 3MB limit for Base64 (Vercel payload limit is 4.5MB)
+    if (file.size > 3 * 1024 * 1024) {
+      setError("Image size must be less than 3MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const imgs = [...form.images];
+      imgs[idx] = reader.result as string;
+      set("images", imgs);
+    };
+    reader.onerror = () => {
+      setError("Failed to read file");
+    };
   };
+
   const addImage = () => set("images", [...form.images, ""]);
   const removeImage = (idx: number) => set("images", form.images.filter((_, i) => i !== idx));
 
@@ -298,9 +314,8 @@ export function ProductFormModal({ isOpen, onClose, product, onSaved }: Props) {
                       <div key={idx} className="flex gap-2 items-center">
                         {img && <img src={img} alt="" className="w-10 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0" onError={e => (e.currentTarget.style.display = 'none')} />}
                         {!img && <div className="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 border border-gray-200 flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>}
-                        <input type="url" value={img} onChange={e => setImage(idx, e.target.value)}
-                          placeholder="https://example.com/image.jpg"
-                          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 outline-none" />
+                        <input type="file" accept="image/*" onChange={e => e.target.files && handleImageUpload(idx, e.target.files[0])}
+                          className="flex-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 outline-none cursor-pointer" />
                         {form.images.length > 1 && (
                           <button type="button" onClick={() => removeImage(idx)}
                             className="p-2 text-gray-400 hover:text-red-500 transition-colors">

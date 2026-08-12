@@ -3,18 +3,14 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
-const initCronJobs = require('./utils/cronJobs');
 
 // Connect Database
 connectDB();
 
-// Initialize Background Jobs
-initCronJobs();
-
 const app = express();
 
 // Middlewares
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -39,6 +35,7 @@ const couponRoutes = require('./routes/couponRoutes');
 const returnRoutes = require('./routes/returnRoutes');
 const supportRoutes = require('./routes/supportRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const cronRoutes = require('./routes/cronRoutes');
 
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
@@ -55,6 +52,7 @@ app.use('/api/coupons', couponRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/cron', cronRoutes);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

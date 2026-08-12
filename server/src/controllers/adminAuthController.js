@@ -5,8 +5,11 @@ const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'vancy_secret_key';
-const REFRESH_SECRET = process.env.REFRESH_SECRET || 'vancy_refresh_secret';
+if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set.');
+if (!process.env.REFRESH_SECRET) throw new Error('REFRESH_SECRET environment variable is not set.');
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
 
 // Helper to generate access token
 const generateAccessToken = (userId, role) => {
@@ -99,8 +102,8 @@ const verify2FA = async (req, res) => {
 
       res.cookie('admin_refresh_token', refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: true,
+        sameSite: 'none',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
@@ -156,6 +159,8 @@ const adminLogout = async (req, res) => {
     }
     res.cookie('admin_refresh_token', '', {
       httpOnly: true,
+      secure: true,
+      sameSite: 'none',
       expires: new Date(0)
     });
     res.json({ message: 'Logged out successfully' });

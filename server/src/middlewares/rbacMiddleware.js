@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'vancy_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Strictly verify the short-lived access token
 const protectAdmin = async (req, res, next) => {

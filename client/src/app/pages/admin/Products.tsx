@@ -32,14 +32,6 @@ export function Products() {
     fetchProducts();
   }, []);
 
-  if (loading) {
-    return <div className="p-6">Loading products...</div>;
-  }
-
-  if (error) {
-    return <div className="p-6 text-red-500">Error: {error}</div>;
-  }
-
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase());
@@ -55,6 +47,14 @@ export function Products() {
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
+
+  if (loading) {
+    return <div className="p-6">Loading products...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-500">Error: {error}</div>;
+  }
 
   const toggleSelectAll = () => {
     if (selectedProductIds.length === paginatedProducts.length) {

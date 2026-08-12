@@ -16,6 +16,9 @@ const {
   deleteCoupon,
   getProductInsights,
   updateProductStock,
+  createProduct,
+  updateProduct,
+  deleteProduct,
   getSettings,
   updateSettings
 } = require('../controllers/adminController');
@@ -49,6 +52,9 @@ router.delete('/coupons/:id', requireRole(['manager', 'super-admin']), deleteCou
 // Product Insights & Management
 router.get('/products/:id/cross-reference', requireRole(['support-staff', 'manager', 'super-admin']), getProductInsights);
 router.put('/products/:id/stock', requireRole(['support-staff', 'manager', 'super-admin']), updateProductStock);
+router.post('/products', requireRole(['manager', 'super-admin']), createProduct);
+router.put('/products/:id', requireRole(['manager', 'super-admin']), updateProduct);
+router.delete('/products/:id', requireRole(['manager', 'super-admin']), deleteProduct);
 
 // Support Tickets
 router.get('/support', requireRole(['support-staff', 'manager', 'super-admin']), getTickets);

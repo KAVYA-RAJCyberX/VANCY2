@@ -406,6 +406,93 @@ const getSettings = async (req, res) => {
   }
 };
 
+// @desc    Create a new product
+// @route   POST /api/admin/products
+const createProduct = async (req, res) => {
+  try {
+    const {
+      name, description, fabricDescription, fabric, category, subCategory,
+      price, originalPrice, discountPrice, images, variants,
+      isNewArrival, isLuxury, isSale, luxuryTier, limitedEdition,
+      limitedEditionStock, sizeChartType
+    } = req.body;
+
+    // Auto-generate slug from name
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const existingCount = await Product.countDocuments({ slug: new RegExp(`^${baseSlug}`) });
+    const slug = existingCount > 0 ? `${baseSlug}-${existingCount}` : baseSlug;
+
+    const product = await Product.create({
+      user: req.user._id,
+      name, slug, description, fabricDescription, fabric,
+      category, subCategory, price,
+      originalPrice: originalPrice || price,
+      discountPrice: discountPrice || null,
+      images: images || [],
+      variants: variants || [],
+      isNewArrival: isNewArrival || false,
+      isLuxury: isLuxury || false,
+      isSale: isSale || false,
+      luxuryTier: isLuxury ? luxuryTier : undefined,
+      limitedEdition: limitedEdition || null,
+      limitedEditionStock: limitedEditionStock || null,
+      sizeChartType: sizeChartType || 'polo'
+    });
+
+    await logAction(req.user._id, 'CREATE_PRODUCT', 'Product', product._id, null, { name: product.name }, req);
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Update a product
+// @route   PUT /api/admin/products/:id
+const updateProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    const fields = [
+      'name', 'description', 'fabricDescription', 'fabric', 'category', 'subCategory',
+      'price', 'originalPrice', 'discountPrice', 'images', 'variants',
+      'isNewArrival', 'isLuxury', 'isSale', 'luxuryTier', 'limitedEdition',
+      'limitedEditionStock', 'sizeChartType'
+    ];
+
+    const before = { name: product.name };
+    fields.forEach(f => { if (req.body[f] !== undefined) product[f] = req.body[f]; });
+
+    // Regen slug if name changed
+    if (req.body.name && req.body.name !== before.name) {
+      const baseSlug = req.body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const existingCount = await Product.countDocuments({ slug: new RegExp(`^${baseSlug}`), _id: { $ne: product._id } });
+      product.slug = existingCount > 0 ? `${baseSlug}-${existingCount}` : baseSlug;
+    }
+
+    const updated = await product.save();
+    await logAction(req.user._id, 'UPDATE_PRODUCT', 'Product', updated._id, before, { name: updated.name }, req);
+    res.json(updated);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Delete a product
+// @route   DELETE /api/admin/products/:id
+const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    await Product.deleteOne({ _id: product._id });
+    await logAction(req.user._id, 'DELETE_PRODUCT', 'Product', product._id, { name: product.name }, null, req);
+    res.json({ message: 'Product removed' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // @desc    Update settings
 // @route   PUT /api/admin/settings
 const updateSettings = async (req, res) => {
@@ -444,6 +531,9 @@ module.exports = {
   deleteCoupon,
   getProductInsights,
   updateProductStock,
+  createProduct,
+  updateProduct,
+  deleteProduct,
   getSettings,
   updateSettings
 };

@@ -3,6 +3,7 @@ import api from "../../../lib/axios";
 import { Package, Edit, Trash2, BarChart2, X, Star, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
+import { ProductFormModal } from "../../components/admin/ProductFormModal";
 
 export function Products() {
   const [products, setProducts] = useState<any[]>([]);
@@ -17,6 +18,10 @@ export function Products() {
   
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -76,7 +81,9 @@ export function Products() {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         setIsDeleting(true);
-        await api.delete(`/admin/products/${id}`);
+        await api.delete(`/admin/products/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('admin_access_token')}` }
+        });
         setProducts(products.filter(p => p._id !== id));
         setSelectedProductIds(selectedProductIds.filter(pid => pid !== id));
       } catch (err: any) {
@@ -86,6 +93,17 @@ export function Products() {
       }
     }
   };
+
+  const handleProductSaved = (savedProduct: any, isEdit: boolean) => {
+    if (isEdit) {
+      setProducts(products.map(p => p._id === savedProduct._id ? savedProduct : p));
+    } else {
+      setProducts([savedProduct, ...products]);
+    }
+  };
+
+  const openAdd = () => { setEditingProduct(null); setModalOpen(true); };
+  const openEdit = (product: any) => { setEditingProduct(product); setModalOpen(true); };
 
   const handleBulkDelete = async () => {
     if (window.confirm(`Are you sure you want to delete ${selectedProductIds.length} products?`)) {
@@ -117,7 +135,10 @@ export function Products() {
               Delete Selected ({selectedProductIds.length})
             </button>
           )}
-          <button className="bg-gray-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors">
+          <button
+            onClick={openAdd}
+            className="bg-gray-900 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors"
+          >
             Add New Product
           </button>
         </div>
@@ -209,17 +230,17 @@ export function Products() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => setSelectedProductId(product._id)} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors" title="Insights"><BarChart2 className="w-4 h-4" /></button>
-                        <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
-                        <button 
-                          onClick={() => handleDelete(product._id)} 
-                          disabled={isDeleting}
-                          className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => setSelectedProductId(product._id)} className="p-2 text-gray-400 hover:text-indigo-600 transition-colors" title="Insights"><BarChart2 className="w-4 h-4" /></button>
+                          <button onClick={() => openEdit(product)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
+                          <button 
+                            onClick={() => handleDelete(product._id)} 
+                            disabled={isDeleting}
+                            className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                     </td>
                   </tr>
                 );
@@ -274,6 +295,13 @@ export function Products() {
           />
         )}
       </AnimatePresence>
+
+      <ProductFormModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        product={editingProduct}
+        onSaved={handleProductSaved}
+      />
     </div>
   );
 }

@@ -10,6 +10,10 @@ const api = axios.create({
 
 // Attach the correct token on every request
 api.interceptors.request.use((config) => {
+  if (!import.meta.env.VITE_API_URL) {
+    return Promise.reject(new Error("VITE_API_URL is not configured in environment variables"));
+  }
+
   try {
     const isAdminRoute = config.url?.startsWith('/admin');
 
@@ -53,7 +57,13 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Check if we accidentally received HTML (usually means VITE_API_URL is wrong)
+    if (typeof response.data === 'string' && response.data.trim().toLowerCase().startsWith('<!doctype html>')) {
+      return Promise.reject(new Error("API returned HTML instead of JSON. Ensure VITE_API_URL is pointing to the backend."));
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 

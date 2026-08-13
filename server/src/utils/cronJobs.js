@@ -1,12 +1,11 @@
 /**
  * Abandoned Cart Notification Handler
  *
- * Previously ran via node-cron inside the Express process (not viable on Vercel serverless).
- * Now exported as a standalone async function to be called by a Vercel Cron HTTP endpoint.
+ * Exported as a standalone async function called via HTTP POST.
+ * Triggered by a free external scheduler (e.g., cron-job.org) since
+ * Vercel Hobby does not support hourly cron schedules.
  *
  * Usage: POST /api/cron/abandoned-carts  (secured by CRON_SECRET header)
- * Vercel cron entry in server/vercel.json:
- *   { "path": "/api/cron/abandoned-carts", "schedule": "0 * * * *" }
  */
 
 const Cart = require('../models/Cart');

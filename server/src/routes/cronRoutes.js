@@ -1,12 +1,12 @@
 /**
- * Vercel Cron endpoint: POST /api/cron/abandoned-carts
- * Scheduled hourly via vercel.json crons config.
+ * Cron endpoint: POST /api/cron/abandoned-carts
+ * Triggered by an external scheduler (e.g., cron-job.org).
  * Protected by CRON_SECRET header to prevent public invocation.
  */
 
 const express = require('express');
 const router = express.Router();
-const runAbandonedCartJob = require('../../utils/cronJobs');
+const runAbandonedCartJob = require('../utils/cronJobs');
 
 router.post('/abandoned-carts', async (req, res) => {
   const secret = req.headers['x-cron-secret'];

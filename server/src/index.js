@@ -8,7 +8,12 @@ const app = express();
 
 // CORS Middleware - MUST be before DB connection to ensure fast preflight without DB dependency
 const corsOptions = { 
-  origin: process.env.CLIENT_URL, 
+  origin: [
+    'https://vancy-2.vercel.app',
+    process.env.CLIENT_URL,
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ].filter(Boolean), 
   credentials: true 
 };
 app.use(cors(corsOptions));

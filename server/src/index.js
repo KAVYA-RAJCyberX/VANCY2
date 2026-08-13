@@ -6,6 +6,14 @@ const connectDB = require('./config/db');
 
 const app = express();
 
+// CORS Middleware - MUST be before DB connection to ensure fast preflight without DB dependency
+const corsOptions = { 
+  origin: process.env.CLIENT_URL, 
+  credentials: true 
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 // Vercel-safe Database Connection Middleware
 app.use(async (req, res, next) => {
   try {
@@ -18,7 +26,6 @@ app.use(async (req, res, next) => {
 });
 
 // Middlewares
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 

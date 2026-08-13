@@ -29,7 +29,11 @@ api.interceptors.request.use((config) => {
     if (authStorage) {
       const parsed = JSON.parse(authStorage);
       const token = parsed.state?.user?.token;
-      if (token && config.headers && !config.headers.Authorization) {
+      
+      // Prevent unnecessary CORS preflight on public catalog endpoints
+      const isPublicGet = config.method?.toLowerCase() === 'get' && config.url?.startsWith('/products');
+
+      if (token && config.headers && !config.headers.Authorization && !isPublicGet) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }

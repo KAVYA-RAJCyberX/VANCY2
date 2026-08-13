@@ -4,10 +4,18 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 
-// Connect Database
-connectDB();
-
 const app = express();
+
+// Vercel-safe Database Connection Middleware
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('Database connection failed in middleware:', error);
+    res.status(500).json({ message: 'Internal Server Error: Database connection failed.' });
+  }
+});
 
 // Middlewares
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));

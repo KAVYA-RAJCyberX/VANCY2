@@ -17,11 +17,12 @@ export function Home() {
   const lookbookRef = useRef<HTMLDivElement>(null);
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', 'newArrivals', 'limit-3'],
     queryFn: async () => {
-      const { data } = await api.get('/products');
+      const { data } = await api.get('/products', { params: { isNewArrival: true, limit: 3 } });
       return Array.isArray(data) ? data : (data?.products || []);
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 
   useEffect(() => {
@@ -81,7 +82,7 @@ export function Home() {
     <div className="flex flex-col w-full bg-background selection:bg-black selection:text-white">
       
       {/* Hero Section */}
-      <section className="relative w-full h-screen min-h-[800px] flex items-center justify-center overflow-hidden bg-[#FDFBF7]">
+      <section className="relative w-full h-screen min-h-[600px] md:min-h-[800px] flex items-center justify-center overflow-hidden bg-[#FDFBF7]">
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none z-0">
           <img src="/images/logo/leaf-logo.png" alt="Vancy Logo Background" className="w-[80vw] h-[80vw] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
         </div>
@@ -98,7 +99,7 @@ export function Home() {
           />
         </div>
         <div className="relative z-10 w-full px-6 lg:px-12 flex flex-col justify-end h-full pb-24">
-          <div ref={heroTextRef} className="pt-20 md:pt-0">
+          <div ref={heroTextRef} className="pt-10 md:pt-0">
             <h1 className="hero-text text-[clamp(2.75rem,12vw,10rem)] leading-[0.85] font-medium tracking-[0.05em] text-foreground uppercase max-w-5xl">
               Timeless<br/>Essentials
             </h1>
@@ -115,7 +116,7 @@ export function Home() {
       </section>
 
       {/* Featured Collection / New Arrivals */}
-      <section ref={collectionRef} className="py-32 lg:py-48 px-6 lg:px-12">
+      <section ref={collectionRef} className="py-16 md:py-32 lg:py-48 px-6 lg:px-12">
         <div className="mb-24 flex justify-between items-end border-b border-border pb-8">
           <h2 className="text-4xl md:text-6xl font-medium tracking-tighter uppercase">New Arrivals</h2>
           <Link to="/category/new" className="text-sm font-medium tracking-wide underline underline-offset-4 hover:text-muted-foreground transition-colors hidden sm:block">
@@ -123,39 +124,40 @@ export function Home() {
           </Link>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-24 gap-x-8">
+        <div className="grid grid-cols-3 gap-x-2 md:gap-x-8 gap-y-6 md:gap-y-16">
           {isLoading ? (
             // Skeleton
             [...Array(3)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="aspect-[3/4] bg-muted mb-6"></div>
-                <div className="h-4 bg-muted w-3/4 mb-2"></div>
-                <div className="h-4 bg-muted w-1/4"></div>
+                <div className="aspect-[3/4] bg-muted mb-2 md:mb-6"></div>
+                <div className="h-3 md:h-4 bg-muted w-3/4 mb-1 md:mb-2"></div>
+                <div className="h-2 md:h-4 bg-muted w-1/4 hidden md:block"></div>
               </div>
             ))
           ) : (
-            products.slice(0, 3).map((product: any, idx: number) => (
+            products.map((product: any, idx: number) => (
               <Link 
                 key={product._id} 
                 to={`/product/${product.slug}`} 
-                className={`collection-item group flex flex-col ${idx === 1 ? 'md:mt-24' : ''}`}
+                className={`collection-item group flex flex-col ${idx === 1 ? 'md:mt-24 mt-6' : ''}`}
               >
-                <div className="aspect-[3/4] overflow-hidden bg-muted mb-6 relative">
+                <div className="aspect-[3/4] w-full overflow-hidden bg-muted mb-2 md:mb-6 relative">
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-[0.04] transition-opacity duration-700 pointer-events-none z-10">
-                    <img src="/images/logo/leaf-logo.png" alt="Vancy Logo Hover" className="w-[80%] h-[80%] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
+                    <img src="/images/logo/leaf-logo.png" alt="Vancy Logo Hover" className="w-[80%] h-[80%] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" loading="lazy" />
                   </div>
                   <img 
                     src={product.images[0]} 
                     alt={product.name} 
+                    loading="lazy"
                     className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] relative z-0"
                   />
                 </div>
-                <div className="flex justify-between items-start uppercase tracking-widest">
-                  <div className="flex-1 pr-4">
-                    <h3 className="text-sm font-medium group-hover:text-accent transition-colors duration-300 line-clamp-2 break-words">{product.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-2 font-light">{product.fabricDescription}</p>
+                <div className="flex flex-col md:flex-row justify-between items-start uppercase tracking-widest gap-1 md:gap-0">
+                  <div className="flex-1 md:pr-4 w-full">
+                    <h3 className="text-[10px] md:text-sm font-medium group-hover:text-accent transition-colors duration-300 line-clamp-2 break-words leading-tight">{product.name}</h3>
+                    <p className="hidden md:block text-xs text-muted-foreground mt-2 font-light">{product.fabricDescription}</p>
                   </div>
-                  <span className="text-sm font-medium text-muted-foreground">₹{product.price}</span>
+                  <span className="text-[10px] md:text-sm font-medium text-muted-foreground">₹{product.price}</span>
                 </div>
               </Link>
             ))
@@ -164,8 +166,8 @@ export function Home() {
       </section>
 
       {/* Editorial Lookbook Section */}
-      <section ref={lookbookRef} className="py-32 px-6 lg:px-12 bg-black text-white min-h-screen flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center w-full max-w-[1600px] mx-auto">
+      <section ref={lookbookRef} className="py-16 md:py-32 px-6 lg:px-12 bg-black text-white min-h-screen flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 items-center w-full max-w-[1600px] mx-auto">
           <div className="order-2 lg:order-1">
             <h2 className="text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-medium tracking-tighter uppercase mb-12">
               Quiet<br/>Confidence

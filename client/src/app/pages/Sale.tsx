@@ -10,11 +10,12 @@ export function Sale() {
   const addItem = useCartStore((state) => state.addItem);
 
   const { data: allProducts = [], isLoading } = useQuery({
-    queryKey: ['products'],
+    queryKey: ['products', 'sale'],
     queryFn: async () => {
-      const { data } = await api.get('/products');
+      const { data } = await api.get('/products', { params: { isSale: true, limit: 30 } });
       return Array.isArray(data) ? data : (data?.products || []);
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 
   const products = allProducts.filter((p: any) => p.originalPrice && p.originalPrice > p.price);
@@ -47,12 +48,12 @@ export function Sale() {
             Loading Archive...
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-3 gap-x-2 md:gap-x-8 gap-y-6 md:gap-y-16">
             {products.length === 0 ? (
               <div className="col-span-full py-32 text-center text-xs font-medium tracking-widest uppercase text-muted-foreground">
                 The archive is currently empty.
               </div>
-            ) : products.map((product: any) => {
+            ) : products.map((product: any, idx: number) => {
               const discountPercentage = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
               return (
                 <div 
@@ -61,11 +62,13 @@ export function Sale() {
                   onMouseEnter={() => setHoveredId(product._id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-muted mb-4">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-muted mb-4 w-full">
                     <Link to={`/product/${product.slug}`}>
                       <img 
                         src={hoveredId === product._id && product.images.length > 1 ? product.images[1] : product.images[0]}
                         alt={product.name}
+                        loading={idx > 5 ? "lazy" : "eager"}
+                        fetchPriority={idx <= 5 ? "high" : "auto"}
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 mix-blend-multiply opacity-90 group-hover:opacity-100"
                       />
                     </Link>
@@ -94,12 +97,12 @@ export function Sale() {
                       </button>
                     </div>
                   </div>
-                  <Link to={`/product/${product.slug}`} className="mb-1">
-                    <h3 className="text-sm font-medium uppercase group-hover:text-muted-foreground transition-colors">{product.name}</h3>
+                  <Link to={`/product/${product.slug}`} className="mb-1 mt-2 md:mt-0">
+                    <h3 className="text-[10px] md:text-sm font-medium uppercase group-hover:text-muted-foreground transition-colors leading-tight md:leading-normal">{product.name}</h3>
                   </Link>
-                  <div className="flex items-center gap-3">
-                    <p className="text-sm font-medium text-foreground">₹{product.price}</p>
-                    <p className="text-xs font-medium text-muted-foreground line-through opacity-70">₹{product.originalPrice}</p>
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
+                    <p className="text-[10px] md:text-sm font-medium text-foreground">₹{product.price}</p>
+                    <p className="text-[10px] md:text-xs font-medium text-muted-foreground line-through opacity-70">₹{product.originalPrice}</p>
                   </div>
                 </div>
               )

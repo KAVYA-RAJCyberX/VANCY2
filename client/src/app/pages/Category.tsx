@@ -54,10 +54,11 @@ export function Category() {
       const { data } = await api.get('/products', { params });
       return Array.isArray(data) ? data : (data?.products || []);
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 
   return (
-    <div className="pt-32 pb-24 min-h-screen bg-background">
+    <div className="pt-24 md:pt-32 pb-16 md:pb-24 min-h-screen bg-background">
       <div className="container mx-auto px-6 lg:px-12">
         
         {/* Header */}
@@ -101,7 +102,7 @@ export function Category() {
                           <button 
                             key={s} 
                             onClick={() => setSize(size === s ? '' : s)}
-                            className={`w-10 h-10 border flex items-center justify-center text-xs transition-colors ${size === s ? 'border-foreground bg-foreground text-background' : 'border-border hover:border-foreground'}`}
+                            className={`min-w-[44px] min-h-[44px] border flex items-center justify-center text-xs transition-colors ${size === s ? 'border-foreground bg-foreground text-background' : 'border-border hover:border-foreground'}`}
                           >
                             {s}
                           </button>
@@ -143,19 +144,19 @@ export function Category() {
           )}
         </AnimatePresence>
 
-        {/* 2 or 3 Column Grid for large cards */}
+        {/* 3 Column Grid for large cards */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+          <div className="grid grid-cols-3 gap-x-2 md:gap-x-12 gap-y-6 md:gap-y-24">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="aspect-[3/4] bg-muted mb-6"></div>
-                <div className="h-4 bg-muted w-2/3 mb-2"></div>
-                <div className="h-4 bg-muted w-1/4"></div>
+                <div className="aspect-[3/4] bg-muted mb-2 md:mb-6"></div>
+                <div className="h-3 md:h-4 bg-muted w-2/3 mb-1 md:mb-2"></div>
+                <div className="h-2 md:h-4 bg-muted w-1/4"></div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-24">
+          <div className="grid grid-cols-3 gap-x-2 md:gap-x-12 gap-y-6 md:gap-y-24">
             {products.map((product: any, idx: number) => (
               <Link 
                 key={product._id}
@@ -164,16 +165,19 @@ export function Category() {
                 onMouseEnter={() => setHoveredId(product._id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
-                <div className="relative aspect-[3/4] overflow-hidden bg-muted mb-6">
+                <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted mb-2 md:mb-6">
                   <img 
                     src={product.images[0]}
                     alt={product.name}
+                    loading={idx > 5 ? "lazy" : "eager"}
+                    fetchPriority={idx <= 5 ? "high" : "auto"}
                     className={`absolute inset-0 w-full h-full object-cover mix-blend-multiply transition-all duration-1000 ease-out ${hoveredId === product._id && product.images.length > 1 ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
                   />
                   {product.images.length > 1 && (
                     <img 
                       src={product.images[1]}
                       alt={`${product.name} Alternate`}
+                      loading={idx > 5 ? "lazy" : "eager"}
                       className={`absolute inset-0 w-full h-full object-cover mix-blend-multiply transition-all duration-1000 ease-out ${hoveredId === product._id ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
                     />
                   )}
@@ -195,9 +199,9 @@ export function Category() {
                   </button>
                 </div>
                 
-                <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-medium tracking-wide group-hover:translate-x-1 transition-transform duration-300 ease-out">{product.name}</h3>
-                  <p className="text-sm font-medium tracking-wide">₹{product.price}</p>
+                <div className="flex flex-col md:flex-row justify-between items-start gap-1 md:gap-0 mt-2 md:mt-0">
+                  <h3 className="text-[10px] md:text-lg font-medium tracking-wide group-hover:translate-x-1 transition-transform duration-300 ease-out leading-tight md:leading-normal">{product.name}</h3>
+                  <p className="text-[10px] md:text-sm font-medium tracking-wide">₹{product.price}</p>
                 </div>
               </Link>
             ))}

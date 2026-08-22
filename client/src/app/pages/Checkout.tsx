@@ -266,7 +266,7 @@ export function Checkout() {
     return (
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }}
-        className="pt-40 pb-24 min-h-screen bg-background flex flex-col items-center text-center px-6"
+        className="pt-24 md:pt-40 pb-16 md:pb-24 min-h-screen bg-background flex flex-col items-center text-center px-6"
       >
         <CheckCircle2 className="w-16 h-16 text-foreground mb-12" strokeWidth={1} />
         <h1 className="text-5xl md:text-7xl font-medium tracking-tighter uppercase mb-6">Confirmed</h1>
@@ -280,9 +280,9 @@ export function Checkout() {
     );
   }
 
-  if (items.length === 0 && step !== "success") {
-    return (
-      <div className="pt-40 pb-24 min-h-screen bg-background flex flex-col items-center justify-center text-center px-6">
+    if (items.length === 0 && step !== "success") {
+      return (
+        <div className="pt-24 md:pt-40 pb-16 md:pb-24 min-h-screen bg-background flex flex-col items-center justify-center text-center px-6">
         <h1 className="text-5xl md:text-7xl font-medium tracking-tighter uppercase mb-6">Checkout</h1>
         <p className="text-muted-foreground font-light mb-16 text-lg">Your bag is empty.</p>
         <Link to="/category/all" className="inline-block border border-foreground text-foreground px-8 py-4 text-sm font-medium tracking-widest uppercase hover:bg-foreground hover:text-background transition-all duration-500">
@@ -292,9 +292,9 @@ export function Checkout() {
     );
   }
 
-  if (!user && step !== "success") {
-    return (
-      <div className="pt-40 pb-24 min-h-screen bg-background flex flex-col items-center justify-center text-center px-6">
+    if (!user && step !== "success") {
+      return (
+        <div className="pt-24 md:pt-40 pb-16 md:pb-24 min-h-screen bg-background flex flex-col items-center justify-center text-center px-6">
         <h1 className="text-5xl md:text-7xl font-medium tracking-tighter uppercase mb-6">Checkout</h1>
         <p className="text-muted-foreground font-light mb-16 text-lg">Please log in or sign up to continue with your purchase.</p>
         <div className="flex gap-4">
@@ -309,8 +309,7 @@ export function Checkout() {
     );
   }
 
-  return (
-    <div className="pt-32 pb-32 min-h-screen bg-background">
+    <div className="pt-24 md:pt-32 pb-16 md:pb-32 min-h-screen bg-background">
       <div className="container mx-auto px-6 lg:px-12 max-w-6xl">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
           
@@ -395,7 +394,7 @@ export function Checkout() {
                   )}
 
                   <div className={`transition-opacity duration-300 ${!useNewAddress && savedAddresses.length > 0 ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                    <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                     <div>
                       <input 
                         type="text" 
@@ -424,7 +423,7 @@ export function Checkout() {
                       className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                     <div>
                       <input 
                         type="text" 
@@ -444,7 +443,7 @@ export function Checkout() {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-6 mb-16">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
                     <div>
                       <input 
                         type="text" 

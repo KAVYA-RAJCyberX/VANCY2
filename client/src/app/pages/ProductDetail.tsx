@@ -146,7 +146,7 @@ export function ProductDetail() {
   const inWishlist = isInWishlist(product._id);
 
   return (
-    <div className="pt-24 pb-32 min-h-screen bg-background text-foreground">
+    <div className="pt-20 md:pt-24 pb-16 md:pb-32 min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-6 lg:px-12">
         
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
@@ -160,13 +160,12 @@ export function ProductDetail() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="flex lg:grid lg:grid-cols-1 gap-4 overflow-x-auto snap-x snap-mandatory w-full hide-scrollbar"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                className="flex flex-col lg:grid lg:grid-cols-1 gap-4 w-full"
               >
                 {galleryImages.map((img: string, idx: number) => (
                   <div 
                     key={`${selectedColor}-${idx}`}
-                    className="min-w-[85vw] lg:min-w-full w-full aspect-[3/4] bg-muted overflow-hidden snap-center flex-shrink-0"
+                    className="w-full aspect-[3/4] bg-muted overflow-hidden flex-shrink-0"
                   >
                     <img 
                       src={img} 
@@ -316,7 +315,7 @@ export function ProductDetail() {
                   <button 
                     onClick={handleAddToCart}
                     disabled={selectedVariantStock !== null && selectedVariantStock <= 0}
-                    className={`flex-1 py-5 text-sm font-medium tracking-widest uppercase transition-colors ${
+                    className={`flex-1 min-h-[44px] py-5 text-sm font-medium tracking-widest uppercase transition-colors ${
                       selectedVariantStock !== null && selectedVariantStock <= 0
                         ? 'bg-muted text-muted-foreground cursor-not-allowed'
                         : 'bg-foreground text-background hover:bg-foreground/90'
@@ -331,7 +330,7 @@ export function ProductDetail() {
                       price: product.price,
                       image: galleryImages[0] || product.images[0]
                     })}
-                    className={`w-16 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'border-red-500 bg-red-50' : 'border-border hover:border-foreground text-foreground'}`}
+                    className={`min-w-[64px] min-h-[44px] flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'border-red-500 bg-red-50' : 'border-border hover:border-foreground text-foreground'}`}
                     aria-label={inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
                   >
                     <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-red-500 text-red-500' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />

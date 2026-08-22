@@ -41,7 +41,7 @@ export function Cart() {
   };
 
   return (
-    <div className="pt-32 pb-32 min-h-screen bg-background text-foreground">
+    <div className="pt-24 md:pt-32 pb-16 md:pb-32 min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-6 lg:px-12 max-w-6xl">
         <h1 className="text-4xl md:text-6xl font-medium tracking-tighter uppercase mb-16">Bag</h1>
 
@@ -87,7 +87,7 @@ export function Cart() {
                           </div>
                           <button 
                             onClick={() => removeItem(item.id, item.size)}
-                            className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                            className="text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 -mt-2"
                           >
                             <X className="w-4 h-4" strokeWidth={1.5} />
                           </button>
@@ -97,14 +97,14 @@ export function Cart() {
                           <div className="flex items-center gap-4">
                             <button 
                               onClick={() => updateQuantity(item.id, item.quantity - 1, item.size)}
-                              className="text-muted-foreground hover:text-foreground transition-colors"
+                              className="text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center -ml-2"
                             >
                               <Minus className="w-3 h-3" strokeWidth={1.5} />
                             </button>
-                            <span className="text-sm font-medium">{item.quantity}</span>
+                            <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
                             <button 
                               onClick={() => updateQuantity(item.id, item.quantity + 1, item.size)}
-                              className="text-muted-foreground hover:text-foreground transition-colors"
+                              className="text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                             >
                               <Plus className="w-3 h-3" strokeWidth={1.5} />
                             </button>
@@ -150,9 +150,9 @@ export function Cart() {
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
                       placeholder="Promo Code"
-                      className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-muted-foreground/50 uppercase"
+                      className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-muted-foreground/50 uppercase min-h-[44px]"
                     />
-                    <button type="submit" disabled={isApplyingPromo} className="text-xs font-medium uppercase tracking-widest hover:text-muted-foreground transition-colors">
+                    <button type="submit" disabled={isApplyingPromo} className="text-xs font-medium uppercase tracking-widest hover:text-muted-foreground transition-colors min-w-[44px] min-h-[44px]">
                       {isApplyingPromo ? 'Applying...' : 'Apply'}
                     </button>
                   </form>

@@ -91,10 +91,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.02em;
+    overflow-x: hidden;
+    width: 100%;
   }
 
   html {
     font-size: var(--font-size);
+    overflow-x: hidden;
+    width: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {

@@ -70,7 +70,22 @@ const getProducts = async (req, res) => {
     const limit = Number(req.query.limit) || 50;
     const skip = (page - 1) * limit;
     
-    const products = await Product.find(query).sort(sort).skip(skip).limit(limit);
+    const products = await Product.find(query)
+      .select({
+        name: 1,
+        slug: 1,
+        price: 1,
+        originalPrice: 1,
+        fabricDescription: 1,
+        category: 1,
+        isSale: 1,
+        isNewArrival: 1,
+        images: { $slice: 2 }
+      })
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean();
     const total = await Product.countDocuments(query);
     
     res.json(products);
@@ -84,7 +99,7 @@ const getProducts = async (req, res) => {
 // @access  Public
 const getProductBySlug = async (req, res) => {
   try {
-    const product = await Product.findOne({ slug: req.params.slug });
+    const product = await Product.findOne({ slug: req.params.slug }).lean();
 
     if (product) {
       res.json(product);

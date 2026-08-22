@@ -300,14 +300,14 @@ export function Layout() {
               transition={{ type: "tween", duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="fixed inset-y-0 right-0 w-full max-w-[440px] bg-background shadow-2xl z-[70] flex flex-col border-l border-border"
             >
-              <div className="p-10 flex justify-between items-center border-b border-border/50">
+              <div className="p-6 md:p-10 flex justify-between items-center border-b border-border/50">
                 <h2 className="text-xs font-medium tracking-[0.2em] uppercase">Your Wardrobe</h2>
-                <button onClick={() => setCartOpen(false)} className="text-muted-foreground hover:text-accent transition-colors">
+                <button onClick={() => setCartOpen(false)} className="text-muted-foreground hover:text-accent transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2">
                   <VancyClose className="w-5 h-5" strokeWidth={1} />
                 </button>
               </div>
               
-              <div className="flex-1 overflow-y-auto px-10 flex flex-col gap-10 py-10">
+              <div className="flex-1 overflow-y-auto px-6 md:px-10 flex flex-col gap-10 py-6 md:py-10">
                 {cartItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center opacity-70">
                     <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-16 h-16 object-contain mb-6 opacity-80" />
@@ -320,7 +320,7 @@ export function Layout() {
                 ) : (
                   cartItems.map((item, idx) => (
                     <div key={idx} className="flex gap-6 items-start relative group">
-                      <button onClick={() => removeItem(item.id, item._id)} className="absolute -left-4 top-0 p-2 text-muted-foreground hover:text-accent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => removeItem(item.id, item._id)} className="absolute -left-4 top-0 p-2 text-muted-foreground hover:text-accent md:opacity-0 group-hover:opacity-100 transition-opacity min-w-[44px] min-h-[44px] flex items-center justify-center">
                         <VancyClose className="w-4 h-4" />
                       </button>
                       <div className="w-28 aspect-[3/4] bg-muted overflow-hidden relative">
@@ -334,11 +334,11 @@ export function Layout() {
                         </div>
                         <div className="flex justify-between items-end mt-6">
                           <div className="flex items-center gap-4 border border-border px-3 py-1">
-                            <button onClick={() => updateQuantity(item.id, item.quantity - 1, item._id)} className="text-muted-foreground hover:text-accent transition-colors">
+                            <button onClick={() => updateQuantity(item.id, item.quantity - 1, item._id)} className="text-muted-foreground hover:text-accent transition-colors p-2 min-w-[32px] min-h-[32px] flex items-center justify-center">
                               <VancyMinus className="w-3 h-3" />
                             </button>
                             <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, item.quantity + 1, item._id)} className="text-muted-foreground hover:text-accent transition-colors">
+                            <button onClick={() => updateQuantity(item.id, item.quantity + 1, item._id)} className="text-muted-foreground hover:text-accent transition-colors p-2 min-w-[32px] min-h-[32px] flex items-center justify-center">
                               <VancyPlus className="w-3 h-3" />
                             </button>
                           </div>
@@ -351,7 +351,7 @@ export function Layout() {
               </div>
 
               {cartItems.length > 0 && (
-                <div className="p-10 bg-background border-t border-border/50">
+                <div className="p-6 md:p-10 bg-background border-t border-border/50">
                   <div className="flex justify-between items-center mb-8">
                     <span className="text-xs tracking-widest uppercase text-muted-foreground">Subtotal</span>
                     <span className="font-medium text-lg">₹{cartTotal.toLocaleString()}</span>
@@ -379,9 +379,9 @@ export function Layout() {
 
       <ToastContainer />
 
-      <footer className="bg-background pt-40 pb-16 px-6 lg:px-12 border-t border-border mt-auto">
+      <footer className="bg-background pt-20 md:pt-40 pb-8 md:pb-16 px-6 lg:px-12 border-t border-border mt-auto">
         <div className="container mx-auto">
-          <div className="flex flex-col items-center mb-32 text-center">
+          <div className="flex flex-col items-center mb-16 md:mb-32 text-center">
             <div className="mb-10">
               <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-20 h-20 object-contain" />
             </div>
@@ -391,7 +391,7 @@ export function Layout() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-16 text-xs uppercase tracking-widest">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-16 text-xs uppercase tracking-widest">
             <div className="flex flex-col gap-6">
               <Link to="/category/all" className="hover:text-accent transition-colors w-fit">Shop</Link>
               <Link to="/journal" className="hover:text-accent transition-colors w-fit">Journal</Link>
@@ -424,7 +424,7 @@ export function Layout() {
             </div>
           </div>
           
-          <div className="mt-40 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground uppercase tracking-widest">
+          <div className="mt-20 md:mt-40 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground uppercase tracking-widest text-center md:text-left gap-4 md:gap-0">
             <p>© {new Date().getFullYear()} VANCY. All Rights Reserved.</p>
             <p className="mt-4 md:mt-0">Designed without compromise.</p>
           </div>

@@ -36,5 +36,11 @@ const productSchema = new mongoose.Schema({
 // Text index for search
 productSchema.index({ name: 'text', description: 'text', fabricDescription: 'text' });
 
+// Add indexes for commonly queried fields
+productSchema.index({ category: 1 });
+productSchema.index({ isSale: 1 });
+productSchema.index({ isNewArrival: 1 });
+productSchema.index({ createdAt: -1 });
+
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;

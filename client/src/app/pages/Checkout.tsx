@@ -309,6 +309,7 @@ export function Checkout() {
     );
   }
 
+  return (
     <div className="pt-24 md:pt-32 pb-16 md:pb-32 min-h-screen bg-background">
       <div className="container mx-auto px-6 lg:px-12 max-w-6xl">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">

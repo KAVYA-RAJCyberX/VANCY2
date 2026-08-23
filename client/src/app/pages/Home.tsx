@@ -84,7 +84,7 @@ export function Home() {
       {/* Hero Section */}
       <section className="relative w-full h-screen min-h-[600px] md:min-h-[800px] flex items-center justify-center overflow-hidden bg-[#FDFBF7]">
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none z-0">
-          <img src="/images/logo/leaf-logo.png" alt="Vancy Logo Background" className="w-[80vw] h-[80vw] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
+          <img src="/images/logo/vancy-logo.png" alt="Vancy Logo Background" className="w-[80vw] h-[80vw] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
         </div>
         <div ref={heroImgRef} className="absolute inset-0 w-full h-full z-0 overflow-hidden">
           <img 
@@ -143,7 +143,7 @@ export function Home() {
               >
                 <div className="aspect-[3/4] w-full overflow-hidden bg-muted mb-2 md:mb-6 relative">
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-[0.04] transition-opacity duration-700 pointer-events-none z-10">
-                    <img src="/images/logo/leaf-logo.png" alt="Vancy Logo Hover" className="w-[80%] h-[80%] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" loading="lazy" />
+                    <img src="/images/logo/vancy-logo.png" alt="Vancy Logo Hover" className="w-[80%] h-[80%] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" loading="lazy" />
                   </div>
                   <img 
                     src={product.images[0]} 

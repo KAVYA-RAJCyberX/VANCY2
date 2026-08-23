@@ -2,53 +2,53 @@
 
 :root {
   --font-size: 16px;
-  --background: #FDFBF7;
-  --foreground: #1A1A1A;
+  --background: #FAF8F5;
+  --foreground: #333333;
   --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
-  --popover: #FDFBF7;
-  --popover-foreground: #1A1A1A;
-  --primary: #1A1A1A;
+  --card-foreground: #333333;
+  --popover: #FAF8F5;
+  --popover-foreground: #333333;
+  --primary: #333333;
   --primary-foreground: #FFFFFF;
-  --secondary: #F5F3ED;
+  --secondary: #F0EDE6;
   --secondary-foreground: #8C8C8C;
   --muted: #D4CFC7;
   --muted-foreground: #8C8C8C;
-  --accent: #D4AF37; /* Champagne Gold */
-  --accent-foreground: #1A1A1A;
+  --accent: #B0986F; /* Muted Gold / Taupe */
+  --accent-foreground: #333333;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(26, 26, 26, 0.1);
+  --border: rgba(51, 51, 51, 0.1);
   --input: transparent;
   --input-background: #ffffff;
   --switch-background: #cbced4;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #D4AF37;
+  --ring: #B0986F;
   --radius: 0;
-  --font-sans: 'Inter Tight', sans-serif;
-  --font-serif: 'Inter Tight', sans-serif; /* Unify to one font */
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
 }
 
 .dark {
   --background: #1A1A1A;
-  --foreground: #FDFBF7;
+  --foreground: #FAF8F5;
   --card: #222222;
-  --card-foreground: #FDFBF7;
+  --card-foreground: #FAF8F5;
   --popover: #1A1A1A;
-  --popover-foreground: #FDFBF7;
-  --primary: #FDFBF7;
+  --popover-foreground: #FAF8F5;
+  --primary: #FAF8F5;
   --primary-foreground: #1A1A1A;
   --secondary: #2A2A2A;
   --secondary-foreground: #D4CFC7;
   --muted: #333333;
   --muted-foreground: #8C8C8C;
-  --accent: #D4AF37;
-  --accent-foreground: #1A1A1A;
-  --border: rgba(253, 251, 247, 0.1);
+  --accent: #B0986F;
+  --accent-foreground: #333333;
+  --border: rgba(250, 248, 245, 0.1);
   --input: transparent;
   --input-background: #222222;
-  --ring: #D4AF37;
+  --ring: #B0986F;
 }
 
 @theme inline {
@@ -102,13 +102,13 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans;
+    @apply font-serif;
     letter-spacing: -0.04em;
   }
 
   h1 {
     font-size: clamp(2.5rem, 5vw + 1rem, 4rem);
-    font-weight: var(--font-weight-medium);
+    font-weight: var(--font-weight-normal);
     line-height: 1;
   }
 

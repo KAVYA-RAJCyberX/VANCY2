@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useSpring, useTransform } from "motion/react";
 import Lenis from "lenis";
+import { Capacitor } from "@capacitor/core";
 import { useCartStore } from "../../store/useCartStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useWishlistStore } from "../../store/useWishlistStore";
@@ -11,7 +12,7 @@ import { SearchModal } from "./SearchModal";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { VancyV, VancyLeaf, VancyClose, VancyMenu, VancyMinus, VancyPlus } from "./ui/Icons";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Search, ShoppingBag, User, Heart } from "lucide-react";
+import { Sun, Moon, Search, ShoppingBag, User, Heart, Home, Grid } from "lucide-react";
 import { Button } from "./ui/button";
 
 // Botanical Stem Scroll Progress Component
@@ -63,13 +64,13 @@ function LoadingScreen({ onComplete }: { onComplete: () => void }) {
       className="fixed inset-0 z-[100] bg-background flex items-center justify-center pointer-events-none"
     >
       <div className="relative flex items-center justify-center">
-        {/* Leaf Logo Loading Animation */}
+        {/* Logo Loading Animation */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: [0.8, 1.2, 1], opacity: [0, 1, 0] }}
           transition={{ duration: 2, ease: "easeInOut" }}
         >
-          <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-32 h-32 object-contain" />
+          <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-40 object-contain" />
         </motion.div>
 
         {/* Champagne Gold Sweep */}
@@ -105,7 +106,11 @@ export function Layout() {
   const addToast = useToastStore((state) => state.addToast);
 
   useEffect(() => {
-    // Lenis Smooth Scroll Setup
+    // Lenis Smooth Scroll Setup - Disable on native mobile apps for better UX
+    if (Capacitor.isNativePlatform()) {
+      return;
+    }
+
     const lenis = new Lenis({
       duration: 1.5, // Slower, more cinematic
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Power4.out equivalent
@@ -182,7 +187,7 @@ export function Layout() {
 
       {/* Header */}
       <header 
-        className={`w-full z-50 fixed top-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`w-full z-50 fixed top-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pt-[env(safe-area-inset-top)] ${
           isScrolled ? 'bg-background/90 backdrop-blur-xl py-6 border-b border-border' : 'bg-transparent py-10'
         }`}
       >
@@ -205,9 +210,8 @@ export function Layout() {
           </nav>
 
           {/* Logo Section */}
-          <Link to="/" className="flex-1 lg:flex-none flex justify-center items-center gap-3 relative z-10 group">
-            <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-12 h-12 md:w-14 md:h-14 object-contain" />
-            <span className="text-xl md:text-2xl font-medium tracking-[0.2em] uppercase mt-1 hidden sm:block">VANCY</span>
+          <Link to="/" className="flex-1 lg:flex-none flex justify-center items-center relative z-10 group">
+            <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-16 md:h-20 object-contain" />
           </Link>
           
           <div className="flex items-center gap-2 md:gap-8 flex-1 justify-end">
@@ -252,9 +256,8 @@ export function Layout() {
               className="fixed inset-y-0 left-0 w-full max-w-[320px] bg-background shadow-2xl z-[70] flex flex-col border-r border-border lg:hidden"
             >
               <div className="p-6 flex justify-between items-center border-b border-border/50">
-                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2">
-                  <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-8 h-8 object-contain" />
-                  <span className="text-sm font-medium tracking-[0.2em] uppercase mt-1">VANCY</span>
+                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center">
+                  <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-12 object-contain" />
                 </Link>
                 <button onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-accent transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                   <VancyClose className="w-5 h-5" strokeWidth={1} />
@@ -298,7 +301,7 @@ export function Layout() {
             <motion.div 
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-y-0 right-0 w-full max-w-[440px] bg-background shadow-2xl z-[70] flex flex-col border-l border-border"
+              className="fixed inset-y-0 right-0 w-full max-w-[440px] bg-background/80 backdrop-blur-xl shadow-2xl z-[70] flex flex-col border-l border-border"
             >
               <div className="p-6 md:p-10 flex justify-between items-center border-b border-border/50">
                 <h2 className="text-xs font-medium tracking-[0.2em] uppercase">Your Wardrobe</h2>
@@ -310,7 +313,7 @@ export function Layout() {
               <div className="flex-1 overflow-y-auto px-6 md:px-10 flex flex-col gap-10 py-6 md:py-10">
                 {cartItems.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center opacity-70">
-                    <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-16 h-16 object-contain mb-6 opacity-80" />
+                    <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-24 object-contain mb-6 opacity-80" />
                     <h3 className="text-2xl font-medium tracking-tighter mb-4">Your wardrobe awaits.</h3>
                     <p className="text-sm text-muted-foreground mb-8">Discover our latest essentials.</p>
                     <Button variant="outline" withArrow href="/category/all" onClick={() => setCartOpen(false)}>
@@ -323,7 +326,7 @@ export function Layout() {
                       <button onClick={() => removeItem(item.id, item._id)} className="absolute -left-4 top-0 p-2 text-muted-foreground hover:text-accent md:opacity-0 group-hover:opacity-100 transition-opacity min-w-[44px] min-h-[44px] flex items-center justify-center">
                         <VancyClose className="w-4 h-4" />
                       </button>
-                      <div className="w-28 aspect-[3/4] bg-muted overflow-hidden relative">
+                      <div className="w-24 aspect-square bg-muted overflow-hidden relative">
                         <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
                         <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                       </div>
@@ -358,7 +361,7 @@ export function Layout() {
                   </div>
                   <Button 
                     onClick={() => { setCartOpen(false); navigate("/checkout"); }}
-                    className="w-full bg-foreground text-background py-5 hover:bg-accent hover:text-foreground border-none"
+                    className="w-full bg-foreground text-background py-5 hover:bg-accent hover:text-foreground border-none uppercase tracking-widest font-medium"
                   >
                     Proceed to Checkout
                   </Button>
@@ -383,11 +386,10 @@ export function Layout() {
         <div className="container mx-auto">
           <div className="flex flex-col items-center mb-16 md:mb-32 text-center">
             <div className="mb-10">
-              <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-20 h-20 object-contain" />
+              <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-40 object-contain" />
             </div>
-            <h2 className="text-4xl md:text-5xl font-medium tracking-[0.2em] uppercase mb-8">VANCY</h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl font-light uppercase tracking-widest leading-loose">
-              Timeless Essentials.<br/>Crafted for Everyday.
+              Crafted for Everyday.
             </p>
           </div>
           
@@ -408,7 +410,7 @@ export function Layout() {
             </div>
             <div className="flex flex-col gap-8">
               <div className="flex items-center gap-3 text-accent mb-2">
-                <img src="/images/logo/leaf-logo.png" alt="Vancy Leaf" className="w-6 h-6 object-contain" />
+                <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-8 object-contain" />
                 <span className="font-medium text-foreground">Join the VANCY Journal</span>
               </div>
               <p className="text-muted-foreground leading-relaxed normal-case tracking-normal">
@@ -424,12 +426,37 @@ export function Layout() {
             </div>
           </div>
           
-          <div className="mt-20 md:mt-40 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground uppercase tracking-widest text-center md:text-left gap-4 md:gap-0">
+          <div className="mt-20 md:mt-40 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground uppercase tracking-widest text-center md:text-left gap-4 md:gap-0 pb-[calc(env(safe-area-inset-bottom,16px)+64px)] lg:pb-0">
             <p>© {new Date().getFullYear()} VANCY. All Rights Reserved.</p>
             <p className="mt-4 md:mt-0">Designed without compromise.</p>
           </div>
         </div>
       </footer>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 w-full bg-background/90 backdrop-blur-xl border-t border-border z-50 px-6 py-2 flex justify-between items-center pb-[env(safe-area-inset-bottom,16px)]">
+        <Link to="/" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+          <Home className="w-5 h-5" strokeWidth={1.5} />
+          <span className="text-[9px] font-medium tracking-widest uppercase">Home</span>
+        </Link>
+        <Link to="/category/all" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+          <Grid className="w-5 h-5" strokeWidth={1.5} />
+          <span className="text-[9px] font-medium tracking-widest uppercase">Shop</span>
+        </Link>
+        <button onClick={() => setSearchOpen(true)} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+          <Search className="w-5 h-5" strokeWidth={1.5} />
+          <span className="text-[9px] font-medium tracking-widest uppercase">Search</span>
+        </button>
+        <button onClick={() => setCartOpen(true)} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2 relative">
+          <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+          {totalItems > 0 && <span className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-accent"></span>}
+          <span className="text-[9px] font-medium tracking-widest uppercase">Cart</span>
+        </button>
+        <Link to={user ? "/account" : "/login"} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+          <User className="w-5 h-5" strokeWidth={1.5} />
+          <span className="text-[9px] font-medium tracking-widest uppercase">Profile</span>
+        </Link>
+      </nav>
     </div>
   );
 }

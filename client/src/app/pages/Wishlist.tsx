@@ -27,7 +27,7 @@ export function Wishlist() {
 
         {items.length === 0 ? (
           <div className="py-32 flex flex-col items-start">
-            <img src="/images/leaf-logo.png" alt="Vancy Leaf" className="w-16 h-16 object-contain mb-8 opacity-80" />
+            <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-24 object-contain mb-8 opacity-80" />
             <p className="text-2xl font-light mb-8">Your selection is currently empty.</p>
             <Link 
               to="/category/all"

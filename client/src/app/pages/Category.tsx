@@ -62,12 +62,12 @@ export function Category() {
       <div className="container mx-auto px-6 lg:px-12">
         
         {/* Header */}
-        <div className={`flex flex-col md:flex-row justify-between items-end border-b border-border pb-8 ${filterOpen || sortOpen ? 'mb-0' : 'mb-24'}`}>
+        <div className={`flex flex-col md:flex-row justify-between items-end border-b border-border pb-4 md:pb-8 ${filterOpen || sortOpen ? 'mb-0' : 'mb-24'} sticky top-[72px] md:top-[88px] z-40 bg-background pt-4 -mx-6 px-6 lg:-mx-12 lg:px-12`}>
           <div>
             <h1 className="text-5xl md:text-7xl font-medium tracking-tighter uppercase mb-2">{displayHeading}</h1>
             <p className="text-muted-foreground font-light">{products.length} pieces</p>
           </div>
-          <div className="flex gap-8 mt-8 md:mt-0 text-sm">
+          <div className="flex gap-8 mt-4 md:mt-0 text-sm">
             <button 
               onClick={() => { setFilterOpen(!filterOpen); setSortOpen(false); }}
               className={`transition-colors uppercase tracking-widest font-medium ${filterOpen ? 'text-accent' : 'hover:text-muted-foreground'}`}
@@ -144,9 +144,9 @@ export function Category() {
           )}
         </AnimatePresence>
 
-        {/* 3 Column Grid for large cards */}
+        {/* 2 Column Grid for large cards */}
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-x-2 md:gap-x-12 gap-y-6 md:gap-y-24">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-2 md:gap-x-12 gap-y-6 md:gap-y-24">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="aspect-[3/4] bg-muted mb-2 md:mb-6"></div>
@@ -156,7 +156,7 @@ export function Category() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-x-2 md:gap-x-12 gap-y-6 md:gap-y-24">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-2 md:gap-x-12 gap-y-6 md:gap-y-24">
             {products.map((product: any, idx: number) => (
               <Link 
                 key={product._id}
@@ -199,9 +199,9 @@ export function Category() {
                   </button>
                 </div>
                 
-                <div className="flex flex-col md:flex-row justify-between items-start gap-1 md:gap-0 mt-2 md:mt-0">
-                  <h3 className="text-[10px] md:text-lg font-medium tracking-wide group-hover:translate-x-1 transition-transform duration-300 ease-out leading-tight md:leading-normal">{product.name}</h3>
-                  <p className="text-[10px] md:text-sm font-medium tracking-wide">₹{product.price}</p>
+                <div className="flex flex-col items-start gap-1 md:gap-1 mt-2 md:mt-0 font-sans">
+                  <h3 className="text-xs md:text-lg font-medium tracking-wide group-hover:translate-x-1 transition-transform duration-300 ease-out leading-tight md:leading-normal text-left">{product.name}</h3>
+                  <p className="text-xs md:text-sm font-medium tracking-wide text-left">₹{product.price}</p>
                 </div>
               </Link>
             ))}

@@ -152,7 +152,7 @@ export function ProductDetail() {
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
           
           {/* Gallery - Left */}
-          <div className="lg:w-3/5">
+          <div className="lg:w-3/5 -mx-6 lg:mx-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={selectedColor} // Triggers unmount/mount on color change
@@ -198,7 +198,7 @@ export function ProductDetail() {
                   <Link to="/category/all" className="hover:text-foreground transition-colors">Collection</Link>
                 </nav>
 
-                <h1 className="text-4xl md:text-5xl font-medium tracking-tighter uppercase mb-4 leading-tight">{product.name}</h1>
+                <h1 className="text-4xl md:text-5xl font-serif tracking-tighter uppercase mb-4 leading-tight">{product.name}</h1>
                 <p className="text-lg font-medium mb-10">₹{product.price}</p>
 
                 {/* Color Selector */}
@@ -297,7 +297,7 @@ export function ProductDetail() {
                         <button 
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`min-w-[4rem] min-h-[44px] px-4 py-3 text-sm font-medium tracking-wider transition-all duration-300 border flex items-center justify-center ${
+                          className={`w-12 h-12 rounded-full text-sm font-medium tracking-wider transition-all duration-300 border flex items-center justify-center ${
                             selectedSize === size 
                             ? 'border-foreground bg-foreground text-background'
                             : 'border-border bg-transparent text-foreground hover:border-foreground/50'
@@ -311,14 +311,14 @@ export function ProductDetail() {
                 </div>
 
                 {/* Add to Bag and Wishlist */}
-                <div className="mb-16 flex gap-4">
+                <div className="mb-16 flex flex-col md:flex-row gap-4">
                   <button 
                     onClick={handleAddToCart}
                     disabled={selectedVariantStock !== null && selectedVariantStock <= 0}
-                    className={`flex-1 min-h-[44px] py-5 text-sm font-medium tracking-widest uppercase transition-colors ${
+                    className={`flex-1 min-h-[56px] py-4 w-full text-sm font-medium tracking-widest uppercase transition-colors border border-accent bg-transparent text-foreground ${
                       selectedVariantStock !== null && selectedVariantStock <= 0
-                        ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                        : 'bg-foreground text-background hover:bg-foreground/90'
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:bg-accent/10'
                     }`}
                   >
                     {selectedVariantStock !== null && selectedVariantStock <= 0 ? 'Sold Out' : 'Add to Bag'}
@@ -330,7 +330,7 @@ export function ProductDetail() {
                       price: product.price,
                       image: galleryImages[0] || product.images[0]
                     })}
-                    className={`min-w-[64px] min-h-[44px] flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'border-red-500 bg-red-50' : 'border-border hover:border-foreground text-foreground'}`}
+                    className={`min-h-[56px] md:min-w-[64px] flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'border-red-500 bg-red-50' : 'border-border hover:border-foreground text-foreground'}`}
                     aria-label={inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
                   >
                     <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-red-500 text-red-500' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />

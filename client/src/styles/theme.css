@@ -91,14 +91,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     letter-spacing: -0.02em;
-    overflow-x: hidden;
-    width: 100%;
   }
 
   html {
     font-size: var(--font-size);
-    overflow-x: hidden;
-    width: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -161,4 +157,29 @@
   0% { transform: translateX(-100%); }
   50% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Consistent Product Image Container */
+.product-image-container {
+  aspect-ratio: 4 / 5;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--muted);
+  width: 100%;
+}
+
+.product-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

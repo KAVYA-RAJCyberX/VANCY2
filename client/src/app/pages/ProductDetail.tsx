@@ -7,6 +7,7 @@ import api from "../../lib/axios";
 import { useCartStore } from "../../store/useCartStore";
 import { useToastStore } from "../../store/useToastStore";
 import { useWishlistStore } from "../../store/useWishlistStore";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "../components/ui/carousel";
 
 const COLOR_MAP: Record<string, string> = {
   black: '#111111',
@@ -41,15 +42,17 @@ export function ProductDetail() {
   });
 
   const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
   const [openAccordion, setOpenAccordion] = useState("details");
   const [hoveredColor, setHoveredColor] = useState<string | null>(null);
   
-  const navigate = useNavigate();
+  // Mobile Carousel State
+  const [apiCarousel, setApiCarousel] = useState<CarouselApi>();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [count, setCount] = useState(0);
+  
   const addItem = useCartStore((state) => state.addItem);
   const { addItem: addWishlistItem, isInWishlist } = useWishlistStore();
 
-  // Derive unique colors and sizes from variants
   const availableColors = useMemo(() => {
     if (!product?.variants) return ["Standard"];
     return Array.from(new Set(product.variants.map((v: any) => v.color)));
@@ -60,7 +63,6 @@ export function ProductDetail() {
     return Array.from(new Set(product.variants.map((v: any) => v.size)));
   }, [product]);
 
-  // Sync color with URL
   const urlColor = searchParams.get('color');
   const selectedColor = urlColor && availableColors.includes(urlColor) ? urlColor : availableColors[0];
 
@@ -74,36 +76,39 @@ export function ProductDetail() {
     setSearchParams({ color }, { replace: true });
   };
 
-  // Check stock for a specific size + color combination
   const getVariantStock = (color: string, size: string) => {
-    if (!product?.variants) return 10; // default if no variants array
+    if (!product?.variants) return 10;
     const variant = product.variants.find((v: any) => v.color === color && v.size === size);
     return variant ? variant.stock : 0;
   };
 
-  // Mock splitting images for colors
   const galleryImages = useMemo(() => {
     if (!product?.images) return [];
-    
-    // If only one color, show all images
     if (availableColors.length <= 1) return product.images;
     
-    // Otherwise, slice the array based on the color's index to mock color-specific images
     const colorIndex = availableColors.indexOf(selectedColor);
-    
-    // Give each color at least 1 image, wrapping around if necessary
     const imagesPerColor = Math.max(1, Math.floor(product.images.length / availableColors.length));
     const startIdx = (colorIndex * imagesPerColor) % product.images.length;
     const endIdx = startIdx + imagesPerColor;
     
-    // If we only have a few images, just return the specific slice or wrap around
     const slice = product.images.slice(startIdx, endIdx);
-    
-    // Fallback: if we ran out of images (e.g. 1 image total, 3 colors), just return the first image
     if (slice.length === 0) return [product.images[0]];
     
     return slice;
   }, [product, selectedColor, availableColors]);
+
+  // Update carousel indicator
+  useEffect(() => {
+    if (!apiCarousel) {
+      return;
+    }
+    setCount(apiCarousel.scrollSnapList().length);
+    setCurrentSlide(apiCarousel.selectedScrollSnap() + 1);
+
+    apiCarousel.on("select", () => {
+      setCurrentSlide(apiCarousel.selectedScrollSnap() + 1);
+    });
+  }, [apiCarousel, galleryImages]);
 
   const toggleAccordion = (id: string) => {
     setOpenAccordion(openAccordion === id ? "" : id);
@@ -127,7 +132,7 @@ export function ProductDetail() {
       name: product.name,
       price: product.price,
       image: galleryImages[0] || product.images[0],
-      quantity: quantity,
+      quantity: 1,
       size: selectedSize || "M",
       color: selectedColor
     });
@@ -144,42 +149,84 @@ export function ProductDetail() {
 
   const selectedVariantStock = selectedSize ? getVariantStock(selectedColor, selectedSize) : null;
   const inWishlist = isInWishlist(product._id);
+  const isOOS = selectedVariantStock !== null && selectedVariantStock <= 0;
 
   return (
-    <div className="pt-20 md:pt-24 pb-16 md:pb-32 min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-6 lg:px-12">
+    <div className="pt-20 md:pt-24 pb-32 md:pb-32 min-h-screen bg-background text-foreground relative">
+      <div className="container mx-auto px-0 md:px-6 lg:px-12">
         
-        <div className="flex flex-col lg:flex-row gap-16 lg:gap-32">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-32">
           
           {/* Gallery - Left */}
-          <div className="lg:w-3/5 -mx-6 lg:mx-0">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selectedColor} // Triggers unmount/mount on color change
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-col lg:grid lg:grid-cols-1 gap-4 w-full"
-              >
-                {galleryImages.map((img: string, idx: number) => (
-                  <div 
-                    key={`${selectedColor}-${idx}`}
-                    className="w-full aspect-[3/4] bg-muted overflow-hidden flex-shrink-0"
-                  >
-                    <img 
-                      src={img} 
-                      alt={`${product.name} in ${selectedColor}`} 
-                      className="w-full h-full object-cover mix-blend-multiply opacity-90" 
-                    />
-                  </div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
+          <div className="w-full lg:w-3/5 lg:mx-0 relative">
+            
+            <button 
+              onClick={() => addWishlistItem({
+                id: product._id,
+                name: product.name,
+                price: product.price,
+                image: galleryImages[0] || product.images[0]
+              })}
+              className={`absolute top-4 right-4 md:hidden z-10 p-2 min-w-[40px] min-h-[40px] flex items-center justify-center bg-background/60 backdrop-blur-md rounded-full transition-transform`}
+              aria-label={inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+            >
+              <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-foreground text-foreground' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />
+            </button>
+
+            {/* Mobile Swipeable Carousel */}
+            <div className="block lg:hidden relative">
+              <Carousel setApi={setApiCarousel} className="w-full">
+                <CarouselContent>
+                  {galleryImages.map((img: string, idx: number) => (
+                    <CarouselItem key={idx}>
+                      <div className="w-full aspect-[4/5] bg-muted overflow-hidden flex-shrink-0">
+                        <img 
+                          src={img} 
+                          alt={`${product.name} in ${selectedColor}`} 
+                          className="w-full h-full object-cover mix-blend-multiply opacity-90" 
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+              {count > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-medium tracking-widest uppercase shadow-sm">
+                  {currentSlide} / {count}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Stacked Gallery */}
+            <div className="hidden lg:block">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedColor}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col gap-4 w-full"
+                >
+                  {galleryImages.map((img: string, idx: number) => (
+                    <div 
+                      key={`${selectedColor}-${idx}`}
+                      className="w-full aspect-[4/5] bg-muted overflow-hidden flex-shrink-0"
+                    >
+                      <img 
+                        src={img} 
+                        alt={`${product.name} in ${selectedColor}`} 
+                        className="w-full h-full object-cover mix-blend-multiply opacity-90" 
+                      />
+                    </div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Info - Right (Sticky) */}
-          <div className="lg:w-2/5">
+          <div className="w-full lg:w-2/5 px-6 md:px-0">
             <div className="sticky top-32 flex flex-col h-fit">
               <motion.div
                 initial={{ opacity: 0 }}
@@ -188,22 +235,24 @@ export function ProductDetail() {
               >
                 <Link 
                   to="/category/all" 
-                  className="flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors mb-6 w-fit"
+                  className="hidden md:flex items-center gap-2 text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors mb-6 w-fit"
                 >
                   <ArrowLeft className="w-3 h-3" /> Back to Shop
                 </Link>
-                <nav className="flex text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8 gap-2">
-                  <Link to="/" className="hover:text-foreground transition-colors">Archive</Link>
-                  <span>—</span>
-                  <Link to="/category/all" className="hover:text-foreground transition-colors">Collection</Link>
-                </nav>
 
-                <h1 className="text-4xl md:text-5xl font-serif tracking-tighter uppercase mb-4 leading-tight">{product.name}</h1>
-                <p className="text-lg font-medium mb-10">₹{product.price}</p>
+                <h1 className="text-3xl md:text-5xl font-serif tracking-tighter uppercase mb-2 leading-tight">{product.name}</h1>
+                <div className="flex items-center gap-4 mb-8">
+                  <p className="text-lg font-medium">₹{product.price}</p>
+                  <div className="flex text-accent">
+                    {/* Mock Stars */}
+                    <span>★</span><span>★</span><span>★</span><span>★</span><span className="opacity-50">★</span>
+                    <span className="text-foreground/50 ml-2 text-sm">(4.8)</span>
+                  </div>
+                </div>
 
                 {/* Color Selector */}
-                <div className="mb-12">
-                  <div className="flex justify-between items-center mb-6 h-6">
+                <div className="mb-10">
+                  <div className="flex justify-between items-center mb-4 h-6">
                     <span className="text-sm font-medium tracking-widest uppercase">Color</span>
                     <AnimatePresence mode="wait">
                       <motion.span 
@@ -235,7 +284,6 @@ export function ProductDetail() {
                             className="relative flex items-center justify-center w-8 h-8 rounded-full outline-none focus:outline-none"
                             aria-label={`Select ${color} color`}
                           >
-                            {/* Outer Ring for Selected State */}
                             {isSelected && (
                               <motion.div
                                 layoutId="selected-color-ring"
@@ -245,8 +293,6 @@ export function ProductDetail() {
                                 style={{ padding: '2px' }}
                               />
                             )}
-                            
-                            {/* Swatch Circle */}
                             <motion.div 
                               className={`w-6 h-6 rounded-full relative overflow-hidden transition-transform duration-300 ${isSelected ? 'scale-90' : 'hover:scale-110'}`}
                               style={{ 
@@ -255,7 +301,6 @@ export function ProductDetail() {
                                 opacity: isOutOfStock ? 0.3 : 1
                               }}
                             >
-                              {/* Strike-through for out of stock */}
                               {isOutOfStock && (
                                 <div className="absolute inset-0 w-full h-full" style={{
                                   background: 'linear-gradient(to top right, transparent calc(50% - 1px), #0A0A0A, transparent calc(50% + 1px))'
@@ -271,7 +316,7 @@ export function ProductDetail() {
 
                 {/* Size Selector */}
                 <div className="mb-10">
-                  <div className="flex justify-between items-center mb-6">
+                  <div className="flex justify-between items-center mb-4">
                     <span className="text-sm font-medium tracking-widest uppercase flex items-center gap-4">
                       Size
                       {selectedVariantStock !== null && (
@@ -288,6 +333,9 @@ export function ProductDetail() {
                         </AnimatePresence>
                       )}
                     </span>
+                    <button className="text-xs tracking-widest uppercase underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors">
+                      Size Guide
+                    </button>
                   </div>
                   <div className="flex flex-wrap gap-3">
                     {(sizes as string[]).map(size => {
@@ -310,18 +358,16 @@ export function ProductDetail() {
                   </div>
                 </div>
 
-                {/* Add to Bag and Wishlist */}
-                <div className="mb-16 flex flex-col md:flex-row gap-4">
+                {/* Desktop Add to Bag (Hidden on mobile sticky) */}
+                <div className="hidden md:flex mb-16 flex-col md:flex-row gap-4">
                   <button 
                     onClick={handleAddToCart}
-                    disabled={selectedVariantStock !== null && selectedVariantStock <= 0}
-                    className={`flex-1 min-h-[56px] py-4 w-full text-sm font-medium tracking-widest uppercase transition-colors border border-accent bg-transparent text-foreground ${
-                      selectedVariantStock !== null && selectedVariantStock <= 0
-                        ? 'opacity-50 cursor-not-allowed'
-                        : 'hover:bg-accent/10'
+                    disabled={isOOS}
+                    className={`flex-1 min-h-[56px] py-4 w-full text-sm font-medium tracking-widest uppercase transition-colors border bg-foreground text-background ${
+                      isOOS ? 'opacity-50 cursor-not-allowed' : 'hover:bg-accent hover:border-accent'
                     }`}
                   >
-                    {selectedVariantStock !== null && selectedVariantStock <= 0 ? 'Sold Out' : 'Add to Bag'}
+                    {isOOS ? 'Sold Out' : 'Add to Bag'}
                   </button>
                   <button 
                     onClick={() => addWishlistItem({
@@ -330,7 +376,7 @@ export function ProductDetail() {
                       price: product.price,
                       image: galleryImages[0] || product.images[0]
                     })}
-                    className={`min-h-[56px] md:min-w-[64px] flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'border-red-500 bg-red-50' : 'border-border hover:border-foreground text-foreground'}`}
+                    className={`min-h-[56px] min-w-[64px] flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'border-red-500 bg-red-50' : 'border-border hover:border-foreground text-foreground'}`}
                     aria-label={inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
                   >
                     <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-red-500 text-red-500' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />
@@ -338,8 +384,7 @@ export function ProductDetail() {
                 </div>
 
                 {/* Details Accordion */}
-                <div className="border-t border-border">
-                  {/* Description */}
+                <div className="border-t border-border mt-8 md:mt-0">
                   <div className="border-b border-border overflow-hidden">
                     <button 
                       onClick={() => toggleAccordion("details")}
@@ -369,7 +414,6 @@ export function ProductDetail() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Shipping */}
                   <div className="border-b border-border overflow-hidden">
                     <button 
                       onClick={() => toggleAccordion("shipping")}
@@ -402,8 +446,42 @@ export function ProductDetail() {
             </div>
           </div>
         </div>
-        
       </div>
+
+      {/* Mobile Sticky Bottom Purchase Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-background/95 backdrop-blur-md border-t border-border z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <button 
+          onClick={handleAddToCart}
+          disabled={isOOS}
+          className={`flex-1 min-h-[50px] text-xs font-medium tracking-widest uppercase transition-colors border bg-foreground text-background ${
+            isOOS ? 'opacity-50 cursor-not-allowed' : 'active:bg-accent active:border-accent'
+          }`}
+        >
+          {isOOS ? 'Sold Out' : 'Add to Bag'}
+        </button>
+        <button 
+          onClick={() => {
+            // Check if size selected, if not open a drawer or toast
+            if (!selectedSize) {
+              addToast({ type: 'error', message: 'Please select a size first' });
+              window.scrollTo({ top: 400, behavior: 'smooth' }); // Scroll back to size selector roughly
+              return;
+            }
+            // Proceed to checkout direct logic
+            handleAddToCart();
+            if (selectedSize && !isOOS) {
+              // Usually we'd navigate to checkout or cart
+            }
+          }}
+          disabled={isOOS}
+          className={`flex-1 min-h-[50px] text-xs font-medium tracking-widest uppercase transition-colors border border-border bg-background text-foreground ${
+            isOOS ? 'opacity-50 cursor-not-allowed' : 'active:bg-muted'
+          }`}
+        >
+          Buy Now
+        </button>
+      </div>
+
     </div>
   );
 }

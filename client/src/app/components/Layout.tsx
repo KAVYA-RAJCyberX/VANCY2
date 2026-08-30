@@ -12,8 +12,9 @@ import { SearchModal } from "./SearchModal";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { VancyV, VancyLeaf, VancyClose, VancyMenu, VancyMinus, VancyPlus } from "./ui/Icons";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Search, ShoppingBag, User, Heart, Home, Grid } from "lucide-react";
+import { Sun, Moon, Search, ShoppingBag, User, Heart, Home, Grid, Plus } from "lucide-react";
 import { Button } from "./ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 
 // Botanical Stem Scroll Progress Component
 function ScrollProgress() {
@@ -382,35 +383,66 @@ export function Layout() {
 
       <ToastContainer />
 
-      <footer className="bg-background pt-20 md:pt-40 pb-8 md:pb-16 px-6 lg:px-12 border-t border-border mt-auto">
+      <footer className="bg-background pt-16 md:pt-32 pb-8 md:pb-16 px-6 lg:px-12 border-t border-border mt-auto">
         <div className="container mx-auto">
-          <div className="flex flex-col items-center mb-16 md:mb-32 text-center">
-            <div className="mb-10">
-              <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-40 object-contain" />
+          
+          <div className="flex flex-col items-center mb-12 md:mb-24 text-center">
+            <div className="mb-6 md:mb-10">
+              <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-24 md:h-40 object-contain" />
             </div>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl font-light uppercase tracking-widest leading-loose">
+            <p className="text-sm md:text-xl text-muted-foreground max-w-xl font-light uppercase tracking-widest leading-loose">
               Crafted for Everyday.
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-16 text-xs uppercase tracking-widest">
-            <div className="flex flex-col gap-6">
-              <Link to="/category/all" className="hover:text-accent transition-colors w-fit">Shop</Link>
-              <Link to="/journal" className="hover:text-accent transition-colors w-fit">Journal</Link>
+
+          {/* Mobile Footer (Accordion) */}
+          <div className="md:hidden flex flex-col w-full mb-12">
+            <Accordion type="single" collapsible className="w-full uppercase tracking-widest">
+              <AccordionItem value="shop" className="border-b border-border">
+                <AccordionTrigger className="text-xs font-medium py-6 hover:no-underline">Shop</AccordionTrigger>
+                <AccordionContent className="flex flex-col gap-4 pb-6">
+                  <Link to="/category/new" className="text-xs text-muted-foreground hover:text-foreground transition-colors">New Arrivals</Link>
+                  <Link to="/category/all" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Collections</Link>
+                  <Link to="/category/sale" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Sale</Link>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="help" className="border-b border-border">
+                <AccordionTrigger className="text-xs font-medium py-6 hover:no-underline">Help</AccordionTrigger>
+                <AccordionContent className="flex flex-col gap-4 pb-6">
+                  <Link to="/contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+                  <Link to="/shipping" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Shipping & Returns</Link>
+                  <Link to="/size-guide" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Size Guide</Link>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="about" className="border-b border-border">
+                <AccordionTrigger className="text-xs font-medium py-6 hover:no-underline">About</AccordionTrigger>
+                <AccordionContent className="flex flex-col gap-4 pb-6">
+                  <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Our Story</Link>
+                  <Link to="/journal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Journal</Link>
+                  <Link to="/careers" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Careers</Link>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+            
+            <div className="mt-12 flex flex-col gap-6 text-center">
+              <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Follow Us</h4>
+              <div className="flex justify-center gap-8">
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors">Instagram</a>
+                <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors">Pinterest</a>
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors">Facebook</a>
+              </div>
             </div>
-            <div className="flex flex-col gap-6">
-              <Link to="/about" className="hover:text-accent transition-colors w-fit">About</Link>
-              <Link to="/shipping" className="hover:text-accent transition-colors w-fit">Shipping & Returns</Link>
-              <Link to="/terms" className="hover:text-accent transition-colors w-fit">Terms</Link>
-              <Link to="/privacy" className="hover:text-accent transition-colors w-fit">Privacy</Link>
+
+            <div className="mt-12 pt-12 border-t border-border flex flex-col items-center gap-4 text-[10px] uppercase tracking-widest text-muted-foreground">
+              <p>Secure Payments • Free Shipping • Easy Returns</p>
             </div>
-            <div className="flex flex-col gap-6">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors w-fit">Instagram</a>
-              <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors w-fit">Pinterest</a>
-            </div>
-            <div className="flex flex-col gap-8">
+          </div>
+
+          {/* Desktop Footer (Multi-column) */}
+          <div className="hidden md:grid grid-cols-5 gap-8 text-xs uppercase tracking-widest mb-20">
+            <div className="col-span-2 flex flex-col gap-8 pr-12">
               <div className="flex items-center gap-3 text-accent mb-2">
-                <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-8 object-contain" />
+                <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-6 object-contain" />
                 <span className="font-medium text-foreground">Join the VANCY Journal</span>
               </div>
               <p className="text-muted-foreground leading-relaxed normal-case tracking-normal">
@@ -424,11 +456,38 @@ export function Layout() {
                 <span className="absolute left-0 bottom-[-1px] w-full h-[1px] bg-accent scale-x-0 group-focus-within:scale-x-100 transition-transform duration-700 origin-left ease-[cubic-bezier(0.16,1,0.3,1)]"></span>
               </form>
             </div>
+
+            <div className="flex flex-col gap-6">
+              <h4 className="font-medium text-muted-foreground mb-2">Shop</h4>
+              <Link to="/category/new" className="hover:text-accent transition-colors w-fit">New Arrivals</Link>
+              <Link to="/category/all" className="hover:text-accent transition-colors w-fit">Collections</Link>
+              <Link to="/category/sale" className="hover:text-accent transition-colors w-fit">Sale</Link>
+            </div>
+            <div className="flex flex-col gap-6">
+              <h4 className="font-medium text-muted-foreground mb-2">Help</h4>
+              <Link to="/contact" className="hover:text-accent transition-colors w-fit">Contact</Link>
+              <Link to="/shipping" className="hover:text-accent transition-colors w-fit">Shipping & Returns</Link>
+              <Link to="/size-guide" className="hover:text-accent transition-colors w-fit">Size Guide</Link>
+            </div>
+            <div className="flex flex-col gap-6">
+              <h4 className="font-medium text-muted-foreground mb-2">About</h4>
+              <Link to="/about" className="hover:text-accent transition-colors w-fit">Our Story</Link>
+              <Link to="/journal" className="hover:text-accent transition-colors w-fit">Journal</Link>
+              <Link to="/careers" className="hover:text-accent transition-colors w-fit">Careers</Link>
+              <div className="mt-4 flex flex-col gap-4">
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors w-fit">Instagram</a>
+                <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors w-fit">Pinterest</a>
+              </div>
+            </div>
           </div>
           
-          <div className="mt-20 md:mt-40 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground uppercase tracking-widest text-center md:text-left gap-4 md:gap-0 pb-[calc(env(safe-area-inset-bottom,16px)+64px)] lg:pb-0">
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center text-[10px] md:text-xs text-muted-foreground uppercase tracking-widest text-center md:text-left gap-4 md:gap-0 pb-[calc(env(safe-area-inset-bottom,16px)+64px)] lg:pb-0">
             <p>© {new Date().getFullYear()} VANCY. All Rights Reserved.</p>
-            <p className="mt-4 md:mt-0">Designed without compromise.</p>
+            <div className="flex gap-4 md:gap-8 mt-2 md:mt-0">
+              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-foreground transition-colors">Terms & Conditions</Link>
+            </div>
+            <p className="mt-2 md:mt-0">Designed without compromise.</p>
           </div>
         </div>
       </footer>

@@ -1,12 +1,11 @@
 import { Link } from "react-router";
 import { useEffect, useRef } from "react";
-import { motion } from "motion/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useQuery } from '@tanstack/react-query';
 import api from '../../lib/axios';
-import { VancyV } from '../components/ui/Icons';
 import { Button } from '../components/ui/button';
+import { ProductCard } from "../components/ProductCard";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,12 +16,22 @@ export function Home() {
   const lookbookRef = useRef<HTMLDivElement>(null);
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products', 'newArrivals', 'limit-3'],
+    queryKey: ['products', 'newArrivals', 'limit-4'],
     queryFn: async () => {
-      const { data } = await api.get('/products', { params: { isNewArrival: true, limit: 3 } });
+      const { data } = await api.get('/products', { params: { isNewArrival: true, limit: 4 } });
       return Array.isArray(data) ? data : (data?.products || []);
     },
     staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
+
+  const { data: shopTheLook = [] } = useQuery({
+    queryKey: ['products', 'shopTheLook'],
+    queryFn: async () => {
+      // Just fetch some products to populate the shop the look
+      const { data } = await api.get('/products', { params: { limit: 3 } });
+      return Array.isArray(data) ? data : (data?.products || []);
+    },
+    staleTime: 1000 * 60 * 5,
   });
 
   useEffect(() => {
@@ -69,7 +78,6 @@ export function Home() {
           }
         );
         
-        // Refresh ScrollTrigger to recalculate layout after products are rendered
         setTimeout(() => {
           ScrollTrigger.refresh();
         }, 100);
@@ -77,6 +85,8 @@ export function Home() {
       return () => ctx.revert();
     }
   }, [products]);
+
+  const shopTheLookTotal = shopTheLook.reduce((acc, p: any) => acc + p.price, 0);
 
   return (
     <div className="flex flex-col w-full bg-background selection:bg-black selection:text-white">
@@ -107,7 +117,7 @@ export function Home() {
               Refined simplicity. Crafted for everyday living without compromise.
             </p>
             <div className="hero-text mt-12 mb-8 md:mb-0">
-              <Button href="/collections" withArrow variant="default" className="min-h-[44px]">
+              <Button href="/category/all" withArrow variant="default" className="min-h-[44px]">
                 Explore Collection
               </Button>
             </div>
@@ -116,52 +126,89 @@ export function Home() {
       </section>
 
       {/* Featured Collection / New Arrivals */}
-      <section ref={collectionRef} className="py-16 md:py-32 lg:py-48 px-6 lg:px-12">
-        <div className="mb-24 flex justify-between items-end border-b border-border pb-8">
+      <section ref={collectionRef} className="py-16 md:py-32 px-0 md:px-6 lg:px-12">
+        <div className="px-6 md:px-0 mb-12 md:mb-24 flex justify-between items-end border-b border-border pb-8">
           <h2 className="text-4xl md:text-6xl font-medium tracking-tighter uppercase">New Arrivals</h2>
           <Link to="/category/new" className="text-sm font-medium tracking-wide underline underline-offset-4 hover:text-muted-foreground transition-colors hidden sm:block">
             View All
           </Link>
         </div>
         
-        <div className="grid grid-cols-3 gap-x-2 md:gap-x-8 gap-y-6 md:gap-y-16">
+        {/* Mobile Carousel & Desktop Grid */}
+        <div className="w-full">
           {isLoading ? (
-            // Skeleton
-            [...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="aspect-[3/4] bg-muted mb-2 md:mb-6"></div>
-                <div className="h-3 md:h-4 bg-muted w-3/4 mb-1 md:mb-2"></div>
-                <div className="h-2 md:h-4 bg-muted w-1/4 hidden md:block"></div>
-              </div>
-            ))
+            <div className="px-6 md:px-0 flex md:grid md:grid-cols-4 gap-4 md:gap-8 overflow-x-auto no-scrollbar pb-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse flex-none w-[80vw] md:w-auto">
+                  <div className="aspect-[4/5] bg-muted mb-4"></div>
+                  <div className="h-4 bg-muted w-3/4 mb-2"></div>
+                  <div className="h-4 bg-muted w-1/4"></div>
+                </div>
+              ))}
+            </div>
           ) : (
-            products.map((product: any, idx: number) => (
-              <Link 
-                key={product._id} 
-                to={`/product/${product.slug}`} 
-                className={`collection-item group flex flex-col ${idx === 1 ? 'md:mt-24 mt-6' : ''}`}
-              >
-                <div className="aspect-[3/4] w-full overflow-hidden bg-muted mb-2 md:mb-6 relative">
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-[0.04] transition-opacity duration-700 pointer-events-none z-10">
-                    <img src="/images/logo/vancy-logo.png" alt="Vancy Logo Hover" className="w-[80%] h-[80%] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" loading="lazy" />
-                  </div>
-                  <img 
-                    src={product.images[0]} 
-                    alt={product.name} 
-                    loading="lazy"
-                    className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] relative z-0"
-                  />
+            <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar md:grid md:grid-cols-4 gap-4 md:gap-8 px-6 md:px-0 pb-8 md:pb-0">
+              {products.map((product: any, idx: number) => (
+                <div key={product._id} className="collection-item flex-none w-[80vw] md:w-auto snap-center md:snap-align-none first:pl-0 last:pr-6 md:last:pr-0">
+                  <ProductCard product={product} idx={idx} />
                 </div>
-                <div className="flex flex-col md:flex-row justify-between items-start uppercase tracking-widest gap-1 md:gap-0">
-                  <div className="flex-1 md:pr-4 w-full">
-                    <h3 className="text-[10px] md:text-sm font-medium group-hover:text-accent transition-colors duration-300 line-clamp-2 break-words leading-tight">{product.name}</h3>
-                    <p className="hidden md:block text-xs text-muted-foreground mt-2 font-light">{product.fabricDescription}</p>
-                  </div>
-                  <span className="text-[10px] md:text-sm font-medium text-muted-foreground">₹{product.price}</span>
-                </div>
-              </Link>
-            ))
+              ))}
+            </div>
           )}
+        </div>
+        <div className="px-6 mt-8 sm:hidden">
+           <Button href="/category/new" variant="outline" className="w-full uppercase tracking-widest">
+            View All
+          </Button>
+        </div>
+      </section>
+
+      {/* Shop The Look */}
+      <section className="py-16 md:py-32 px-6 lg:px-12 bg-muted/30">
+        <div className="mb-12 md:mb-24 text-center">
+          <h2 className="text-3xl md:text-5xl font-medium tracking-tighter uppercase mb-4">Shop The Look</h2>
+          <p className="text-sm text-muted-foreground uppercase tracking-widest">Curated Editorial Styling</p>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+          {/* Editorial Image */}
+          <div className="lg:col-span-7 aspect-[4/5] md:aspect-[3/4] lg:aspect-auto lg:h-[80vh] bg-muted relative overflow-hidden">
+            <img 
+              src="/images/landing-page/hero-bg.jpg" 
+              alt="Editorial Styling" 
+              className="absolute inset-0 w-full h-full object-cover object-center mix-blend-multiply" 
+            />
+          </div>
+          
+          {/* Products */}
+          <div className="lg:col-span-5 flex flex-col justify-center">
+            <h3 className="text-xl md:text-2xl font-medium tracking-wide uppercase mb-8">The Look</h3>
+            
+            <div className="flex flex-col gap-6 mb-12">
+              {shopTheLook.map((p: any) => (
+                <div key={p._id} className="flex justify-between items-center border-b border-border/50 pb-4">
+                  <Link to={`/product/${p.slug}`} className="flex items-center gap-4 group">
+                    <div className="w-16 h-20 bg-muted overflow-hidden">
+                      <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium uppercase tracking-widest group-hover:text-accent transition-colors">{p.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">₹{p.price}</p>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-between items-center border-t border-border pt-6 mb-8">
+              <span className="text-sm font-medium uppercase tracking-widest">Total Look</span>
+              <span className="text-lg font-medium tracking-wide">₹{shopTheLookTotal}</span>
+            </div>
+            
+            <Button className="w-full md:w-auto uppercase tracking-widest min-h-[56px]">
+              Shop Complete Look
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -177,9 +224,9 @@ export function Home() {
             </p>
             <Button 
               href="/about" 
-              variant="default"
+              variant="outline"
               withArrow
-              className="text-white hover:text-accent min-h-[44px]"
+              className="text-white hover:text-black hover:bg-white border-white min-h-[44px]"
             >
               Our Philosophy
             </Button>

@@ -189,12 +189,12 @@ export function Layout() {
       {/* Header */}
       <header 
         className={`w-full z-50 fixed top-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pt-[env(safe-area-inset-top)] ${
-          isScrolled ? 'bg-background/90 backdrop-blur-xl py-6 border-b border-border' : 'bg-transparent py-10'
+          isScrolled ? 'bg-background/90 backdrop-blur-xl py-4 md:py-6 border-b border-border' : 'bg-transparent py-6 md:py-10'
         }`}
       >
-        <div className="container mx-auto px-6 lg:px-12 flex items-center justify-between">
+        <div className="container mx-auto px-4 md:px-6 lg:px-12 flex items-center justify-between">
           
-          <button className="lg:hidden text-foreground hover:text-accent transition-colors flex items-center justify-center min-w-[44px] min-h-[44px]" onClick={() => setMobileMenuOpen(true)}>
+          <button className="lg:hidden text-foreground hover:text-accent transition-colors flex items-center justify-center min-w-[48px] min-h-[48px] -ml-2" onClick={() => setMobileMenuOpen(true)} aria-label="Open Menu">
             <VancyMenu className="w-6 h-6" strokeWidth={1} />
           </button>
           
@@ -212,10 +212,10 @@ export function Layout() {
 
           {/* Logo Section */}
           <Link to="/" className="flex-1 lg:flex-none flex justify-center items-center relative z-10 group">
-            <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-16 md:h-20 object-contain" />
+            <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-12 md:h-16 lg:h-20 object-contain transition-all duration-300" />
           </Link>
           
-          <div className="flex items-center gap-2 md:gap-8 flex-1 justify-end">
+          <div className="flex items-center justify-end gap-1 md:gap-4 lg:gap-8 flex-1">
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
               className="text-foreground hover:text-accent transition-colors hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]"
@@ -223,19 +223,19 @@ export function Layout() {
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </button>
-            <button onClick={() => setSearchOpen(true)} className="text-foreground hover:text-accent flex items-center justify-center min-w-[44px] min-h-[44px]">
+            <button onClick={() => setSearchOpen(true)} className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[48px] min-h-[48px]" aria-label="Search">
               <Search className="w-5 h-5" strokeWidth={1.5} />
             </button>
-            <Link to={user ? "/account" : "/login"} className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]">
+            <Link to={user ? "/account" : "/login"} className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[48px] min-h-[48px]" aria-label="Account">
               <User className="w-5 h-5" strokeWidth={1.5} />
             </Link>
             <NotificationsDropdown />
-            <Link to="/wishlist" className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[44px] min-h-[44px] relative">
+            <Link to="/wishlist" className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[48px] min-h-[48px] relative" aria-label="Wishlist">
               <Heart className="w-5 h-5" strokeWidth={1.5} />
               {wishlistItems.length > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent"></span>}
             </Link>
-            <button onClick={() => setCartOpen(true)} className="text-foreground hover:text-accent flex items-center justify-center min-w-[44px] min-h-[44px] relative">
-              <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+            <button onClick={() => setCartOpen(true)} className="text-foreground hover:text-accent flex items-center justify-center min-w-[48px] min-h-[48px] relative -mr-2 md:-mr-0" aria-label="Cart">
+              <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
               {totalItems > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent"></span>}
             </button>
           </div>
@@ -264,23 +264,23 @@ export function Layout() {
                   <VancyClose className="w-5 h-5" strokeWidth={1} />
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
-                <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Shop All</Link>
-                <Link to="/category/polo-shirts" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Polo Shirts</Link>
-                <Link to="/category/joggers" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Joggers</Link>
-                <Link to="/journal" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">Journal</Link>
-                <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-xl font-medium tracking-wide uppercase">About</Link>
+              <div className="flex-1 overflow-y-auto px-8 py-10 flex flex-col gap-8">
+                <Link to="/category/all" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-serif tracking-wide uppercase hover:text-accent transition-colors">Shop All</Link>
+                <Link to="/category/polo-shirts" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-serif tracking-wide uppercase hover:text-accent transition-colors">Polo Shirts</Link>
+                <Link to="/category/joggers" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-serif tracking-wide uppercase hover:text-accent transition-colors">Joggers</Link>
+                <Link to="/journal" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-serif tracking-wide uppercase hover:text-accent transition-colors">Journal</Link>
+                <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-2xl font-serif tracking-wide uppercase hover:text-accent transition-colors">About</Link>
               </div>
-              <div className="p-8 border-t border-border/50 flex flex-col gap-6">
-                <Link to={user ? "/account" : "/login"} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-sm font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground">
+              <div className="p-8 border-t border-border/50 flex flex-col gap-6 bg-muted/20">
+                <Link to={user ? "/account" : "/login"} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground p-2 -ml-2">
                   <User className="w-5 h-5" strokeWidth={1.5} /> Account
                 </Link>
-                <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-sm font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground">
+                <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground p-2 -ml-2">
                   <Heart className="w-5 h-5" strokeWidth={1.5} /> Wishlist {wishlistItems.length > 0 && `(${wishlistItems.length})`}
                 </Link>
                 <button 
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-                  className="flex items-center gap-4 text-sm font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground text-left"
+                  className="flex items-center gap-4 text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground text-left p-2 -ml-2"
                 >
                   {theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />} Theme
                 </button>
@@ -302,7 +302,7 @@ export function Layout() {
             <motion.div 
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-y-0 right-0 w-full max-w-[440px] bg-background/80 backdrop-blur-xl shadow-2xl z-[70] flex flex-col border-l border-border"
+              className="fixed inset-y-0 right-0 w-full max-w-[440px] sm:w-[440px] bg-background/95 backdrop-blur-xl shadow-2xl z-[70] flex flex-col border-l border-border"
             >
               <div className="p-6 md:p-10 flex justify-between items-center border-b border-border/50">
                 <h2 className="text-xs font-medium tracking-[0.2em] uppercase">Your Wardrobe</h2>
@@ -383,12 +383,12 @@ export function Layout() {
 
       <ToastContainer />
 
-      <footer className="bg-background pt-16 md:pt-32 pb-8 md:pb-16 px-6 lg:px-12 border-t border-border mt-auto">
+      <footer className="bg-background pt-12 md:pt-32 pb-8 md:pb-16 px-4 md:px-6 lg:px-12 border-t border-border mt-auto">
         <div className="container mx-auto">
           
-          <div className="flex flex-col items-center mb-12 md:mb-24 text-center">
+          <div className="flex flex-col items-center mb-10 md:mb-24 text-center">
             <div className="mb-6 md:mb-10">
-              <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-24 md:h-40 object-contain" />
+              <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-16 md:h-40 object-contain" />
             </div>
             <p className="text-sm md:text-xl text-muted-foreground max-w-xl font-light uppercase tracking-widest leading-loose">
               Crafted for Everyday.
@@ -493,25 +493,25 @@ export function Layout() {
       </footer>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 w-full bg-background/90 backdrop-blur-xl border-t border-border z-50 px-6 py-2 flex justify-between items-center pb-[env(safe-area-inset-bottom,16px)]">
-        <Link to="/" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+      <nav className="md:hidden fixed bottom-0 w-full bg-background/95 backdrop-blur-xl border-t border-border z-40 px-4 py-2 flex justify-between items-center pb-[env(safe-area-inset-bottom,16px)]">
+        <Link to="/" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] active:scale-95 transition-transform">
           <Home className="w-5 h-5" strokeWidth={1.5} />
           <span className="text-[9px] font-medium tracking-widest uppercase">Home</span>
         </Link>
-        <Link to="/category/all" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+        <Link to="/category/all" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] active:scale-95 transition-transform">
           <Grid className="w-5 h-5" strokeWidth={1.5} />
           <span className="text-[9px] font-medium tracking-widest uppercase">Shop</span>
         </Link>
-        <button onClick={() => setSearchOpen(true)} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+        <button onClick={() => setSearchOpen(true)} className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] active:scale-95 transition-transform">
           <Search className="w-5 h-5" strokeWidth={1.5} />
           <span className="text-[9px] font-medium tracking-widest uppercase">Search</span>
         </button>
-        <button onClick={() => setCartOpen(true)} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2 relative">
+        <button onClick={() => setCartOpen(true)} className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] relative active:scale-95 transition-transform">
           <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-          {totalItems > 0 && <span className="absolute top-1 right-2 w-1.5 h-1.5 rounded-full bg-accent"></span>}
+          {totalItems > 0 && <span className="absolute top-1 right-3 w-1.5 h-1.5 rounded-full bg-accent"></span>}
           <span className="text-[9px] font-medium tracking-widest uppercase">Cart</span>
         </button>
-        <Link to={user ? "/account" : "/login"} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground p-2">
+        <Link to={user ? "/account" : "/login"} className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] active:scale-95 transition-transform">
           <User className="w-5 h-5" strokeWidth={1.5} />
           <span className="text-[9px] font-medium tracking-widest uppercase">Profile</span>
         </Link>

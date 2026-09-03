@@ -345,7 +345,7 @@ export function ProductDetail() {
                         <button 
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`w-12 h-12 rounded-full text-sm font-medium tracking-wider transition-all duration-300 border flex items-center justify-center ${
+                          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full text-xs sm:text-sm font-medium tracking-wider transition-all duration-300 border flex items-center justify-center ${
                             selectedSize === size 
                             ? 'border-foreground bg-foreground text-background'
                             : 'border-border bg-transparent text-foreground hover:border-foreground/50'

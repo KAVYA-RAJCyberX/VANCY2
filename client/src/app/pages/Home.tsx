@@ -92,7 +92,7 @@ export function Home() {
     <div className="flex flex-col w-full bg-background selection:bg-black selection:text-white">
       
       {/* Hero Section */}
-      <section className="relative w-full h-screen min-h-[600px] md:min-h-[800px] flex items-center justify-center overflow-hidden bg-[#FDFBF7]">
+      <section className="relative w-full h-[100dvh] min-h-[600px] md:h-screen md:min-h-[800px] flex items-center justify-center overflow-hidden bg-[#FDFBF7]">
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none z-0">
           <img src="/images/logo/vancy-logo.png" alt="Vancy Logo Background" className="w-[80vw] h-[80vw] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
         </div>
@@ -108,7 +108,7 @@ export function Home() {
             className="absolute inset-0 w-full h-full object-cover object-center opacity-0 dark:opacity-80 transition-opacity duration-[1500ms] ease-in-out"
           />
         </div>
-        <div className="relative z-10 w-full px-6 lg:px-12 flex flex-col justify-end h-full pb-24">
+        <div className="relative z-10 w-full px-4 md:px-6 lg:px-12 flex flex-col justify-end h-full pb-[calc(10vh+env(safe-area-inset-bottom,16px))] md:pb-24">
           <div ref={heroTextRef} className="pt-10 md:pt-0">
             <h1 className="hero-text text-[clamp(2.75rem,12vw,10rem)] leading-[0.85] font-medium tracking-[0.05em] text-foreground uppercase max-w-5xl">
               Timeless<br/>Essentials
@@ -127,8 +127,8 @@ export function Home() {
 
       {/* Featured Collection / New Arrivals */}
       <section ref={collectionRef} className="py-16 md:py-32 px-0 md:px-6 lg:px-12">
-        <div className="px-6 md:px-0 mb-12 md:mb-24 flex justify-between items-end border-b border-border pb-8">
-          <h2 className="text-4xl md:text-6xl font-medium tracking-tighter uppercase">New Arrivals</h2>
+        <div className="px-4 md:px-0 mb-8 md:mb-24 flex justify-between items-end border-b border-border pb-4 md:pb-8">
+          <h2 className="text-3xl md:text-6xl font-medium tracking-tighter uppercase">New Arrivals</h2>
           <Link to="/category/new" className="text-sm font-medium tracking-wide underline underline-offset-4 hover:text-muted-foreground transition-colors hidden sm:block">
             View All
           </Link>
@@ -164,15 +164,15 @@ export function Home() {
       </section>
 
       {/* Shop The Look */}
-      <section className="py-16 md:py-32 px-6 lg:px-12 bg-muted/30">
-        <div className="mb-12 md:mb-24 text-center">
+      <section className="py-16 md:py-32 px-4 md:px-6 lg:px-12 bg-muted/30">
+        <div className="mb-10 md:mb-24 text-center">
           <h2 className="text-3xl md:text-5xl font-medium tracking-tighter uppercase mb-4">Shop The Look</h2>
           <p className="text-sm text-muted-foreground uppercase tracking-widest">Curated Editorial Styling</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
           {/* Editorial Image */}
-          <div className="lg:col-span-7 aspect-[4/5] md:aspect-[3/4] lg:aspect-auto lg:h-[80vh] bg-muted relative overflow-hidden">
+          <div className="lg:col-span-7 aspect-[4/5] md:aspect-[3/4] lg:aspect-auto lg:h-[80vh] bg-muted relative overflow-hidden -mx-4 md:mx-0">
             <img 
               src="/images/landing-page/hero-bg.jpg" 
               alt="Editorial Styling" 
@@ -213,25 +213,25 @@ export function Home() {
       </section>
 
       {/* Editorial Lookbook Section */}
-      <section ref={lookbookRef} className="py-16 md:py-32 px-6 lg:px-12 bg-black text-white min-h-screen flex items-center">
+      <section ref={lookbookRef} className="py-16 md:py-32 px-4 md:px-6 lg:px-12 bg-black text-white min-h-[100dvh] flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-20 items-center w-full max-w-[1600px] mx-auto">
-          <div className="order-2 lg:order-1">
-            <h2 className="text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-medium tracking-tighter uppercase mb-12">
+          <div className="order-2 lg:order-1 text-center md:text-left">
+            <h2 className="text-[clamp(2.75rem,8vw,8rem)] leading-[0.9] font-medium tracking-tighter uppercase mb-8 md:mb-12">
               Quiet<br/>Confidence
             </h2>
-            <p className="text-lg md:text-xl text-white/70 max-w-md font-light leading-relaxed mb-12">
+            <p className="text-base md:text-xl text-white/70 max-w-md mx-auto md:mx-0 font-light leading-relaxed mb-10 md:mb-12">
               We believe in fewer, better things. Each piece in our collection is meticulously designed to outlast trends and become a foundational element of your wardrobe.
             </p>
             <Button 
               href="/about" 
               variant="outline"
               withArrow
-              className="text-white hover:text-black hover:bg-white border-white min-h-[44px]"
+              className="text-white hover:text-black hover:bg-white border-white min-h-[48px]"
             >
               Our Philosophy
             </Button>
           </div>
-          <div className="order-1 lg:order-2 aspect-[4/5] relative lookbook-img flex items-center justify-center bg-white/5 rounded-3xl overflow-hidden p-8">
+          <div className="order-1 lg:order-2 aspect-[4/5] relative lookbook-img flex items-center justify-center bg-white/5 rounded-3xl overflow-hidden p-6 md:p-8">
             <img 
               src="/images/landing-page/quiet-confidence.png" 
               alt="Quiet Confidence" 

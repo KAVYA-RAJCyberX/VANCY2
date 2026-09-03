@@ -205,7 +205,7 @@ export function Category() {
 
         {/* Product Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-8 gap-y-10 md:gap-y-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2 sm:gap-x-4 md:gap-x-8 gap-y-10 md:gap-y-16">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="aspect-[4/5] bg-muted mb-2 md:mb-4"></div>
@@ -215,7 +215,7 @@ export function Category() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-8 gap-y-10 md:gap-y-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2 sm:gap-x-4 md:gap-x-8 gap-y-10 md:gap-y-16">
             {products.map((product: any, idx: number) => (
               <ProductCard 
                 key={product._id} 

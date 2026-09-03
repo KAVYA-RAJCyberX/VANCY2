@@ -136,17 +136,17 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
         </div>
       </Link>
 
-      <div className="flex flex-col items-start gap-1 font-sans">
+      <div className="flex flex-col items-start gap-1 font-sans mt-2">
         <Link to={`/product/${product.slug}`} className="w-full">
-          <h3 className="text-xs md:text-sm font-medium tracking-wide leading-tight text-left truncate w-full">
+          <h3 className="text-[10px] sm:text-xs md:text-sm font-medium tracking-wide leading-tight text-left truncate w-full">
             {product.name}
           </h3>
-          <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-xs md:text-sm font-medium tracking-wide text-left">
+          <div className="flex items-center gap-1.5 md:gap-2 mt-0.5 md:mt-1">
+            <p className="text-[10px] sm:text-xs md:text-sm font-medium tracking-wide text-left">
               ₹{product.price}
             </p>
             {isSale && product.originalPrice && (
-              <p className="text-[10px] md:text-xs text-muted-foreground line-through">
+              <p className="text-[9px] md:text-xs text-muted-foreground line-through">
                 ₹{product.originalPrice}
               </p>
             )}
@@ -156,7 +156,7 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
         {/* Quick Add Drawer */}
         <Drawer open={quickAddOpen} onOpenChange={setQuickAddOpen}>
           <DrawerTrigger asChild>
-            <button className="text-[10px] md:text-xs font-medium tracking-widest uppercase underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors mt-2 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+            <button className="text-[10px] md:text-xs font-medium tracking-widest uppercase underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors mt-2 md:mt-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 min-h-[32px] md:min-h-0 flex items-center">
               Quick Add
             </button>
           </DrawerTrigger>

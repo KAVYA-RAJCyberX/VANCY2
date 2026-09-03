@@ -105,6 +105,10 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    } else if (!isAdminRoute && is401) {
+      // Normal user token expired or is invalid
+      localStorage.removeItem('vancy-auth-storage');
+      window.location.href = '/login';
     }
 
     return Promise.reject(error);

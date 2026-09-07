@@ -5,15 +5,15 @@ const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 
-if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set.');
+if (!process.env.JWT_SECRET && !process.env.ADMIN_JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set.');
 if (!process.env.REFRESH_SECRET) throw new Error('REFRESH_SECRET environment variable is not set.');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const getAdminJWTSecret = () => process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
 
-// Helper to generate access token
+// Helper to generate short-lived 15m access token
 const generateAccessToken = (userId, role) => {
-  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId, role }, getAdminJWTSecret(), { expiresIn: '15m' });
 };
 
 // Helper to generate refresh token

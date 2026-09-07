@@ -22,6 +22,19 @@ interface WishlistState {
 
 const generateSessionId = () => Math.random().toString(36).substring(2, 15);
 
+const formatWishlistItems = (wishlistData: any): WishlistItem[] => {
+  if (!wishlistData || !wishlistData.products) return [];
+  return wishlistData.products
+    .filter((p: any) => p && typeof p === 'object')
+    .map((p: any) => ({
+      id: p._id,
+      name: p.name,
+      price: p.price,
+      image: p.images?.[0] || '',
+      originalPrice: p.originalPrice
+    }));
+};
+
 export const useWishlistStore = create<WishlistState>()(
   persist(
     (set, get) => ({
@@ -33,16 +46,7 @@ export const useWishlistStore = create<WishlistState>()(
           const { sessionId } = get();
           const { data } = await api.get(`/wishlist?sessionId=${sessionId}`);
           if (data && data.products) {
-            const formattedItems = data.products
-              .filter((p: any) => p) // Filter out items where the referenced product was deleted
-              .map((p: any) => ({
-                id: p._id,
-                name: p.name,
-                price: p.price,
-                image: p.images?.[0] || '',
-                originalPrice: p.originalPrice
-              }));
-            set({ items: formattedItems });
+            set({ items: formatWishlistItems(data) });
           }
         } catch (error) {
           console.error('Failed to fetch wishlist', error);
@@ -54,12 +58,14 @@ export const useWishlistStore = create<WishlistState>()(
           const { sessionId, items } = get();
           const wasInWishlist = items.some(i => i.id === item.id);
           
-          await api.post('/wishlist/toggle', {
+          const { data } = await api.post('/wishlist/toggle', {
             productId: item.id,
             sessionId
           });
-          // After toggling on the backend, refetch to keep perfectly in sync
-          await get().fetchWishlist();
+          
+          if (data && data.products) {
+            set({ items: formatWishlistItems(data) });
+          }
           
           // Fire toast
           if (wasInWishlist) {

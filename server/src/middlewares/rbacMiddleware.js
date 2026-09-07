@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const getAdminSecret = () => process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET;
 
 // Strictly verify the short-lived access token
 const protectAdmin = async (req, res, next) => {
@@ -12,23 +12,27 @@ const protectAdmin = async (req, res, next) => {
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const secret = getAdminSecret();
+      if (!secret) {
+        return res.status(500).json({ message: 'Server configuration error: JWT secret missing' });
+      }
+      const decoded = jwt.verify(token, secret);
       // We only allow these roles in the admin panel
-      if (['support-staff', 'manager', 'super-admin'].includes(decoded.role)) {
+      if (decoded && decoded.role && ['support-staff', 'manager', 'super-admin'].includes(decoded.role)) {
         req.user = await User.findById(decoded.userId).select('-password');
         if (req.user && req.user.role === decoded.role) {
-          next();
+          return next();
         } else {
-          res.status(401).json({ message: 'Role mismatch or user not found' });
+          return res.status(401).json({ message: 'Role mismatch or user not found' });
         }
       } else {
-        res.status(403).json({ message: 'Not authorized for admin access' });
+        return res.status(403).json({ message: 'Not authorized for admin access' });
       }
     } catch (error) {
-      res.status(401).json({ message: 'Access token expired or invalid' });
+      return res.status(401).json({ message: 'Access token expired or invalid' });
     }
   } else {
-    res.status(401).json({ message: 'Not authorized, no access token' });
+    return res.status(401).json({ message: 'Not authorized, no access token' });
   }
 };
 

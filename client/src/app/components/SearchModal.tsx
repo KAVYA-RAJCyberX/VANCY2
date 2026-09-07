@@ -7,6 +7,7 @@ import api from "../../lib/axios";
 
 export function SearchModal({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -18,14 +19,21 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query.trim());
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [query]);
+
   const { data: results = [], isLoading } = useQuery({
-    queryKey: ["search", query],
+    queryKey: ["search", debouncedQuery],
     queryFn: async () => {
-      if (query.length < 2) return [];
-      const { data } = await api.get(`/products?search=${encodeURIComponent(query)}`);
+      if (debouncedQuery.length < 2) return [];
+      const { data } = await api.get(`/products?search=${encodeURIComponent(debouncedQuery)}`);
       return data;
     },
-    enabled: query.length >= 2,
+    enabled: debouncedQuery.length >= 2,
   });
 
   return (

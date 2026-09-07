@@ -8,6 +8,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useWishlistStore } from "../../store/useWishlistStore";
 import { useToastStore } from "../../store/useToastStore";
 import { ToastContainer } from "./Toast";
+import api from "../../lib/axios";
 import { SearchModal } from "./SearchModal";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { VancyV, VancyLeaf, VancyClose, VancyMenu, VancyMinus, VancyPlus } from "./ui/Icons";
@@ -15,6 +16,23 @@ import { useTheme } from "next-themes";
 import { Sun, Moon, Search, ShoppingBag, User, Heart, Home, Grid, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
+
+function StemLeaf({ scrollYProgress, pos, i }: { scrollYProgress: any, pos: number, i: number }) {
+  const opacity = useTransform(scrollYProgress, [pos - 0.1, pos], [0, 1]);
+  return (
+    <motion.div 
+      className="absolute text-foreground"
+      style={{ 
+        top: `${pos * 100}%`,
+        opacity,
+        x: i % 2 === 0 ? -12 : 12,
+        rotate: i % 2 === 0 ? -45 : 45
+      }}
+    >
+      <VancyLeaf size={12} strokeWidth={1.5} />
+    </motion.div>
+  );
+}
 
 // Botanical Stem Scroll Progress Component
 function ScrollProgress() {
@@ -31,20 +49,9 @@ function ScrollProgress() {
         className="w-[1px] bg-foreground origin-top"
         style={{ scaleY, height: '100%' }}
       />
-      {/* Decorative Leaves along the stem - they fade in based on scroll */}
+      {/* Decorative Leaves along the stem */}
       {[0.2, 0.4, 0.6, 0.8].map((pos, i) => (
-        <motion.div 
-          key={i}
-          className="absolute text-foreground"
-          style={{ 
-            top: `${pos * 100}%`,
-            opacity: useTransform(scrollYProgress, [pos - 0.1, pos], [0, 1]),
-            x: i % 2 === 0 ? -12 : 12,
-            rotate: i % 2 === 0 ? -45 : 45
-          }}
-        >
-          <VancyLeaf size={12} strokeWidth={1.5} />
-        </motion.div>
+        <StemLeaf key={i} scrollYProgress={scrollYProgress} pos={pos} i={i} />
       ))}
     </div>
   );
@@ -89,14 +96,14 @@ function LoadingScreen({ onComplete }: { onComplete: () => void }) {
 export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !sessionStorage.getItem("vancy_loaded"));
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
   
-  const totalItems = useCartStore((state) => state.totalItems());
+  const totalItems = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
   const cartItems = useCartStore((state) => state.items) || [];
   const cartTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -105,6 +112,20 @@ export function Layout() {
   const user = useAuthStore((state) => state.user);
   const wishlistItems = useWishlistStore((state) => state.items) || [];
   const addToast = useToastStore((state) => state.addToast);
+
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    try {
+      await api.post('/newsletter/subscribe', { email: newsletterEmail.trim() });
+      addToast({ type: 'success', message: 'Subscribed to VANCY Journal' });
+      setNewsletterEmail("");
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || 'Failed to subscribe';
+      addToast({ type: 'error', message: msg });
+    }
+  };
 
   useEffect(() => {
     // Lenis Smooth Scroll Setup - Disable on native mobile apps for better UX
@@ -181,7 +202,14 @@ export function Layout() {
     <div className="min-h-screen flex flex-col font-sans bg-background text-foreground selection:bg-accent selection:text-foreground">
       
       <AnimatePresence>
-        {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
+        {loading && (
+          <LoadingScreen 
+            onComplete={() => {
+              sessionStorage.setItem("vancy_loaded", "true");
+              setLoading(false);
+            }} 
+          />
+        )}
       </AnimatePresence>
 
       <ScrollProgress />
@@ -456,8 +484,14 @@ export function Layout() {
               <p className="text-muted-foreground leading-relaxed normal-case tracking-normal">
                 Receive early access to new collections, editorials, and exclusive releases.
               </p>
-              <form className="flex border-b border-border pb-3 group relative" onSubmit={(e) => e.preventDefault()}>
-                <input type="email" placeholder="Email Address" className="bg-transparent w-full focus:outline-none placeholder:text-muted-foreground/40 normal-case tracking-normal" />
+              <form className="flex border-b border-border pb-3 group relative" onSubmit={handleNewsletterSubmit}>
+                <input 
+                  type="email" 
+                  placeholder="Email Address" 
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  className="bg-transparent w-full focus:outline-none placeholder:text-muted-foreground/40 normal-case tracking-normal" 
+                />
                 <button type="submit" className="text-muted-foreground group-hover:text-accent transition-colors">
                   <VancyPlus className="w-4 h-4" />
                 </button>

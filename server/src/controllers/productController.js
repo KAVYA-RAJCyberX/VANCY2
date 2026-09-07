@@ -32,9 +32,11 @@ const getProducts = async (req, res) => {
       query['variants.size'] = req.query.size;
     }
     
+    const escapeRegex = (str) => str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
     // Color filter
     if (req.query.color) {
-      query['variants.color'] = { $regex: new RegExp(req.query.color, 'i') };
+      query['variants.color'] = { $regex: new RegExp(escapeRegex(req.query.color), 'i') };
     }
     
     // Price range filter
@@ -46,7 +48,7 @@ const getProducts = async (req, res) => {
     
     // Text search
     if (req.query.search) {
-      const searchRegex = new RegExp(req.query.search, 'i');
+      const searchRegex = new RegExp(escapeRegex(req.query.search), 'i');
       query.$or = [
         { name: searchRegex },
         { description: searchRegex },

@@ -43,6 +43,7 @@ export function ProductDetail() {
 
   const [selectedSize, setSelectedSize] = useState("");
   const [openAccordion, setOpenAccordion] = useState("details");
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
   const [hoveredColor, setHoveredColor] = useState<string | null>(null);
   
   // Mobile Carousel State
@@ -243,10 +244,10 @@ export function ProductDetail() {
                 <h1 className="text-3xl md:text-5xl font-serif tracking-tighter uppercase mb-2 leading-tight">{product.name}</h1>
                 <div className="flex items-center gap-4 mb-8">
                   <p className="text-lg font-medium">₹{product.price}</p>
-                  <div className="flex text-accent">
-                    {/* Mock Stars */}
-                    <span>★</span><span>★</span><span>★</span><span>★</span><span className="opacity-50">★</span>
-                    <span className="text-foreground/50 ml-2 text-sm">(4.8)</span>
+                  <div className="flex items-center text-accent">
+                    <span className="text-yellow-500 mr-1 text-sm">★</span>
+                    <span className="text-sm font-medium">{product.rating ? Number(product.rating).toFixed(1) : "5.0"}</span>
+                    <span className="text-foreground/50 ml-2 text-sm">({product.numReviews || 0} {product.numReviews === 1 ? 'review' : 'reviews'})</span>
                   </div>
                 </div>
 
@@ -333,7 +334,10 @@ export function ProductDetail() {
                         </AnimatePresence>
                       )}
                     </span>
-                    <button className="text-xs tracking-widest uppercase underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors">
+                    <button 
+                      onClick={() => setSizeGuideOpen(true)}
+                      className="text-xs tracking-widest uppercase underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       Size Guide
                     </button>
                   </div>
@@ -448,39 +452,80 @@ export function ProductDetail() {
         </div>
       </div>
 
-      {/* Mobile Sticky Bottom Purchase Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-background/95 backdrop-blur-md border-t border-border z-50 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex gap-3 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+      {/* Mobile Sticky Bottom Purchase Bar - Offset bottom so it floats above the mobile nav */}
+      <div className="md:hidden fixed bottom-[64px] left-0 w-full bg-background/95 backdrop-blur-md border-t border-border z-40 p-3 flex gap-3 shadow-lg">
         <button 
           onClick={handleAddToCart}
           disabled={isOOS}
-          className={`flex-1 min-h-[50px] text-xs font-medium tracking-widest uppercase transition-colors border bg-foreground text-background ${
+          className={`flex-1 min-h-[48px] text-xs font-medium tracking-widest uppercase transition-colors border bg-foreground text-background ${
             isOOS ? 'opacity-50 cursor-not-allowed' : 'active:bg-accent active:border-accent'
           }`}
         >
           {isOOS ? 'Sold Out' : 'Add to Bag'}
         </button>
         <button 
-          onClick={() => {
-            // Check if size selected, if not open a drawer or toast
+          onClick={async () => {
             if (!selectedSize) {
               addToast({ type: 'error', message: 'Please select a size first' });
-              window.scrollTo({ top: 400, behavior: 'smooth' }); // Scroll back to size selector roughly
+              window.scrollTo({ top: 400, behavior: 'smooth' });
               return;
             }
-            // Proceed to checkout direct logic
-            handleAddToCart();
+            await handleAddToCart();
             if (selectedSize && !isOOS) {
-              // Usually we'd navigate to checkout or cart
+              navigate('/checkout');
             }
           }}
           disabled={isOOS}
-          className={`flex-1 min-h-[50px] text-xs font-medium tracking-widest uppercase transition-colors border border-border bg-background text-foreground ${
+          className={`flex-1 min-h-[48px] text-xs font-medium tracking-widest uppercase transition-colors border border-border bg-background text-foreground ${
             isOOS ? 'opacity-50 cursor-not-allowed' : 'active:bg-muted'
           }`}
         >
           Buy Now
         </button>
       </div>
+
+      {/* Size Guide Modal */}
+      <AnimatePresence>
+        {sizeGuideOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-background border border-border max-w-lg w-full p-6 sm:p-8 shadow-2xl relative"
+            >
+              <button 
+                onClick={() => setSizeGuideOpen(false)}
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-sm font-medium tracking-widest uppercase"
+              >
+                ✕ Close
+              </button>
+              <h3 className="text-xl font-serif tracking-wider uppercase mb-2">Size Guide ({product.sizeChartType || 'Standard'})</h3>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-6">Measurements in inches</p>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border text-muted-foreground uppercase tracking-widest">
+                      <th className="py-2">Size</th>
+                      <th className="py-2">{product.sizeChartType === 'jogger' ? 'Waist' : 'Chest'}</th>
+                      <th className="py-2">{product.sizeChartType === 'jogger' ? 'Hip' : 'Shoulder'}</th>
+                      <th className="py-2">Length</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    <tr><td className="py-3 font-medium">S</td><td className="py-3">{product.sizeChartType === 'jogger' ? '28 - 30"' : '38"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '38"' : '17.5"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '39"' : '27"'}</td></tr>
+                    <tr><td className="py-3 font-medium">M</td><td className="py-3">{product.sizeChartType === 'jogger' ? '31 - 33"' : '40"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '40"' : '18"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '40"' : '28"'}</td></tr>
+                    <tr><td className="py-3 font-medium">L</td><td className="py-3">{product.sizeChartType === 'jogger' ? '34 - 36"' : '42"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '42"' : '18.5"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '41"' : '29"'}</td></tr>
+                    <tr><td className="py-3 font-medium">XL</td><td className="py-3">{product.sizeChartType === 'jogger' ? '37 - 39"' : '44"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '44"' : '19"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '42"' : '30"'}</td></tr>
+                    <tr><td className="py-3 font-medium">XXL</td><td className="py-3">{product.sizeChartType === 'jogger' ? '40 - 42"' : '46"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '46"' : '19.5"'}</td><td className="py-3">{product.sizeChartType === 'jogger' ? '42.5"' : '31"'}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -42,6 +42,7 @@ exports.toggleWishlist = async (req, res) => {
     }
 
     await wishlist.save();
+    await wishlist.populate('products');
     res.status(200).json(wishlist);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

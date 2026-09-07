@@ -57,6 +57,7 @@ exports.addToCart = async (req, res) => {
     }
 
     await cart.save();
+    await cart.populate('items.product');
     res.status(201).json(cart);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -88,6 +89,7 @@ exports.updateCartItem = async (req, res) => {
     }
 
     await cart.save();
+    await cart.populate('items.product');
     res.status(200).json(cart);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -111,6 +113,7 @@ exports.removeFromCart = async (req, res) => {
 
     cart.items.pull({ _id: itemId });
     await cart.save();
+    await cart.populate('items.product');
     res.status(200).json(cart);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

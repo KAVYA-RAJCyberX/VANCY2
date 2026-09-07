@@ -19,10 +19,14 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+const mongoose = require('mongoose');
+
 // Vercel-safe Database Connection Middleware
 app.use(async (req, res, next) => {
   try {
-    await connectDB();
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB();
+    }
     next();
   } catch (error) {
     console.error('Database connection failed in middleware:', error);

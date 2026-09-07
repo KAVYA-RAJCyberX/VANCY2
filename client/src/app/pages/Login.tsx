@@ -8,6 +8,7 @@ import api from "../../lib/axios";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useCartStore } from "../../store/useCartStore";
 import { useWishlistStore } from "../../store/useWishlistStore";
+import { useToastStore } from "../../store/useToastStore";
 import { motion } from "motion/react";
 
 const loginSchema = z.object({
@@ -101,7 +102,13 @@ export function Login() {
           </div>
           
           <div className="flex justify-between items-center text-xs font-medium uppercase tracking-widest pt-4">
-            <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">Forgot Password?</Link>
+            <button 
+              type="button" 
+              onClick={() => useToastStore.getState().addToast({ type: 'info', message: 'Contact support@vancy.com to request password reset' })}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Forgot Password?
+            </button>
           </div>
 
           <button 

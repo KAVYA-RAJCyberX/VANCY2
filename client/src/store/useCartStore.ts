@@ -29,6 +29,23 @@ interface CartState {
 // Generate a random session ID if not exists
 const generateSessionId = () => Math.random().toString(36).substring(2, 15);
 
+// Helper to format backend cart schema into store CartItem[]
+const formatCartItems = (cartData: any): CartItem[] => {
+  if (!cartData || !cartData.items) return [];
+  return cartData.items
+    .filter((i: any) => i.product)
+    .map((i: any) => ({
+      id: typeof i.product === 'object' ? (i.product._id || i.product) : i.product,
+      _id: i._id,
+      name: i.name,
+      price: i.price,
+      image: i.image,
+      quantity: i.quantity,
+      size: i.size,
+      color: i.color
+    }));
+};
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -40,19 +57,7 @@ export const useCartStore = create<CartState>()(
           const { sessionId } = get();
           const { data } = await api.get(`/cart?sessionId=${sessionId}`);
           if (data && data.items) {
-            const formattedItems = data.items
-              .filter((i: any) => i.product) // Filter out items where the referenced product was deleted
-              .map((i: any) => ({
-                id: i.product._id || i.product,
-                _id: i._id,
-                name: i.name,
-                price: i.price,
-                image: i.image,
-                quantity: i.quantity,
-                size: i.size,
-                color: i.color
-              }));
-            set({ items: formattedItems });
+            set({ items: formatCartItems(data) });
           }
         } catch (error) {
           console.error('Failed to fetch cart', error);
@@ -62,14 +67,16 @@ export const useCartStore = create<CartState>()(
       addItem: async (item) => {
         try {
           const { sessionId } = get();
-          await api.post('/cart', {
+          const { data } = await api.post('/cart', {
             productId: item.id,
             quantity: item.quantity,
             size: item.size,
             color: item.color,
             sessionId
           });
-          await get().fetchCart();
+          if (data && data.items) {
+            set({ items: formatCartItems(data) });
+          }
           // Fire toast
           useToastStore.getState().addToast({
             type: 'cart',
@@ -91,8 +98,12 @@ export const useCartStore = create<CartState>()(
         try {
           const { sessionId } = get();
           if (backendItemId) {
-            await api.delete(`/cart/${backendItemId}?sessionId=${sessionId}`);
-            await get().fetchCart();
+            const { data } = await api.delete(`/cart/${backendItemId}?sessionId=${sessionId}`);
+            if (data && data.items) {
+              set({ items: formatCartItems(data) });
+            } else {
+              set((state) => ({ items: state.items.filter((i) => i._id !== backendItemId && i.id !== id) }));
+            }
           } else {
             set((state) => ({ items: state.items.filter((i) => i.id !== id) }));
           }
@@ -110,8 +121,10 @@ export const useCartStore = create<CartState>()(
             return;
           }
           if (backendItemId) {
-            await api.put(`/cart/${backendItemId}`, { quantity, sessionId });
-            await get().fetchCart();
+            const { data } = await api.put(`/cart/${backendItemId}`, { quantity, sessionId });
+            if (data && data.items) {
+              set({ items: formatCartItems(data) });
+            }
           } else {
             set((state) => ({
               items: state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),

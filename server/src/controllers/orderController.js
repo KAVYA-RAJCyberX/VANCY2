@@ -30,28 +30,55 @@ const addOrderItems = async (req, res) => {
     }
 
     const formattedOrderItems = [];
+    let calculatedItemsPrice = 0;
+
     for (const x of orderItems) {
       let productId = x.product;
+      let dbProduct;
+
       if (!mongoose.Types.ObjectId.isValid(productId)) {
-        const found = await Product.findOne({ slug: productId });
-        if (found) {
-          productId = found._id;
-        } else {
-          const firstProd = await Product.findOne();
-          if (firstProd) {
-            productId = firstProd._id;
-          }
+        dbProduct = await Product.findOne({ slug: productId });
+      } else {
+        dbProduct = await Product.findById(productId);
+      }
+
+      if (!dbProduct) {
+        return res.status(400).json({ message: `Product not found: ${productId}` });
+      }
+
+      const qty = Number(x.qty) || 1;
+      const size = x.size || 'M';
+      const color = x.color || 'Standard';
+
+      // Check variant stock if variants exist
+      if (dbProduct.variants && dbProduct.variants.length > 0) {
+        const variant = dbProduct.variants.find(
+          v => v.size.toLowerCase() === size.toLowerCase() && v.color.toLowerCase() === color.toLowerCase()
+        );
+        if (variant && variant.stock < qty) {
+          return res.status(400).json({
+            message: `Insufficient stock for ${dbProduct.name} (${size} / ${color}). Available: ${variant.stock}`
+          });
         }
       }
 
+      if (dbProduct.limitedEditionStock !== undefined && dbProduct.limitedEditionStock !== null && dbProduct.limitedEditionStock < qty) {
+        return res.status(400).json({
+          message: `Insufficient stock for limited edition product ${dbProduct.name}. Available: ${dbProduct.limitedEditionStock}`
+        });
+      }
+
+      const price = dbProduct.price;
+      calculatedItemsPrice += price * qty;
+
       formattedOrderItems.push({
-        name: x.name || 'Product',
-        qty: Number(x.qty) || 1,
-        image: x.image || '/images/tshirts/mustard-yellow/mustard-yellow-polo.png',
-        price: Number(x.price) || 0,
-        size: x.size || 'M',
-        color: x.color || 'Standard',
-        product: productId
+        name: dbProduct.name,
+        qty: qty,
+        image: x.image || dbProduct.images[0],
+        price: price,
+        size: size,
+        color: color,
+        product: dbProduct._id
       });
     }
 
@@ -62,12 +89,31 @@ const addOrderItems = async (req, res) => {
       paymentMethod: paymentMethod || 'COD',
       paymentResult: {},
       isPaid: false,
-      itemsPrice: Number(itemsPrice) || 0,
+      itemsPrice: calculatedItemsPrice,
       shippingPrice: Number(shippingPrice) || 0,
-      totalPrice: Number(totalPrice) || 0,
+      totalPrice: calculatedItemsPrice + (Number(shippingPrice) || 0),
     });
 
     const createdOrder = await order.save();
+
+    // Decrement stock for ordered items
+    for (const item of formattedOrderItems) {
+      await Product.updateOne(
+        {
+          _id: item.product,
+          'variants.size': item.size,
+          'variants.color': item.color
+        },
+        { $inc: { 'variants.$.stock': -item.qty } }
+      );
+      await Product.updateOne(
+        {
+          _id: item.product,
+          limitedEditionStock: { $exists: true, $ne: null }
+        },
+        { $inc: { limitedEditionStock: -item.qty } }
+      );
+    }
 
     // Auto-save shipping address if not already present
     if (req.user && shippingAddress && shippingAddress.street) {
@@ -107,6 +153,9 @@ const getOrderById = async (req, res) => {
   const order = await Order.findById(req.params.id).populate('user', 'name email');
 
   if (order) {
+    if (order.user && order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to view this order' });
+    }
     res.json(order);
   } else {
     res.status(404).json({ message: 'Order not found' });

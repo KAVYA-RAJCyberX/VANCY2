@@ -150,6 +150,11 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
                 ₹{product.originalPrice}
               </p>
             )}
+            {product.rating > 0 && (
+              <span className="text-[9px] md:text-xs text-yellow-600 font-medium ml-auto flex items-center gap-0.5">
+                ★ {Number(product.rating).toFixed(1)}
+              </span>
+            )}
           </div>
         </Link>
 
@@ -165,27 +170,41 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
               <DrawerTitle className="text-lg font-serif uppercase tracking-wider">{product.name}</DrawerTitle>
               <p className="text-sm font-medium mt-1">₹{product.price}</p>
             </DrawerHeader>
-            <div className="p-4">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Select Size</p>
-              <div className="flex flex-wrap gap-3">
-                {(sizes as string[]).map(size => {
-                  const stock = getStock(size);
-                  const isOos = stock <= 0;
-                  return (
-                    <button 
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      disabled={isOos}
-                      className={`w-12 h-12 rounded-full text-sm font-medium tracking-wider transition-all duration-300 border flex items-center justify-center ${
-                        selectedSize === size 
-                        ? 'border-foreground bg-foreground text-background'
-                        : 'border-border bg-transparent text-foreground hover:border-foreground/50'
-                      } ${isOos ? 'opacity-30 cursor-not-allowed' : ''}`}
-                    >
-                      {size}
-                    </button>
-                  )
-                })}
+            <div className="p-4 space-y-4">
+              {product.variants && product.variants.length > 0 && (
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Available Colors</p>
+                  <div className="flex flex-wrap gap-2 text-xs font-medium uppercase text-foreground">
+                    {Array.from(new Set(product.variants.map((v: any) => v.color))).map((col: any) => (
+                      <span key={col} className="px-2.5 py-1 border border-border bg-muted/40">
+                        {col}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Select Size</p>
+                <div className="flex flex-wrap gap-3">
+                  {(sizes as string[]).map(size => {
+                    const stock = getStock(size);
+                    const isOos = stock <= 0;
+                    return (
+                      <button 
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        disabled={isOos}
+                        className={`w-12 h-12 rounded-full text-sm font-medium tracking-wider transition-all duration-300 border flex items-center justify-center ${
+                          selectedSize === size 
+                          ? 'border-foreground bg-foreground text-background'
+                          : 'border-border bg-transparent text-foreground hover:border-foreground/50'
+                        } ${isOos ? 'opacity-30 cursor-not-allowed' : ''}`}
+                      >
+                        {size}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
             <DrawerFooter className="pb-8 pt-4">

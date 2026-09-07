@@ -12,6 +12,10 @@ const createRazorpayOrder = async (req, res) => {
 
     const dbOrder = await Order.findById(orderId);
     if (!dbOrder) return res.status(404).json({ message: 'Order not found' });
+    
+    if (dbOrder.user && dbOrder.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to pay for this order' });
+    }
 
     const amount = dbOrder.totalPrice;
 
@@ -77,6 +81,10 @@ const verifyRazorpayPayment = async (req, res) => {
     const order = await Order.findOne({ 'paymentResult.razorpayOrderId': razorpayOrderId });
     if (!order) {
       return res.status(404).json({ message: 'Associated order not found for this payment' });
+    }
+
+    if (order.user && order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to verify payment for this order' });
     }
 
     const key_secret = process.env.RAZORPAY_KEY_SECRET || 'test_key_secret';

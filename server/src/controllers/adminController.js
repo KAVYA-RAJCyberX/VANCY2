@@ -162,24 +162,43 @@ const getAdminStaff = async (req, res) => {
   }
 };
 
-// @desc    Update staff role
-// @route   PUT /api/admin/staff/:id/role
-const updateStaffRole = async (req, res) => {
+// @desc    Update staff role and permissions
+// @route   PUT /api/admin/staff/:id/access
+const updateStaffAccess = async (req, res) => {
   try {
-    const { role } = req.body;
-    const staff = await User.findById(req.params.id);
+    const { role, permissions } = req.body;
+    const staffId = req.params.id;
+
+    if (staffId === req.user._id.toString()) {
+      return res.status(400).json({ message: 'Cannot update your own access level' });
+    }
+
+    const staffMember = await User.findById(staffId);
+    if (!staffMember || !staffMember.isAdmin) {
+      return res.status(404).json({ message: 'Staff member not found' });
+    }
+
+    if (role) {
+      if (role === 'customer') {
+        staffMember.isAdmin = false;
+        staffMember.role = 'customer';
+        staffMember.permissions = [];
+      } else {
+        staffMember.role = role;
+      }
+    }
     
-    if (!staff) return res.status(404).json({ message: 'User not found' });
+    if (permissions !== undefined) {
+      staffMember.permissions = permissions;
+    }
 
-    const beforeRole = staff.role;
-    staff.role = role;
-    await staff.save();
+    await staffMember.save();
 
-    await logAction(req.user._id, 'UPDATE_STAFF_ROLE', 'User', staff._id, { role: beforeRole }, { role }, req);
+    await logAction(req.user._id, 'UPDATE_STAFF_ACCESS', 'User', staffMember._id, null, { newRole: role, newPermissions: permissions }, req);
 
-    res.json({ message: 'Role updated successfully', staff });
+    res.json({ message: 'Staff access updated', staffMember });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Failed to update staff access', error: error.message });
   }
 };
 
@@ -538,32 +557,70 @@ const getAdminProducts = async (req, res) => {
 // @route   POST /api/admin/staff/invite
 const inviteStaff = async (req, res) => {
   try {
-    const { name, email, phone, role } = req.body;
+    const { name, email, phone, role, permissions } = req.body;
+    const sendEmail = require('../utils/sendEmail');
 
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+    let user = await User.findOne({ email });
+    let tempPassword = null;
+
+    if (user) {
+      // User exists. Upgrade them.
+      user.isAdmin = true;
+      if (role) user.role = role;
+      if (name) user.name = name;
+      if (phone) user.phone = phone;
+      if (permissions) user.permissions = permissions;
+      await user.save();
+      
+      // Email notification for existing user
+      await sendEmail({
+        to: email,
+        subject: 'Vancy - You have been granted Staff Access',
+        html: `
+          <h2>Welcome to the Vancy Admin Team</h2>
+          <p>Hi ${user.name},</p>
+          <p>Your existing Vancy account has been upgraded to staff level access.</p>
+          <p><strong>Role:</strong> ${user.role}</p>
+          <p>You can now log into the admin dashboard using your existing password.</p>
+          <a href="${process.env.CLIENT_URL}/admin/login" style="padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Go to Admin Dashboard</a>
+        `
+      });
+
+    } else {
+      // Generate a temporary password
+      tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
+
+      user = await User.create({
+        name,
+        email,
+        password: tempPassword,
+        phone,
+        role,
+        permissions: permissions || [],
+        isAdmin: true,
+      });
+
+      // Email notification for new user
+      await sendEmail({
+        to: email,
+        subject: 'Vancy - Staff Invitation',
+        html: `
+          <h2>Welcome to the Vancy Admin Team</h2>
+          <p>Hi ${user.name},</p>
+          <p>An admin account has been created for you.</p>
+          <p><strong>Role:</strong> ${user.role}</p>
+          <p><strong>Temporary Password:</strong> ${tempPassword}</p>
+          <p>Please log in and change your password as soon as possible.</p>
+          <a href="${process.env.CLIENT_URL}/admin/login" style="padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Log in to Admin Dashboard</a>
+        `
+      });
     }
 
-    // Generate a temporary password
-    const tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
-
-    const user = await User.create({
-      name,
-      email,
-      password: tempPassword,
-      phone,
-      role,
-      isAdmin: true,
-    });
-
-    // Mock sending email
-    console.log(`[EMAIL MOCK] To: ${email} | Subject: Staff Invitation | Password: ${tempPassword}`);
-
-    await logAction(req.user._id, 'INVITE_STAFF', 'User', user._id, null, { role }, req);
+    await logAction(req.user._id, 'INVITE_STAFF', 'User', user._id, null, { role, permissions }, req);
 
     res.status(201).json({ message: 'Staff invited successfully', user });
   } catch (error) {
+    console.error("Invite Staff Error:", error);
     res.status(500).json({ message: 'Failed to invite staff', error: error.message });
   }
 };
@@ -574,7 +631,7 @@ module.exports = {
   updateOrderStatus,
   getAdminCustomers,
   getAdminStaff,
-  updateStaffRole,
+  updateStaffAccess,
   getAuditLogs,
   getDetailedAnalytics,
   getAdminCoupons,

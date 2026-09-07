@@ -47,4 +47,15 @@ const requireRole = (roles) => {
   };
 };
 
-module.exports = { protectAdmin, requireRole };
+// Check if user has a specific permission (super-admin bypasses)
+const requirePermission = (permission) => {
+  return (req, res, next) => {
+    if (req.user && (req.user.role === 'super-admin' || (req.user.permissions && req.user.permissions.includes(permission)))) {
+      next();
+    } else {
+      res.status(403).json({ message: `Forbidden: Missing permission '${permission}'` });
+    }
+  };
+};
+
+module.exports = { protectAdmin, requireRole, requirePermission };

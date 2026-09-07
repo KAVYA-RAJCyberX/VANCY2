@@ -7,7 +7,7 @@ const {
   updateOrderStatus,
   getAdminCustomers,
   getAdminStaff,
-  updateStaffRole,
+  updateStaffAccess,
   getAuditLogs,
   getDetailedAnalytics,
   getAdminCoupons,
@@ -42,7 +42,7 @@ router.get('/customers', requireRole(['support-staff', 'manager', 'super-admin']
 // Staff & Audit Logs (Super Admin only)
 router.get('/staff', requireRole(['super-admin']), getAdminStaff);
 router.post('/staff/invite', requireRole(['super-admin']), inviteStaff);
-router.put('/staff/:id/role', requireRole(['super-admin']), updateStaffRole);
+router.put('/staff/:id/access', requireRole(['super-admin']), updateStaffAccess);
 router.get('/audit-logs', requireRole(['super-admin']), getAuditLogs);
 
 // Analytics & Coupons

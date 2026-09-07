@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema({
     enum: ['customer', 'support-staff', 'manager', 'super-admin'],
     default: 'customer'
   },
+  permissions: {
+    type: [String],
+    enum: ['manage_users', 'manage_products', 'manage_orders', 'view_analytics', 'manage_settings'],
+    default: []
+  },
   twoFactorSecret: {
     type: String
   },

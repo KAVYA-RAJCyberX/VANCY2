@@ -92,25 +92,33 @@ export function ProductFormModal({ isOpen, onClose, product, onSaved }: Props) {
   const set = (field: keyof ProductFormData, value: any) => setForm(f => ({ ...f, [field]: value }));
 
   // Image URL handlers
-  const handleImageUpload = (idx: number, file: File) => {
+  const handleImageUpload = async (idx: number, file: File) => {
     if (!file) return;
     
-    // 3MB limit for Base64 (Vercel payload limit is 4.5MB)
-    if (file.size > 3 * 1024 * 1024) {
-      setError("Image size must be less than 3MB");
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size must be less than 5MB");
       return;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
+    try {
+      const formData = new FormData();
+      formData.append("images", file);
+      
+      const token = localStorage.getItem("admin_access_token");
+      const { data } = await api.post("/upload", formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data" 
+        }
+      });
+      
       const imgs = [...form.images];
-      imgs[idx] = reader.result as string;
+      imgs[idx] = data.urls[0];
       set("images", imgs);
-    };
-    reader.onerror = () => {
-      setError("Failed to read file");
-    };
+    } catch (err) {
+      console.error("Upload error:", err);
+      setError("Failed to upload image. Please try again.");
+    }
   };
 
   const addImage = () => set("images", [...form.images, ""]);

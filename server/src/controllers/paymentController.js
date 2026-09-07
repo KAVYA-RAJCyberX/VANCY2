@@ -7,19 +7,32 @@ const Order = require('../models/Order');
 // @access  Public
 const createRazorpayOrder = async (req, res) => {
   try {
+    const { orderId } = req.body;
+    if (!orderId) return res.status(400).json({ message: 'Order ID is required' });
+
+    const dbOrder = await Order.findById(orderId);
+    if (!dbOrder) return res.status(404).json({ message: 'Order not found' });
+
+    const amount = dbOrder.totalPrice;
+
     const key_id = process.env.RAZORPAY_KEY_ID || 'test_key_id';
     const key_secret = process.env.RAZORPAY_KEY_SECRET || 'test_key_secret';
 
     // If using dummy / test credentials, generate a mock order for development
     if (!key_id || key_id === 'test_key_id' || key_id === 'dummy_key_id' || !key_id.startsWith('rzp_')) {
+      const mockOrderId = `order_mock_${Math.floor(Math.random() * 1000000)}`;
+      
+      dbOrder.paymentResult = { razorpayOrderId: mockOrderId };
+      await dbOrder.save();
+      
       const mockOrder = {
-        id: `order_mock_${Math.floor(Math.random() * 1000000)}`,
+        id: mockOrderId,
         entity: 'order',
-        amount: Math.round((req.body.amount || 0) * 100),
+        amount: Math.round(amount * 100),
         amount_paid: 0,
-        amount_due: Math.round((req.body.amount || 0) * 100),
+        amount_due: Math.round(amount * 100),
         currency: 'INR',
-        receipt: `receipt_${Date.now()}`,
+        receipt: `receipt_${dbOrder._id}`,
         status: 'created',
         attempts: 0,
         notes: [],
@@ -30,13 +43,16 @@ const createRazorpayOrder = async (req, res) => {
 
     const instance = new Razorpay({ key_id, key_secret });
     const options = {
-      amount: Math.round((req.body.amount || 0) * 100),
+      amount: Math.round(amount * 100),
       currency: "INR",
-      receipt: `receipt_order_${Math.floor(Math.random() * 10000)}`,
+      receipt: `receipt_order_${dbOrder._id}`,
     };
 
     const order = await instance.orders.create(options);
     if (!order) return res.status(500).json({ message: 'Error creating Razorpay order' });
+
+    dbOrder.paymentResult = { razorpayOrderId: order.id };
+    await dbOrder.save();
 
     res.json(order);
   } catch (error) {
@@ -53,28 +69,34 @@ const verifyRazorpayPayment = async (req, res) => {
     const razorpayOrderId = req.body.razorpay_order_id || req.body.razorpayOrderId;
     const razorpayPaymentId = req.body.razorpay_payment_id || req.body.razorpayPaymentId;
     const razorpaySignature = req.body.razorpay_signature || req.body.razorpaySignature;
-    const orderId = req.body.orderId;
+
+    if (!razorpayOrderId || !razorpayPaymentId) {
+      return res.status(400).json({ message: "Missing Razorpay payment details" });
+    }
+
+    const order = await Order.findOne({ 'paymentResult.razorpayOrderId': razorpayOrderId });
+    if (!order) {
+      return res.status(404).json({ message: 'Associated order not found for this payment' });
+    }
 
     const key_secret = process.env.RAZORPAY_KEY_SECRET || 'test_key_secret';
 
     // Mock verification for development/testing
-    if (!razorpayOrderId || razorpayOrderId.startsWith('order_mock_') || key_secret === 'test_key_secret' || key_secret === 'dummy_key_secret') {
-      if (orderId) {
-        const order = await Order.findById(orderId);
-        if (order) {
-          order.isPaid = true;
-          order.paidAt = Date.now();
-          order.paymentResult = {
-            razorpayOrderId: razorpayOrderId || `order_mock_${Date.now()}`,
-            razorpayPaymentId: razorpayPaymentId || `pay_mock_${Date.now()}`,
-            razorpaySignature: razorpaySignature || 'mock_signature',
-            status: 'Paid'
-          };
-          const updatedOrder = await order.save();
-          return res.status(200).json({ message: "Payment verified successfully (Mock)", order: updatedOrder });
-        }
-      }
-      return res.status(200).json({ message: "Payment verified successfully (Mock)" });
+    if (razorpayOrderId.startsWith('order_mock_') || key_secret === 'test_key_secret' || key_secret === 'dummy_key_secret') {
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      order.paymentResult = {
+        razorpayOrderId,
+        razorpayPaymentId: razorpayPaymentId || `pay_mock_${Date.now()}`,
+        razorpaySignature: razorpaySignature || 'mock_signature',
+        status: 'Paid'
+      };
+      const updatedOrder = await order.save();
+      return res.status(200).json({ message: "Payment verified successfully (Mock)", order: updatedOrder });
+    }
+
+    if (!razorpaySignature) {
+      return res.status(400).json({ message: "Missing Razorpay signature" });
     }
 
     const sign = razorpayOrderId + "|" + razorpayPaymentId;
@@ -84,22 +106,16 @@ const verifyRazorpayPayment = async (req, res) => {
       .digest("hex");
 
     if (razorpaySignature === expectedSign) {
-      if (orderId) {
-        const order = await Order.findById(orderId);
-        if (order) {
-          order.isPaid = true;
-          order.paidAt = Date.now();
-          order.paymentResult = {
-            razorpayOrderId,
-            razorpayPaymentId,
-            razorpaySignature,
-            status: 'Paid'
-          };
-          const updatedOrder = await order.save();
-          return res.status(200).json({ message: "Payment verified successfully", order: updatedOrder });
-        }
-      }
-      return res.status(200).json({ message: "Payment verified successfully" });
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      order.paymentResult = {
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature,
+        status: 'Paid'
+      };
+      const updatedOrder = await order.save();
+      return res.status(200).json({ message: "Payment verified successfully", order: updatedOrder });
     } else {
       res.status(400).json({ message: "Invalid signature sent!" });
     }

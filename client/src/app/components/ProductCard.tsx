@@ -156,7 +156,7 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
         {/* Quick Add Drawer */}
         <Drawer open={quickAddOpen} onOpenChange={setQuickAddOpen}>
           <DrawerTrigger asChild>
-            <button className="text-[10px] md:text-xs font-medium tracking-widest uppercase underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors mt-2 md:mt-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 min-h-[32px] md:min-h-0 flex items-center">
+            <button className="text-[10px] md:text-xs font-medium tracking-widest uppercase underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors mt-2 md:mt-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 min-h-[44px] md:min-h-0 flex items-center">
               Quick Add
             </button>
           </DrawerTrigger>

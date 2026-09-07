@@ -1,6 +1,11 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --vancy-content-max: 1440px;
+  --vancy-page-padding: clamp(1rem, 4vw, 3rem);
+  --vancy-section-gap: clamp(4rem, 8vw, 9rem);
+  --vancy-grid-gap: clamp(0.75rem, 1.5vw, 1.5rem);
+
   --font-size: 16px;
   --background: #FAF8F5;
   --foreground: #333333;

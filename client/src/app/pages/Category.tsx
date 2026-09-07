@@ -119,7 +119,7 @@ export function Category() {
       <div className="container mx-auto px-6 lg:px-12">
         
         {/* Header */}
-        <div className={`flex flex-col md:flex-row justify-between items-start md:items-end border-b border-border pb-4 md:pb-8 ${filterOpen || sortOpen ? 'mb-0' : 'mb-8 md:mb-16'} sticky top-[72px] md:top-[88px] z-40 bg-background pt-4 -mx-6 px-6 lg:-mx-12 lg:px-12`}>
+        <div className={`flex flex-col md:flex-row justify-between items-start md:items-end border-b border-border pb-4 md:pb-8 ${filterOpen || sortOpen ? 'mb-0' : 'mb-8 md:mb-16'} sticky top-[72px] md:top-[88px] z-40 bg-background pt-4 -mx-6 px-6 lg:-mx-12 lg:px-12 transform-gpu`}>
           <div className="mb-4 md:mb-0">
             <h1 className="text-3xl md:text-5xl lg:text-7xl font-medium tracking-tighter uppercase mb-1 md:mb-2">{displayHeading}</h1>
             <p className="text-muted-foreground font-light text-sm">{products.length} pieces</p>

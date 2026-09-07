@@ -111,7 +111,6 @@ export function Checkout() {
           itemsPrice: currentTotal,
           shippingPrice: 0,
           totalPrice: currentTotal,
-          isPaid: false
         };
         const { data } = await api.post("/orders", orderData);
         setOrderId(data._id);
@@ -129,45 +128,45 @@ export function Checkout() {
     }
 
     try {
-      const { data: order } = await api.post("/payments/razorpay", { amount: currentTotal });
+      // 1. Create the DB Order first (unpaid)
+      const orderData = {
+        orderItems: items.map(item => ({
+          product: item.id,
+          name: item.name,
+          qty: item.quantity,
+          image: item.image,
+          price: item.price,
+          size: item.size || 'M',
+          color: item.color || 'Standard'
+        })),
+        shippingAddress: {
+          street: addressData?.address,
+          city: addressData?.city,
+          state: addressData?.state,
+          postalCode: addressData?.postalCode,
+          country: addressData?.country
+        },
+        guestEmail: addressData?.email,
+        paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Card',
+        itemsPrice: currentTotal,
+        shippingPrice: 0,
+        totalPrice: currentTotal,
+      };
+
+      const { data: savedOrder } = await api.post("/orders", orderData);
+      setOrderId(savedOrder._id);
+
+      // 2. Initiate Razorpay Order linked to DB Order
+      const { data: order } = await api.post("/payments/razorpay", { orderId: savedOrder._id });
 
       // If mock order generated (in dev environment without real Razorpay keys)
       if (order.id && order.id.startsWith("order_mock_")) {
-        const orderData = {
-          orderItems: items.map(item => ({
-            product: item.id,
-            name: item.name,
-            qty: item.quantity,
-            image: item.image,
-            price: item.price,
-            size: item.size || 'M',
-            color: item.color || 'Standard'
-          })),
-          shippingAddress: {
-            street: addressData?.address,
-            city: addressData?.city,
-            state: addressData?.state,
-            postalCode: addressData?.postalCode,
-            country: addressData?.country
-          },
-          guestEmail: addressData?.email,
-          paymentMethod: paymentMethod === 'upi' ? 'UPI' : 'Card',
-          paymentResult: {
-            razorpayOrderId: order.id,
-            razorpayPaymentId: `pay_mock_${Date.now()}`,
-            razorpaySignature: 'mock_signature',
-            status: "success",
-          },
-          itemsPrice: currentTotal,
-          shippingPrice: 0,
-          totalPrice: currentTotal,
-          isPaid: true,
-          paidAt: new Date().toISOString()
-        };
+        await api.post("/payments/razorpay/verify", {
+          razorpay_order_id: order.id,
+          razorpay_payment_id: `pay_mock_${Date.now()}`,
+          razorpay_signature: "mock_signature",
+        });
 
-        const { data: savedOrder } = await api.post("/orders", orderData);
-        setOrderId(savedOrder._id);
-        
         const sessionId = useCartStore.getState().sessionId;
         await api.delete(`/cart/clear?sessionId=${sessionId}`).catch(() => {});
         
@@ -176,6 +175,7 @@ export function Checkout() {
         return;
       }
 
+      // 3. Load SDK and open Razorpay
       const res = await loadRazorpayScript();
       if (!res) {
         alert("Razorpay SDK failed to load. Are you online?");
@@ -191,46 +191,12 @@ export function Checkout() {
         order_id: order.id,
         handler: async function (response: any) {
           try {
+            // 4. Verify payment with backend (backend will update the order to paid)
             await api.post("/payments/razorpay/verify", {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
             });
-
-            const orderData = {
-              orderItems: items.map(item => ({
-                product: item.id,
-                name: item.name,
-                qty: item.quantity,
-                image: item.image,
-                price: item.price,
-                size: item.size || 'M',
-                color: item.color || 'Standard'
-              })),
-              shippingAddress: {
-                street: addressData?.address,
-                city: addressData?.city,
-                state: addressData?.state,
-                postalCode: addressData?.postalCode,
-                country: addressData?.country
-              },
-              guestEmail: addressData?.email,
-              paymentMethod: "Razorpay",
-              paymentResult: {
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-                status: "success",
-              },
-              itemsPrice: currentTotal,
-              shippingPrice: 0,
-              totalPrice: currentTotal,
-              isPaid: true,
-              paidAt: new Date().toISOString()
-            };
-
-            const { data: savedOrder } = await api.post("/orders", orderData);
-            setOrderId(savedOrder._id);
             
             const sessionId = useCartStore.getState().sessionId;
             await api.delete(`/cart/clear?sessionId=${sessionId}`).catch(() => {});
@@ -394,78 +360,80 @@ export function Checkout() {
                     </div>
                   )}
 
-                  <div className={`transition-opacity duration-300 ${!useNewAddress && savedAddresses.length > 0 ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <input 
-                        type="text" 
-                        placeholder="First Name" 
-                        autoComplete="given-name"
-                        {...register("firstName")}
-                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
-                      />
+                  {(!useNewAddress && savedAddresses.length > 0) ? null : (
+                    <div className="transition-opacity duration-300 opacity-100">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                        <div>
+                          <input 
+                            type="text" 
+                            placeholder="First Name" 
+                            autoComplete="given-name"
+                            {...register("firstName")}
+                            className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                          />
+                        </div>
+                        <div>
+                          <input 
+                            type="text" 
+                            placeholder="Last Name" 
+                            autoComplete="family-name"
+                            {...register("lastName")}
+                            className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                          />
+                        </div>
+                      </div>
+                      <div className="mb-6">
+                        <input 
+                          type="text" 
+                          placeholder="Address" 
+                          autoComplete="street-address"
+                          {...register("address")}
+                          className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                        <div>
+                          <input 
+                            type="text" 
+                            placeholder="City" 
+                            autoComplete="address-level2"
+                            {...register("city")}
+                            className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.city ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                          />
+                        </div>
+                        <div>
+                          <input 
+                            type="text" 
+                            placeholder="State" 
+                            autoComplete="address-level1"
+                            {...register("state")}
+                            className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.state ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
+                        <div>
+                          <input 
+                            type="text" 
+                            inputMode="numeric"
+                            placeholder="Postal Code" 
+                            autoComplete="postal-code"
+                            {...register("postalCode")}
+                            className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.postalCode ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                          />
+                        </div>
+                        <div>
+                          <input 
+                            type="text" 
+                            placeholder="Country" 
+                            autoComplete="country-name"
+                            {...register("country")}
+                            className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.country ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <input 
-                        type="text" 
-                        placeholder="Last Name" 
-                        autoComplete="family-name"
-                        {...register("lastName")}
-                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-6">
-                    <input 
-                      type="text" 
-                      placeholder="Address" 
-                      autoComplete="street-address"
-                      {...register("address")}
-                      className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <input 
-                        type="text" 
-                        placeholder="City" 
-                        autoComplete="address-level2"
-                        {...register("city")}
-                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.city ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
-                      />
-                    </div>
-                    <div>
-                      <input 
-                        type="text" 
-                        placeholder="State" 
-                        autoComplete="address-level1"
-                        {...register("state")}
-                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.state ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
-                    <div>
-                      <input 
-                        type="text" 
-                        inputMode="numeric"
-                        placeholder="Postal Code" 
-                        autoComplete="postal-code"
-                        {...register("postalCode")}
-                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.postalCode ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
-                      />
-                    </div>
-                    <div>
-                      <input 
-                        type="text" 
-                        placeholder="Country" 
-                        autoComplete="country-name"
-                        {...register("country")}
-                        className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.country ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
-                      />
-                    </div>
-                  </div>
-                  </div>
+                  )}
 
                   <button 
                     type="submit"

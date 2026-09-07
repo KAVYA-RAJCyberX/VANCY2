@@ -2,7 +2,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useCartStore } from "../../store/useCartStore";
 import { useWishlistStore } from "../../store/useWishlistStore";
 import { Link, useNavigate } from "react-router";
-import { LogOut, Package, MapPin, Heart, Settings, ChevronDown, ChevronUp, RefreshCcw, MessageSquare, ShieldAlert, Star, Send, Bot, X, Camera } from "lucide-react";
+import { LogOut, Package, MapPin, Heart, Settings, ChevronDown, ChevronUp, RefreshCcw, MessageSquare, ShieldAlert, Star, Send, Bot, X, Camera, ChevronRight, User } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../lib/axios";
@@ -141,6 +141,8 @@ export function Account() {
 
   if (!user) return null;
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const handleLogout = () => {
     clearCart();
     clearWishlist();
@@ -213,7 +215,16 @@ export function Account() {
       await api.delete(`/auth/profile/addresses/${id}`);
       refetchProfile();
     } catch (error) {
-      console.error(error);
+      console.error('Error removing address', error);
+    }
+  };
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      await api.put(`/auth/profile/addresses/${id}/default`);
+      refetchProfile();
+    } catch (error) {
+      console.error('Error setting default address', error);
     }
   };
 
@@ -392,59 +403,100 @@ export function Account() {
 
   return (
     <div className="pt-32 pb-32 min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-6 lg:px-12 max-w-7xl">
+      <div className="container mx-auto px-4 md:px-6 lg:px-12 max-w-4xl">
         
-        <div className="mb-16 border-b border-border pb-12 flex justify-between items-end">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-medium tracking-tighter uppercase mb-4 text-[#D4AF37]">My Account</h1>
-            <p className="text-muted-foreground font-light text-lg">Feel the Luxury, {user.name}.</p>
-          </div>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
-          {/* Sidebar */}
-          <div className="lg:w-1/4">
-            <div className="flex flex-col sticky top-32">
-              {renderSidebarItem('overview', 'Overview', ShieldAlert)}
-              {renderSidebarItem('orders', 'Orders', Package)}
-              {renderSidebarItem('returns', 'Returns & Exchanges', RefreshCcw)}
-              {renderSidebarItem('reviews', 'My Reviews', Star)}
-              {renderSidebarItem('addresses', 'Addresses', MapPin)}
-              {renderSidebarItem('wishlist', 'Wishlist', Heart)}
-              {renderSidebarItem('support', 'Support', MessageSquare)}
-              {renderSidebarItem('settings', 'Profile', Settings)}
-              
-              <button 
-                onClick={handleLogout}
-                className="flex items-center gap-4 py-4 text-sm font-medium tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors mt-8"
-              >
-                <LogOut className="w-4 h-4" strokeWidth={1.5} />
-                Sign Out
+        <div className="flex flex-col w-full mb-8">
+          
+          {/* Profile Header Card */}
+          <div className="bg-background rounded-2xl shadow-sm border border-border p-6 md:p-8 mb-6 md:mb-8 flex items-center gap-5 md:gap-8">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#D4AF37]/10 text-[#D4AF37] flex items-center justify-center text-2xl md:text-3xl font-medium uppercase tracking-widest shrink-0">
+              {user.name.charAt(0)}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg md:text-2xl font-medium tracking-widest uppercase">{user.name}</h2>
+              <p className="text-xs md:text-sm text-muted-foreground font-light mb-2 md:mb-4 line-clamp-1">{user.email}</p>
+              <button onClick={() => setActiveTab('settings')} className="text-[10px] md:text-xs uppercase tracking-widest font-medium border-b border-[#D4AF37] text-[#D4AF37] pb-0.5 hover:text-foreground transition-colors min-h-[32px]">
+                Edit Profile
               </button>
             </div>
           </div>
 
+          {/* Quick-Access Icon Grid */}
+          <div className="bg-background rounded-2xl shadow-sm border border-border p-4 md:p-8 mb-8 md:mb-12">
+            <div className="grid grid-cols-4 gap-y-6 md:gap-y-10 gap-x-2 md:gap-x-4">
+              {[
+                { id: 'orders', label: 'Orders', Icon: Package },
+                { id: 'wishlist', label: 'Wishlist', Icon: Heart },
+                { id: 'reviews', label: 'Reviews', Icon: Star },
+                { id: 'addresses', label: 'Address', Icon: MapPin },
+                { id: 'returns', label: 'Returns', Icon: RefreshCcw },
+                { id: 'support', label: 'Support', Icon: MessageSquare },
+                { id: 'settings', label: 'Profile', Icon: User },
+                { id: 'overview', label: 'Summary', Icon: ShieldAlert },
+              ].map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id as any)}
+                  className="flex flex-col items-center justify-center gap-2 min-h-[64px] group"
+                >
+                  <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-all duration-300 ${activeTab === id ? 'bg-[#D4AF37] text-white shadow-md' : 'bg-muted/30 text-muted-foreground group-hover:bg-[#D4AF37]/20 group-hover:text-[#D4AF37]'}`}>
+                    <Icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
+                  </div>
+                  <span className={`text-[9px] md:text-[10px] font-medium tracking-widest uppercase text-center w-full truncate px-1 transition-colors ${activeTab === id ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                    {label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Main Content */}
-          <div className="lg:w-3/4 min-h-[600px]">
+          <div className="min-h-[400px] mb-12">
             <AnimatePresence mode="wait">
               {activeTab === 'overview' && (
                 <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
-                  <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Account Overview</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                    <div className="border border-border p-8 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setActiveTab('orders')}>
-                      <Package className="w-6 h-6 mb-4 text-[#D4AF37]" strokeWidth={1} />
-                      <h3 className="text-lg font-medium tracking-widest uppercase mb-2">Active Orders</h3>
-                      <p className="text-sm text-muted-foreground font-light">{orders.filter((o:any) => !o.isDelivered).length} orders in progress</p>
+                  <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-6 md:mb-8">Account Overview</h2>
+                  
+                  {/* Active Orders Horizontal Scroll (Mobile Only) */}
+                  {orders.filter((o:any) => !o.isDelivered).length > 0 && (
+                    <div className="md:hidden w-full overflow-x-auto hide-scrollbar pb-6 mb-2">
+                      <div className="flex gap-4 w-max">
+                        {orders.filter((o:any) => !o.isDelivered).map((order: any) => (
+                          <div key={order._id} onClick={() => setActiveTab('orders')} className="border border-border rounded-xl shadow-sm p-4 w-[280px] shrink-0 cursor-pointer active:bg-muted/30">
+                            <div className="flex justify-between items-center mb-4">
+                              <span className="text-[10px] font-medium tracking-widest uppercase text-[#D4AF37]">Order #{order._id.substring(18)}</span>
+                              <span className="text-[10px] font-medium uppercase text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              {order.orderItems[0] && (
+                                <img src={order.orderItems[0].image} alt="Item" className="w-12 h-12 rounded-md object-cover bg-muted" />
+                              )}
+                              <div>
+                                <p className="text-sm font-medium line-clamp-1">{order.isPaid || order.paymentMethod === 'COD' ? 'Processing' : 'Payment Pending'}</p>
+                                <p className="text-xs text-muted-foreground mt-1">₹{order.totalPrice.toLocaleString()}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="border border-border p-8 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setActiveTab('support')}>
-                      <MessageSquare className="w-6 h-6 mb-4 text-[#D4AF37]" strokeWidth={1} />
-                      <h3 className="text-lg font-medium tracking-widest uppercase mb-2">Support Tickets</h3>
-                      <p className="text-sm text-muted-foreground font-light">{tickets.filter((t:any) => t.status !== 'resolved' && t.status !== 'closed').length} open tickets</p>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <div className="hidden md:block border border-border rounded-2xl md:rounded-none md:p-8 p-6 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setActiveTab('orders')}>
+                      <Package className="w-5 h-5 md:w-6 md:h-6 mb-4 text-[#D4AF37]" strokeWidth={1} />
+                      <h3 className="text-base md:text-lg font-medium tracking-widest uppercase mb-1 md:mb-2">Active Orders</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground font-light">{orders.filter((o:any) => !o.isDelivered).length} orders in progress</p>
                     </div>
-                    <div className="border border-border p-8 hover:bg-muted/30 transition-colors cursor-pointer md:col-span-2 lg:col-span-1" onClick={() => setActiveTab('reviews')}>
-                      <Star className="w-6 h-6 mb-4 text-[#D4AF37]" strokeWidth={1} />
-                      <h3 className="text-lg font-medium tracking-widest uppercase mb-2">My Reviews</h3>
-                      <p className="text-sm text-muted-foreground font-light">{reviews.length} reviews submitted</p>
+                    <div className="border border-border rounded-2xl md:rounded-none md:p-8 p-6 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setActiveTab('support')}>
+                      <MessageSquare className="w-5 h-5 md:w-6 md:h-6 mb-4 text-[#D4AF37]" strokeWidth={1} />
+                      <h3 className="text-base md:text-lg font-medium tracking-widest uppercase mb-1 md:mb-2">Support Tickets</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground font-light">{tickets.filter((t:any) => t.status !== 'resolved' && t.status !== 'closed').length} open tickets</p>
+                    </div>
+                    <div className="border border-border rounded-2xl md:rounded-none md:p-8 p-6 hover:bg-muted/30 transition-colors cursor-pointer md:col-span-2 lg:col-span-1" onClick={() => setActiveTab('reviews')}>
+                      <Star className="w-5 h-5 md:w-6 md:h-6 mb-4 text-[#D4AF37]" strokeWidth={1} />
+                      <h3 className="text-base md:text-lg font-medium tracking-widest uppercase mb-1 md:mb-2">My Reviews</h3>
+                      <p className="text-xs md:text-sm text-muted-foreground font-light">{reviews.length} reviews submitted</p>
                     </div>
                   </div>
                 </motion.div>
@@ -1005,7 +1057,7 @@ export function Account() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       {profile?.savedAddresses?.map((address: any, idx: number) => (
                         <div key={address._id} className="border border-border p-8 relative">
-                          {idx === 0 && <span className="absolute top-6 right-6 text-[10px] font-medium uppercase tracking-widest text-[#D4AF37]">Primary</span>}
+                          {address.isDefault && <span className="absolute top-6 right-6 text-[10px] font-medium uppercase tracking-widest text-[#D4AF37]">Primary</span>}
                           <h4 className="font-medium uppercase tracking-widest text-sm mb-4">{user.name}</h4>
                           <div className="text-sm font-light text-muted-foreground leading-relaxed mb-6">
                             <p>{address.street}</p>
@@ -1015,6 +1067,9 @@ export function Account() {
                           <div className="flex gap-6">
                             <button onClick={() => { setEditingAddress(address); setAddressForm(address); setShowAddressForm(true); }} className="text-xs font-medium uppercase tracking-widest hover:text-[#D4AF37] transition-colors">Edit</button>
                             <button onClick={() => handleRemoveAddress(address._id)} className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">Remove</button>
+                            {!address.isDefault && (
+                              <button onClick={() => handleSetDefaultAddress(address._id)} className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors">Set Default</button>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -1090,8 +1145,80 @@ export function Account() {
               )}
             </AnimatePresence>
           </div>
+          
+          {/* Grouped Settings List */}
+          <div className="bg-background rounded-2xl shadow-sm border border-border overflow-hidden mb-8 md:mb-12">
+            <Link to="/shipping" className="flex items-center justify-between p-4 md:p-6 border-b border-border hover:bg-muted/10 active:bg-muted/30 transition-colors min-h-[48px] md:min-h-[64px]">
+              <div className="flex items-center gap-4 text-xs md:text-sm font-medium tracking-widest uppercase">
+                <Package className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" strokeWidth={1.5} /> Shipping & Returns Policy
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+            </Link>
+            <Link to="/faq" className="flex items-center justify-between p-4 md:p-6 border-b border-border hover:bg-muted/10 active:bg-muted/30 transition-colors min-h-[48px] md:min-h-[64px]">
+              <div className="flex items-center gap-4 text-xs md:text-sm font-medium tracking-widest uppercase">
+                <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" strokeWidth={1.5} /> FAQs
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+            </Link>
+            <Link to="/terms" className="flex items-center justify-between p-4 md:p-6 border-b border-border hover:bg-muted/10 active:bg-muted/30 transition-colors min-h-[48px] md:min-h-[64px]">
+              <div className="flex items-center gap-4 text-xs md:text-sm font-medium tracking-widest uppercase">
+                <ShieldAlert className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" strokeWidth={1.5} /> Terms & Privacy
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+            </Link>
+            <button 
+              onClick={() => { setActiveTab('settings'); setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100); }} 
+              className="flex w-full items-center justify-between p-4 md:p-6 hover:bg-muted/10 active:bg-muted/30 transition-colors min-h-[48px] md:min-h-[64px]"
+            >
+              <div className="flex items-center gap-4 text-xs md:text-sm font-medium tracking-widest uppercase">
+                <Settings className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground" strokeWidth={1.5} /> Data & Privacy Settings
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
+            </button>
+          </div>
+
+          {/* Sign Out */}
+          <div className="flex justify-center pb-8 border-t border-border pt-8 md:pt-12">
+            <button 
+              onClick={() => setShowLogoutConfirm(true)}
+              className="text-xs md:text-sm font-medium tracking-widest uppercase text-red-700/90 hover:text-red-800 transition-colors min-h-[48px] md:min-h-[56px] px-8 md:px-12 py-2 border border-red-200 rounded-full bg-red-50 hover:bg-red-100"
+            >
+              Sign Out Securely
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-background rounded-2xl shadow-xl w-full max-w-sm p-6 border border-border"
+            >
+              <h3 className="text-lg font-medium tracking-widest uppercase mb-2">Sign Out</h3>
+              <p className="text-sm text-muted-foreground font-light mb-8">Are you sure you want to securely sign out of your Vancy account?</p>
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={handleLogout}
+                  className="w-full py-4 text-xs font-medium tracking-widest uppercase rounded-full bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors min-h-[48px]"
+                >
+                  Yes, Sign Out
+                </button>
+                <button 
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="w-full py-4 text-xs font-medium tracking-widest uppercase rounded-full border border-border hover:bg-muted/50 transition-colors min-h-[48px]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

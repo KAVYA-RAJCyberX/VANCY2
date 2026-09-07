@@ -117,12 +117,17 @@ const addAddress = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    if (req.body.isDefault) {
+      user.savedAddresses.forEach(addr => addr.isDefault = false);
+    }
+
     const newAddress = {
       street: req.body.street,
       city: req.body.city,
       state: req.body.state,
       postalCode: req.body.postalCode,
-      country: req.body.country
+      country: req.body.country,
+      isDefault: req.body.isDefault || user.savedAddresses.length === 0 // Make default if it's the first address
     };
 
     user.savedAddresses.push(newAddress);
@@ -145,11 +150,18 @@ const updateAddress = async (req, res) => {
     const address = user.savedAddresses.id(req.params.id);
     if (!address) return res.status(404).json({ message: 'Address not found' });
 
+    if (req.body.isDefault) {
+      user.savedAddresses.forEach(addr => addr.isDefault = false);
+    }
+
     address.street = req.body.street || address.street;
     address.city = req.body.city || address.city;
     address.state = req.body.state || address.state;
     address.postalCode = req.body.postalCode || address.postalCode;
     address.country = req.body.country || address.country;
+    if (req.body.isDefault !== undefined) {
+      address.isDefault = req.body.isDefault;
+    }
 
     await user.save();
     res.json(user.savedAddresses);
@@ -166,9 +178,39 @@ const removeAddress = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    const address = user.savedAddresses.id(req.params.id);
+    const wasDefault = address && address.isDefault;
+
     user.savedAddresses.pull({ _id: req.params.id });
+    
+    // If we deleted the default, make the first remaining address the default
+    if (wasDefault && user.savedAddresses.length > 0) {
+      user.savedAddresses[0].isDefault = true;
+    }
+
     await user.save();
 
+    res.json(user.savedAddresses);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Set default address
+// @route   PUT /api/auth/addresses/:id/default
+// @access  Private
+const setDefaultAddress = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const address = user.savedAddresses.id(req.params.id);
+    if (!address) return res.status(404).json({ message: 'Address not found' });
+
+    user.savedAddresses.forEach(addr => addr.isDefault = false);
+    address.isDefault = true;
+
+    await user.save();
     res.json(user.savedAddresses);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -224,4 +266,4 @@ const requestDataExportDelete = async (req, res) => {
   }
 };
 
-module.exports = { authUser, registerUser, logoutUser, getUserProfile, updateUserProfile, addAddress, updateAddress, removeAddress, requestDataExportDelete };
+module.exports = { authUser, registerUser, logoutUser, getUserProfile, updateUserProfile, addAddress, updateAddress, removeAddress, setDefaultAddress, requestDataExportDelete };

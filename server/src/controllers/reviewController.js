@@ -133,3 +133,75 @@ exports.hideReview = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// @desc    Update a review
+// @route   PUT /api/reviews/:id
+// @access  Private
+exports.updateReview = async (req, res) => {
+  try {
+    const { rating, comment, images } = req.body;
+    const review = await Review.findById(req.params.id);
+
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    if (review.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this review' });
+    }
+
+    if (rating) review.rating = Number(rating);
+    if (comment) review.comment = comment;
+    if (images) review.images = images;
+
+    await review.save();
+
+    // Update product stats
+    const allReviews = await Review.find({ product: review.product, isHidden: false });
+    const numReviews = allReviews.length;
+    const avgRating = numReviews > 0 ? allReviews.reduce((acc, item) => item.rating + acc, 0) / numReviews : 0;
+
+    await Product.findByIdAndUpdate(review.product, {
+      rating: avgRating,
+      numReviews
+    });
+
+    res.status(200).json({ message: 'Review updated successfully', review });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Delete a review
+// @route   DELETE /api/reviews/:id
+// @access  Private
+exports.deleteReview = async (req, res) => {
+  try {
+    const review = await Review.findById(req.params.id);
+
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+
+    if (review.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this review' });
+    }
+
+    const productId = review.product;
+    await Review.deleteOne({ _id: review._id });
+
+    // Update product stats
+    const allReviews = await Review.find({ product: productId, isHidden: false });
+    const numReviews = allReviews.length;
+    const avgRating = numReviews > 0 ? allReviews.reduce((acc, item) => item.rating + acc, 0) / numReviews : 0;
+
+    await Product.findByIdAndUpdate(productId, {
+      rating: avgRating,
+      numReviews
+    });
+
+    res.status(200).json({ message: 'Review removed' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

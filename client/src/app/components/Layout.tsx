@@ -189,54 +189,62 @@ export function Layout() {
       {/* Header */}
       <header 
         className={`w-full z-50 fixed top-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] pt-[env(safe-area-inset-top)] ${
-          isScrolled ? 'bg-background/90 backdrop-blur-xl py-4 md:py-6 border-b border-border' : 'bg-transparent py-6 md:py-10'
-        }`}
+          isScrolled ? 'bg-background/95 backdrop-blur-xl py-4 md:py-6 border-b border-border' : 'bg-transparent py-6 md:py-10'
+        } ${!isScrolled && location.pathname === '/' ? 'text-white' : 'text-foreground'}`}
       >
         <div className="container mx-auto px-4 md:px-6 lg:px-12 flex items-center justify-between">
           
-          <button className="lg:hidden text-foreground hover:text-accent transition-colors flex items-center justify-center min-w-[48px] min-h-[48px] -ml-2" onClick={() => setMobileMenuOpen(true)} aria-label="Open Menu">
-            <VancyMenu className="w-6 h-6" strokeWidth={1} />
+          <button className={`lg:hidden transition-colors flex items-center justify-center min-w-[48px] min-h-[48px] -ml-2 ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md' : 'text-foreground hover:text-accent'}`} onClick={() => setMobileMenuOpen(true)} aria-label="Open Menu">
+            <VancyMenu className="w-6 h-6" strokeWidth={1.5} />
           </button>
           
           <nav className="hidden lg:flex gap-10 flex-1 items-center">
             <div className="relative group/shop">
-              <span className="text-sm font-medium tracking-widest uppercase cursor-pointer py-4">Shop</span>
+              <span className={`text-sm font-medium tracking-widest uppercase cursor-pointer py-4 transition-colors ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`}>Shop</span>
               <div className="absolute left-0 top-full mt-2 w-48 bg-background border border-border shadow-xl opacity-0 invisible group-hover/shop:opacity-100 group-hover/shop:visible transition-all duration-300 z-50 flex flex-col py-2">
-                <Link to="/category/polo-shirts" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-muted transition-colors">Polo Tshirt</Link>
-                <Link to="/category/joggers" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-muted transition-colors">Joggers</Link>
+                <Link to="/category/polo-shirts" className="px-4 py-2 text-sm font-medium tracking-wider uppercase text-foreground hover:bg-muted transition-colors">Polo Tshirt</Link>
+                <Link to="/category/joggers" className="px-4 py-2 text-sm font-medium tracking-wider uppercase text-foreground hover:bg-muted transition-colors">Joggers</Link>
               </div>
             </div>
-            <NavLink to="/journal">Journal</NavLink>
-            <NavLink to="/about">About</NavLink>
+            <Link to="/journal" className={`text-sm font-medium tracking-widest uppercase relative group transition-colors ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`}>
+              Journal
+              <span className="absolute left-1/2 -bottom-2 w-1 h-1 rounded-full bg-accent opacity-0 group-hover:opacity-100 transform -translate-x-1/2 transition-opacity duration-300"></span>
+            </Link>
+            <Link to="/about" className={`text-sm font-medium tracking-widest uppercase relative group transition-colors ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`}>
+              About
+              <span className="absolute left-1/2 -bottom-2 w-1 h-1 rounded-full bg-accent opacity-0 group-hover:opacity-100 transform -translate-x-1/2 transition-opacity duration-300"></span>
+            </Link>
           </nav>
 
           {/* Logo Section */}
           <Link to="/" className="flex-1 lg:flex-none flex justify-center items-center relative z-10 group">
-            <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-12 md:h-16 lg:h-20 object-contain transition-all duration-300" />
+            <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className={`h-12 md:h-16 lg:h-20 object-contain transition-all duration-500 ${!isScrolled && location.pathname === '/' ? 'brightness-0 invert drop-shadow-md' : ''}`} />
           </Link>
           
           <div className="flex items-center justify-end gap-1 md:gap-4 lg:gap-8 flex-1">
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-              className="text-foreground hover:text-accent transition-colors hidden md:flex items-center justify-center min-w-[44px] min-h-[44px]"
+              className={`transition-colors hidden md:flex items-center justify-center min-w-[44px] min-h-[44px] ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`}
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </button>
-            <button onClick={() => setSearchOpen(true)} className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[48px] min-h-[48px]" aria-label="Search">
+            <button onClick={() => setSearchOpen(true)} className={`hidden md:flex items-center justify-center min-w-[48px] min-h-[48px] ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`} aria-label="Search">
               <Search className="w-5 h-5" strokeWidth={1.5} />
             </button>
-            <Link to={user ? "/account" : "/login"} className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[48px] min-h-[48px]" aria-label="Account">
+            <Link to={user ? "/account" : "/login"} className={`hidden md:flex items-center justify-center min-w-[48px] min-h-[48px] ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`} aria-label="Account">
               <User className="w-5 h-5" strokeWidth={1.5} />
             </Link>
-            <NotificationsDropdown />
-            <Link to="/wishlist" className="text-foreground hover:text-accent hidden md:flex items-center justify-center min-w-[48px] min-h-[48px] relative" aria-label="Wishlist">
+            
+            <Link to="/wishlist" className={`hidden md:flex items-center justify-center min-w-[48px] min-h-[48px] relative ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`} aria-label="Wishlist">
               <Heart className="w-5 h-5" strokeWidth={1.5} />
               {wishlistItems.length > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent"></span>}
             </Link>
-            <button onClick={() => setCartOpen(true)} className="text-foreground hover:text-accent flex items-center justify-center min-w-[48px] min-h-[48px] relative -mr-2 md:-mr-0" aria-label="Cart">
-              <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
-              {totalItems > 0 && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-accent"></span>}
+            <button onClick={() => setCartOpen(true)} className={`flex items-center justify-center min-w-[48px] min-h-[48px] -mr-2 md:-mr-0 ${!isScrolled && location.pathname === '/' ? 'text-white drop-shadow-md hover:text-white/80' : 'text-foreground hover:text-accent'}`} aria-label="Cart">
+              <div className="relative flex">
+                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
+                {totalItems > 0 && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-accent"></span>}
+              </div>
             </button>
           </div>
         </div>
@@ -254,13 +262,13 @@ export function Layout() {
             <motion.div 
               initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
               transition={{ type: "tween", duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed inset-y-0 left-0 w-full max-w-[320px] bg-background shadow-2xl z-[70] flex flex-col border-r border-border lg:hidden"
+              className="fixed inset-y-0 left-0 w-[85vw] sm:max-w-[400px] bg-background shadow-2xl z-[70] flex flex-col border-r border-border lg:hidden"
             >
               <div className="p-6 flex justify-between items-center border-b border-border/50">
-                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center">
+                <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center min-h-[48px]">
                   <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-12 object-contain" />
                 </Link>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-accent transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <button onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-accent transition-colors min-w-[48px] min-h-[48px] flex items-center justify-center">
                   <VancyClose className="w-5 h-5" strokeWidth={1} />
                 </button>
               </div>
@@ -377,7 +385,7 @@ export function Layout() {
         {searchOpen && <SearchModal onClose={() => setSearchOpen(false)} />}
       </AnimatePresence>
 
-      <main className="flex-grow flex flex-col w-full">
+      <main className="flex-grow flex flex-col w-full pb-[calc(env(safe-area-inset-bottom,16px)+64px)] md:pb-0">
         <Outlet />
       </main>
 
@@ -400,36 +408,36 @@ export function Layout() {
             <Accordion type="single" collapsible className="w-full uppercase tracking-widest">
               <AccordionItem value="shop" className="border-b border-border">
                 <AccordionTrigger className="text-xs font-medium py-6 hover:no-underline">Shop</AccordionTrigger>
-                <AccordionContent className="flex flex-col gap-4 pb-6">
-                  <Link to="/category/new" className="text-xs text-muted-foreground hover:text-foreground transition-colors">New Arrivals</Link>
-                  <Link to="/category/all" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Collections</Link>
-                  <Link to="/category/sale" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Sale</Link>
+                <AccordionContent className="flex flex-col pb-2">
+                  <Link to="/category/new" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">New Arrivals</Link>
+                  <Link to="/category/all" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Collections</Link>
+                  <Link to="/category/sale" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Sale</Link>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="help" className="border-b border-border">
                 <AccordionTrigger className="text-xs font-medium py-6 hover:no-underline">Help</AccordionTrigger>
-                <AccordionContent className="flex flex-col gap-4 pb-6">
-                  <Link to="/contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
-                  <Link to="/shipping" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Shipping & Returns</Link>
-                  <Link to="/size-guide" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Size Guide</Link>
+                <AccordionContent className="flex flex-col pb-2">
+                  <Link to="/contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Contact</Link>
+                  <Link to="/shipping" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Shipping & Returns</Link>
+                  <Link to="/size-guide" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Size Guide</Link>
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="about" className="border-b border-border">
                 <AccordionTrigger className="text-xs font-medium py-6 hover:no-underline">About</AccordionTrigger>
-                <AccordionContent className="flex flex-col gap-4 pb-6">
-                  <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Our Story</Link>
-                  <Link to="/journal" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Journal</Link>
-                  <Link to="/careers" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Careers</Link>
+                <AccordionContent className="flex flex-col pb-2">
+                  <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Our Story</Link>
+                  <Link to="/journal" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Journal</Link>
+                  <Link to="/careers" className="text-xs text-muted-foreground hover:text-foreground transition-colors min-h-[44px] flex items-center">Careers</Link>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
             
             <div className="mt-12 flex flex-col gap-6 text-center">
               <h4 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Follow Us</h4>
-              <div className="flex justify-center gap-8">
-                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors">Instagram</a>
-                <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors">Pinterest</a>
-                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors">Facebook</a>
+              <div className="flex justify-center gap-4">
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors min-h-[44px] flex items-center px-4">Instagram</a>
+                <a href="https://pinterest.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors min-h-[44px] flex items-center px-4">Pinterest</a>
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-xs uppercase tracking-widest hover:text-accent transition-colors min-h-[44px] flex items-center px-4">Facebook</a>
               </div>
             </div>
 
@@ -506,9 +514,11 @@ export function Layout() {
           <Search className="w-5 h-5" strokeWidth={1.5} />
           <span className="text-[9px] font-medium tracking-widest uppercase">Search</span>
         </button>
-        <button onClick={() => setCartOpen(true)} className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] relative active:scale-95 transition-transform">
-          <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-          {totalItems > 0 && <span className="absolute top-1 right-3 w-1.5 h-1.5 rounded-full bg-accent"></span>}
+        <button onClick={() => setCartOpen(true)} className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] active:scale-95 transition-transform">
+          <div className="relative flex">
+            <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+            {totalItems > 0 && <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-accent"></span>}
+          </div>
           <span className="text-[9px] font-medium tracking-widest uppercase">Cart</span>
         </button>
         <Link to={user ? "/account" : "/login"} className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground min-w-[60px] min-h-[48px] active:scale-95 transition-transform">

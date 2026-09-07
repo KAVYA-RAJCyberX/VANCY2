@@ -37,7 +37,8 @@ const userSchema = new mongoose.Schema({
     city: String,
     state: String,
     postalCode: String,
-    country: String
+    country: String,
+    isDefault: { type: Boolean, default: false }
   }],
   wishlist: [{
     type: mongoose.Schema.Types.ObjectId,

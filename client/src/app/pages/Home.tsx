@@ -35,54 +35,71 @@ export function Home() {
   });
 
   useEffect(() => {
+    let mm = gsap.matchMedia();
     const ctx = gsap.context(() => {
-      // Hero Animations
-      gsap.fromTo(heroImgRef.current, 
-        { scale: 1.1, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 1.8, ease: "power4.out" }
-      );
-
-      gsap.fromTo(".hero-text",
-        { y: 50, opacity: 0 },
-        { y: 0, opacity: 1, duration: 1.2, stagger: 0.2, ease: "power4.out", delay: 0.5 }
-      );
-
-      if (lookbookRef.current) {
-        gsap.fromTo(".lookbook-img",
-          { scale: 0.9, opacity: 0 },
-          {
-            scale: 1, opacity: 1, duration: 1.5, ease: "power4.out",
-            scrollTrigger: {
-              trigger: lookbookRef.current,
-              start: "top 70%",
-            }
-          }
+      mm.add("(min-width: 768px)", () => {
+        // Hero Animations
+        gsap.fromTo(heroImgRef.current, 
+          { scale: 1.1, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 1.8, ease: "power4.out" }
         );
-      }
+
+        gsap.fromTo(".hero-text",
+          { y: 50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 1.2, stagger: 0.2, ease: "power4.out", delay: 0.5 }
+        );
+
+        if (lookbookRef.current) {
+          gsap.fromTo(".lookbook-img",
+            { scale: 0.9, opacity: 0 },
+            {
+              scale: 1, opacity: 1, duration: 1.5, ease: "power4.out",
+              scrollTrigger: {
+                trigger: lookbookRef.current,
+                start: "top 70%",
+              }
+            }
+          );
+        }
+      });
+      
+      mm.add("(max-width: 767px)", () => {
+        // Lighter or zero animation on mobile
+        gsap.set([heroImgRef.current, ".hero-text", ".lookbook-img"], { opacity: 1, scale: 1, y: 0 });
+      });
     });
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      mm.revert();
+    };
   }, []);
 
   useEffect(() => {
+    let mm = gsap.matchMedia();
     if (products.length > 0 && collectionRef.current) {
       const ctx = gsap.context(() => {
-        gsap.fromTo(".collection-item",
-          { y: 100, opacity: 0 },
-          {
-            y: 0, opacity: 1, duration: 1.2, stagger: 0.2, ease: "power4.out",
-            scrollTrigger: {
-              trigger: collectionRef.current,
-              start: "top 80%",
+        mm.add("(min-width: 768px)", () => {
+          gsap.fromTo(".collection-item",
+            { y: 100, opacity: 0 },
+            {
+              y: 0, opacity: 1, duration: 1.2, stagger: 0.2, ease: "power4.out",
+              scrollTrigger: {
+                trigger: collectionRef.current,
+                start: "top 75%",
+              }
             }
-          }
-        );
+          );
+        });
         
-        setTimeout(() => {
-          ScrollTrigger.refresh();
-        }, 100);
+        mm.add("(max-width: 767px)", () => {
+          gsap.set(".collection-item", { opacity: 1, y: 0 });
+        });
       });
-      return () => ctx.revert();
+      return () => {
+        ctx.revert();
+        mm.revert();
+      };
     }
   }, [products]);
 
@@ -92,34 +109,48 @@ export function Home() {
     <div className="flex flex-col w-full bg-background selection:bg-black selection:text-white">
       
       {/* Hero Section */}
-      <section className="relative w-full h-[100dvh] min-h-[600px] md:h-screen md:min-h-[800px] flex items-center justify-center overflow-hidden bg-[#FDFBF7]">
+      <section className="relative w-full h-[75svh] min-h-[500px] md:h-[85svh] lg:h-[90svh] md:min-h-[700px] flex items-center justify-center overflow-hidden bg-black border-none">
         <div className="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none z-0">
-          <img src="/images/logo/vancy-logo.png" alt="Vancy Logo Background" className="w-[80vw] h-[80vw] object-contain opacity-50 grayscale contrast-200 brightness-0 dark:invert" />
+          <img src="/images/logo/vancy-logo.png" alt="Vancy Logo Background" className="w-[80vw] h-[80vw] object-contain opacity-50 grayscale contrast-200 brightness-0" />
         </div>
-        <div ref={heroImgRef} className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-          <img 
-            src="/images/landing-page/hero-bg.jpg"
-            alt="Editorial Fashion Campaign"
-            className="absolute inset-0 w-full h-full object-cover object-center opacity-80 dark:opacity-0 transition-opacity duration-[1500ms] ease-in-out"
-          />
-          <img 
-            src="/images/landing-page/dark-hero-bg.png"
-            alt="Editorial Fashion Campaign Dark"
-            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 dark:opacity-80 transition-opacity duration-[1500ms] ease-in-out"
-          />
+        
+        {/* Layer 1: Image */}
+        <div ref={heroImgRef} className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-black/5">
+          <picture>
+            <source media="(max-width: 768px)" srcSet="/images/landing-page/mobile-vancy-banner.webp" />
+            <img 
+              src="/images/landing-page/desktop-vancy-banner.webp"
+              alt="VANCY Modern Essentials"
+              className="absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-[1500ms] ease-in-out"
+            />
+          </picture>
         </div>
-        <div className="relative z-10 w-full px-4 md:px-6 lg:px-12 flex flex-col justify-end h-full pb-[calc(10vh+env(safe-area-inset-bottom,16px))] md:pb-24">
-          <div ref={heroTextRef} className="pt-10 md:pt-0">
-            <h1 className="hero-text text-[clamp(2.75rem,12vw,10rem)] leading-[0.85] font-medium tracking-[0.05em] text-foreground uppercase max-w-5xl">
-              Timeless<br/>Essentials
+
+        {/* Layer 2: Overlay for Header Contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-transparent h-[30%] z-10 pointer-events-none"></div>
+
+        {/* Layer 3: Decorative Background Typography */}
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none overflow-hidden">
+          <div className="text-[clamp(6rem,15vw,12rem)] leading-[0.85] font-medium tracking-tighter text-black opacity-10 uppercase whitespace-nowrap select-none text-center">
+            Timeless<br/>Essentials
+          </div>
+        </div>
+
+        {/* Layer 4, 5 & 6: Primary Content */}
+        <div className="relative z-20 w-full max-w-[1920px] mx-auto px-4 md:px-6 lg:px-12 flex flex-col justify-end h-full pb-[calc(10vh+env(safe-area-inset-bottom,16px))] md:pb-24 overflow-hidden">
+          <div ref={heroTextRef} className="pt-10 md:pt-0 max-w-full">
+            <h1 className="hero-text text-[clamp(2.5rem,8vw,5rem)] leading-[1.05] font-medium tracking-tighter text-white uppercase drop-shadow-md">
+              Modern<br/>Essentials
             </h1>
-            <p className="hero-text text-sm md:text-lg mt-8 max-w-md font-medium text-foreground/80 leading-loose uppercase tracking-widest">
-              Refined simplicity. Crafted for everyday living without compromise.
+            <p className="hero-text text-xs md:text-sm mt-6 max-w-md font-medium text-white/90 leading-relaxed uppercase tracking-[0.2em] drop-shadow">
+              Premium Polo T-Shirts & Joggers
             </p>
-            <div className="hero-text mt-12 mb-8 md:mb-0">
-              <Button href="/category/all" withArrow variant="default" className="min-h-[44px]">
-                Explore Collection
-              </Button>
+            <div className="hero-text mt-10 mb-8 md:mb-0">
+              <Link to="/category/all" className="inline-block">
+                <Button withArrow variant="default" className="min-h-[48px] text-white hover:text-white/80 transition-colors drop-shadow">
+                  Shop Now
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -176,7 +207,7 @@ export function Home() {
             <img 
               src="/images/landing-page/hero-bg.jpg" 
               alt="Editorial Styling" 
-              className="absolute inset-0 w-full h-full object-cover object-center mix-blend-multiply" 
+              className="absolute inset-0 w-full h-full object-cover object-[25%_center] md:object-center mix-blend-multiply" 
             />
           </div>
           

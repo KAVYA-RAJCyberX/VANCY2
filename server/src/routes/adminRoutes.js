@@ -16,6 +16,7 @@ const {
   deleteCoupon,
   getAdminProducts,
   inviteStaff,
+  getProductInsights,
   updateProductStock,
   createProduct,
   updateProduct,

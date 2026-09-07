@@ -14,7 +14,8 @@ const {
   createCoupon,
   updateCoupon,
   deleteCoupon,
-  getProductInsights,
+  getAdminProducts,
+  inviteStaff,
   updateProductStock,
   createProduct,
   updateProduct,
@@ -39,6 +40,7 @@ router.get('/customers', requireRole(['support-staff', 'manager', 'super-admin']
 
 // Staff & Audit Logs (Super Admin only)
 router.get('/staff', requireRole(['super-admin']), getAdminStaff);
+router.post('/staff/invite', requireRole(['super-admin']), inviteStaff);
 router.put('/staff/:id/role', requireRole(['super-admin']), updateStaffRole);
 router.get('/audit-logs', requireRole(['super-admin']), getAuditLogs);
 
@@ -50,6 +52,7 @@ router.put('/coupons/:id', requireRole(['manager', 'super-admin']), updateCoupon
 router.delete('/coupons/:id', requireRole(['manager', 'super-admin']), deleteCoupon);
 
 // Product Insights & Management
+router.get('/products', requireRole(['support-staff', 'manager', 'super-admin']), getAdminProducts);
 router.get('/products/:id/cross-reference', requireRole(['support-staff', 'manager', 'super-admin']), getProductInsights);
 router.put('/products/:id/stock', requireRole(['support-staff', 'manager', 'super-admin']), updateProductStock);
 router.post('/products', requireRole(['manager', 'super-admin']), createProduct);

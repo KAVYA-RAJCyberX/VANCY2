@@ -523,6 +523,51 @@ const updateSettings = async (req, res) => {
   }
 };
 
+// @desc    Get all products (Admin view including stock/variants)
+// @route   GET /api/admin/products
+const getAdminProducts = async (req, res) => {
+  try {
+    const products = await Product.find({}).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch admin products', error: error.message });
+  }
+};
+
+// @desc    Invite staff
+// @route   POST /api/admin/staff/invite
+const inviteStaff = async (req, res) => {
+  try {
+    const { name, email, phone, role } = req.body;
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Generate a temporary password
+    const tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
+
+    const user = await User.create({
+      name,
+      email,
+      password: tempPassword,
+      phone,
+      role,
+      isAdmin: true,
+    });
+
+    // Mock sending email
+    console.log(`[EMAIL MOCK] To: ${email} | Subject: Staff Invitation | Password: ${tempPassword}`);
+
+    await logAction(req.user._id, 'INVITE_STAFF', 'User', user._id, null, { role }, req);
+
+    res.status(201).json({ message: 'Staff invited successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to invite staff', error: error.message });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAdminOrders,
@@ -542,5 +587,7 @@ module.exports = {
   updateProduct,
   deleteProduct,
   getSettings,
-  updateSettings
+  updateSettings,
+  getAdminProducts,
+  inviteStaff
 };

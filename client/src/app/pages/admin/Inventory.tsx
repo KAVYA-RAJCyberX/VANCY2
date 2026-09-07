@@ -19,7 +19,7 @@ export function Inventory() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await api.get("/products");
+        const { data } = await api.get("/admin/products");
         setProducts(data);
       } catch (err: any) {
         setError(err.response?.data?.message || "Failed to load inventory");

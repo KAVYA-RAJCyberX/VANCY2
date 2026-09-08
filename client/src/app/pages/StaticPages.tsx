@@ -145,3 +145,34 @@ export function FAQ() {
     </StaticPageLayout>
   );
 }
+
+export function CookiePolicy() {
+  return (
+    <StaticPageLayout title="Cookie Policy">
+      <div className="space-y-8 font-light leading-relaxed">
+        <p>Last updated: June 2026</p>
+        <p>This Cookie Policy explains how VANCY uses cookies and similar technologies to recognize you when you visit our website. It explains what these technologies are and why we use them, as well as your rights to control our use of them.</p>
+        
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">What are cookies?</h3>
+          <p>Cookies are small data files that are placed on your computer or mobile device when you visit a website. Cookies are widely used by website owners in order to make their websites work, or to work more efficiently, as well as to provide reporting information.</p>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">Why do we use cookies?</h3>
+          <p className="mb-4">We use first and third party cookies for several reasons. Some cookies are required for technical reasons in order for our website to operate, and we refer to these as "strictly necessary" cookies.</p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Strictly Necessary Cookies:</strong> These cookies are essential to provide you with services available through our website and to use some of its features, such as access to secure areas. Because these cookies are strictly necessary to deliver the website, you cannot refuse them without impacting how our website functions.</li>
+            <li><strong>Analytics Cookies:</strong> These cookies collect information that is used either in aggregate form to help us understand how our website is being used or how effective our marketing campaigns are, or to help us customize our website for you.</li>
+            <li><strong>Marketing Cookies:</strong> These cookies are used to make advertising messages more relevant to you. They perform functions like preventing the same ad from continuously reappearing, ensuring that ads are properly displayed, and in some cases selecting advertisements that are based on your interests.</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 className="text-xl font-medium text-foreground mb-4">How can I control cookies?</h3>
+          <p>You have the right to decide whether to accept or reject optional cookies. You can exercise your cookie rights by setting your preferences in the Cookie Consent Manager, accessible via the link in our website footer.</p>
+        </div>
+      </div>
+    </StaticPageLayout>
+  );
+}

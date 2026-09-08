@@ -82,23 +82,31 @@ export function Login() {
           )}
           
           <div>
+            <label htmlFor="email" className="sr-only">Email Address</label>
             <input 
+              id="email"
               type="email" 
               placeholder="Email Address" 
+              aria-invalid={errors.email ? "true" : "false"}
+              aria-describedby={errors.email ? "email-error" : undefined}
               {...register("email")}
               className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.email ? 'border-red-500' : 'border-border focus:border-foreground'}`}
             />
-            {errors.email && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.email.message}</p>}
+            {errors.email && <p id="email-error" className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.email.message}</p>}
           </div>
           
           <div>
+            <label htmlFor="password" className="sr-only">Password</label>
             <input 
+              id="password"
               type="password" 
               placeholder="Password" 
+              aria-invalid={errors.password ? "true" : "false"}
+              aria-describedby={errors.password ? "password-error" : undefined}
               {...register("password")}
               className={`w-full bg-transparent border-b py-4 text-sm focus:outline-none transition-colors placeholder:text-muted-foreground/50 ${errors.password ? 'border-red-500' : 'border-border focus:border-foreground'}`}
             />
-            {errors.password && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.password.message}</p>}
+            {errors.password && <p id="password-error" className="text-red-500 text-xs mt-2 uppercase tracking-widest">{errors.password.message}</p>}
           </div>
           
           <div className="flex justify-between items-center text-xs font-medium uppercase tracking-widest pt-4">

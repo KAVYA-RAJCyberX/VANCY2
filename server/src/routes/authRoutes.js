@@ -2,9 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { authUser, registerUser, logoutUser, getUserProfile, updateUserProfile, addAddress, updateAddress, removeAddress, setDefaultAddress, requestDataExportDelete } = require('../controllers/authController');
 const { protect } = require('../middlewares/authMiddleware');
+const rateLimit = require('express-rate-limit');
 
-router.post('/login', authUser);
-router.post('/register', registerUser);
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: { message: 'Too many attempts, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.post('/login', authLimiter, authUser);
+router.post('/register', authLimiter, registerUser);
 router.post('/logout', logoutUser);
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
 router.post('/profile/dpdp-request', protect, requestDataExportDelete);

@@ -1,8 +1,9 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -10,12 +11,13 @@ const api = axios.create({
 
 // Attach the correct token on every request
 api.interceptors.request.use((config) => {
-  if (!import.meta.env.VITE_API_URL) {
-    return Promise.reject(new Error("VITE_API_URL is not configured in environment variables"));
+  if (!config.baseURL) {
+    config.baseURL = API_URL;
   }
 
   try {
-    const isAdminRoute = config.url?.startsWith('/admin');
+    const isAuthRoute = config.url?.includes('/auth/');
+    const isAdminRoute = config.url?.startsWith('/admin') && !isAuthRoute;
 
     if (isAdminRoute) {
       const adminToken = localStorage.getItem('admin_access_token');
@@ -71,11 +73,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    const isAdminRoute = originalRequest?.url?.startsWith('/admin');
+    const isAuthRoute = originalRequest?.url?.includes('/auth/');
+    const isAdminRoute = originalRequest?.url?.startsWith('/admin') && !isAuthRoute;
     const is401 = error.response?.status === 401;
-    const isRefreshRoute = originalRequest?.url?.includes('/auth/refresh');
 
-    if (isAdminRoute && is401 && !isRefreshRoute && !originalRequest._retry) {
+    if (isAdminRoute && is401 && !originalRequest._retry) {
       if (isRefreshing) {
         // Queue this request until refresh completes
         return new Promise((resolve, reject) => {
@@ -90,7 +92,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { data } = await api.post('/admin/auth/refresh');
+        const { data } = await api.post('/admin/auth/refresh', {}, { withCredentials: true });
         const newToken = data.accessToken;
         localStorage.setItem('admin_access_token', newToken);
         originalRequest.headers.Authorization = `Bearer ${newToken}`;

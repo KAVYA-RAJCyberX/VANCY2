@@ -48,7 +48,7 @@ export function Luxury() {
       </div>
 
       <div className="w-full aspect-[21/9] bg-muted overflow-hidden mb-32">
-        <img src="https://images.unsplash.com/photo-1596755094514-f87e32f85e98?q=80&w=2500&auto=format&fit=crop" alt="Vancy Prive" className="w-full h-full object-cover mix-blend-multiply opacity-80 grayscale" />
+        <img src="https://images.unsplash.com/photo-1596755094514-f87e32f85e98?q=80&w=2500&auto=format&fit=crop" alt="Vancy Prive" className="w-full h-full object-cover mix-blend-multiply opacity-80 grayscale" loading="lazy" decoding="async" />
       </div>
 
       {/* Collection Grid */}
@@ -77,6 +77,8 @@ export function Luxury() {
                       src={hoveredId === product._id && product.images.length > 1 ? product.images[1] : product.images[0]}
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale group-hover:grayscale-0"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </Link>
 

@@ -85,6 +85,7 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
             alt={product.name}
             loading={priorityLoad ? "eager" : "lazy"}
             fetchPriority={priorityLoad ? "high" : "auto"}
+            decoding={priorityLoad ? "sync" : "async"}
             className={`absolute inset-0 w-full h-full object-cover mix-blend-multiply transition-opacity duration-700 ease-out ${
               hoveredId === product._id && product.images.length > 1 ? 'opacity-0 md:opacity-0' : 'opacity-100'
             }`}
@@ -94,6 +95,7 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
               src={product.images[1]}
               alt={`${product.name} Alternate`}
               loading={priorityLoad ? "eager" : "lazy"}
+              decoding={priorityLoad ? "sync" : "async"}
               className={`absolute inset-0 w-full h-full object-cover mix-blend-multiply transition-opacity duration-700 ease-out hidden md:block ${
                 hoveredId === product._id ? 'opacity-100' : 'opacity-0'
               }`}
@@ -111,7 +113,7 @@ export function ProductCard({ product, idx, priorityLoad = false }: ProductCardP
                 image: product.images[0]
               });
             }}
-            className="absolute top-2 right-2 md:top-4 md:right-4 z-10 p-2 text-foreground hover:scale-110 transition-transform min-w-[40px] min-h-[40px] flex items-center justify-center bg-background/60 backdrop-blur-md rounded-full sm:bg-transparent sm:backdrop-blur-none sm:rounded-none opacity-100 md:opacity-0 md:group-hover:opacity-100"
+            className="absolute top-2 right-2 md:top-4 md:right-4 z-10 p-2 text-foreground hover:scale-110 transition-transform min-w-[44px] min-h-[44px] flex items-center justify-center bg-background/60 backdrop-blur-md rounded-full sm:bg-transparent sm:backdrop-blur-none sm:rounded-none opacity-100 md:opacity-0 md:group-hover:opacity-100"
             aria-label="Toggle Wishlist"
           >
             <Heart 

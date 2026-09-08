@@ -46,7 +46,7 @@ export function Lookbook() {
           </div>
 
           <div className="lookbook-image aspect-[3/4] bg-muted overflow-hidden md:mt-24">
-            <img src="https://images.unsplash.com/photo-1596755094514-f87e32f85e98?q=80&w=1500&auto=format&fit=crop" alt="Look 2" className="w-full h-full object-cover mix-blend-multiply" />
+            <img src="https://images.unsplash.com/photo-1596755094514-f87e32f85e98?q=80&w=1500&auto=format&fit=crop" alt="Look 2" className="w-full h-full object-cover mix-blend-multiply" loading="lazy" decoding="async" />
           </div>
           
           <div className="flex flex-col justify-center max-w-md mx-auto md:ml-12">
@@ -64,11 +64,11 @@ export function Lookbook() {
           </div>
 
           <div className="lookbook-image aspect-[3/4] bg-muted overflow-hidden order-1 md:order-2 md:mt-24">
-            <img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?q=80&w=1500&auto=format&fit=crop" alt="Look 3" className="w-full h-full object-cover mix-blend-multiply" />
+            <img src="https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?q=80&w=1500&auto=format&fit=crop" alt="Look 3" className="w-full h-full object-cover mix-blend-multiply" loading="lazy" decoding="async" />
           </div>
 
           <div className="lookbook-image md:col-span-2 aspect-[21/9] bg-muted overflow-hidden mt-16">
-            <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=2500&auto=format&fit=crop" alt="Look 4" className="w-full h-full object-cover mix-blend-multiply object-top" />
+            <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=2500&auto=format&fit=crop" alt="Look 4" className="w-full h-full object-cover mix-blend-multiply object-top" loading="lazy" decoding="async" />
           </div>
         </div>
       </div>

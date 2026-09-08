@@ -415,7 +415,7 @@ export function Account() {
             <div className="flex-1">
               <h2 className="text-lg md:text-2xl font-medium tracking-widest uppercase">{user.name}</h2>
               <p className="text-xs md:text-sm text-muted-foreground font-light mb-2 md:mb-4 line-clamp-1">{user.email}</p>
-              <button onClick={() => setActiveTab('settings')} className="text-[10px] md:text-xs uppercase tracking-widest font-medium border-b border-[#D4AF37] text-[#D4AF37] pb-0.5 hover:text-foreground transition-colors min-h-[32px]">
+              <button onClick={() => setActiveTab('settings')} className="text-[10px] md:text-xs uppercase tracking-widest font-medium border-b border-[#D4AF37] text-[#D4AF37] pb-0.5 hover:text-foreground transition-colors min-h-[44px] flex items-center justify-start">
                 Edit Profile
               </button>
             </div>

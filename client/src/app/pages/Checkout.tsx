@@ -303,15 +303,19 @@ export function Checkout() {
                 >
                   <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Contact Information</h2>
                   <div className="mb-12">
+                    <label htmlFor="checkout-email" className="sr-only">Email Address</label>
                     <input 
+                      id="checkout-email"
                       type="email" 
                       inputMode="email"
                       placeholder="Email Address" 
                       autoComplete="email"
+                      aria-invalid={errors.email ? "true" : "false"}
+                      aria-describedby={errors.email ? "checkout-email-error" : undefined}
                       {...register("email")}
                       className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                     />
-                    {errors.email && <p className="text-red-500 text-xs mt-2">{errors.email.message}</p>}
+                    {errors.email && <p id="checkout-email-error" className="text-red-500 text-xs mt-2">{errors.email.message}</p>}
                   </div>
                   
                   <h2 className="text-xs font-medium tracking-widest uppercase text-muted-foreground mb-8">Shipping Address</h2>
@@ -364,72 +368,107 @@ export function Checkout() {
                     <div className="transition-opacity duration-300 opacity-100">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                         <div>
+                          <label htmlFor="firstName" className="sr-only">First Name</label>
                           <input 
+                            id="firstName"
                             type="text" 
                             placeholder="First Name" 
                             autoComplete="given-name"
+                            aria-invalid={errors.firstName ? "true" : "false"}
+                            aria-describedby={errors.firstName ? "firstName-error" : undefined}
                             {...register("firstName")}
                             className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                           />
+                          {errors.firstName && <p id="firstName-error" className="text-red-500 text-xs mt-2">{errors.firstName.message}</p>}
                         </div>
                         <div>
+                          <label htmlFor="lastName" className="sr-only">Last Name</label>
                           <input 
+                            id="lastName"
                             type="text" 
                             placeholder="Last Name" 
                             autoComplete="family-name"
+                            aria-invalid={errors.lastName ? "true" : "false"}
+                            aria-describedby={errors.lastName ? "lastName-error" : undefined}
                             {...register("lastName")}
                             className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                           />
+                          {errors.lastName && <p id="lastName-error" className="text-red-500 text-xs mt-2">{errors.lastName.message}</p>}
                         </div>
                       </div>
                       <div className="mb-6">
+                        <label htmlFor="address" className="sr-only">Address</label>
                         <input 
+                          id="address"
                           type="text" 
                           placeholder="Address" 
                           autoComplete="street-address"
+                          aria-invalid={errors.address ? "true" : "false"}
+                          aria-describedby={errors.address ? "address-error" : undefined}
                           {...register("address")}
                           className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                         />
+                        {errors.address && <p id="address-error" className="text-red-500 text-xs mt-2">{errors.address.message}</p>}
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                         <div>
+                          <label htmlFor="city" className="sr-only">City</label>
                           <input 
+                            id="city"
                             type="text" 
                             placeholder="City" 
                             autoComplete="address-level2"
+                            aria-invalid={errors.city ? "true" : "false"}
+                            aria-describedby={errors.city ? "city-error" : undefined}
                             {...register("city")}
                             className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.city ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                           />
+                          {errors.city && <p id="city-error" className="text-red-500 text-xs mt-2">{errors.city.message}</p>}
                         </div>
                         <div>
+                          <label htmlFor="state" className="sr-only">State</label>
                           <input 
+                            id="state"
                             type="text" 
                             placeholder="State" 
                             autoComplete="address-level1"
+                            aria-invalid={errors.state ? "true" : "false"}
+                            aria-describedby={errors.state ? "state-error" : undefined}
                             {...register("state")}
                             className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.state ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                           />
+                          {errors.state && <p id="state-error" className="text-red-500 text-xs mt-2">{errors.state.message}</p>}
                         </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-16">
                         <div>
+                          <label htmlFor="postalCode" className="sr-only">Postal Code</label>
                           <input 
+                            id="postalCode"
                             type="text" 
                             inputMode="numeric"
                             placeholder="Postal Code" 
                             autoComplete="postal-code"
+                            aria-invalid={errors.postalCode ? "true" : "false"}
+                            aria-describedby={errors.postalCode ? "postalCode-error" : undefined}
                             {...register("postalCode")}
                             className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.postalCode ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                           />
+                          {errors.postalCode && <p id="postalCode-error" className="text-red-500 text-xs mt-2">{errors.postalCode.message}</p>}
                         </div>
                         <div>
+                          <label htmlFor="country" className="sr-only">Country</label>
                           <input 
+                            id="country"
                             type="text" 
                             placeholder="Country" 
                             autoComplete="country-name"
+                            aria-invalid={errors.country ? "true" : "false"}
+                            aria-describedby={errors.country ? "country-error" : undefined}
                             {...register("country")}
                             className={`w-full bg-transparent border-b p-4 focus:outline-none transition-colors ${errors.country ? 'border-red-500' : 'border-border focus:border-foreground'}`} 
                           />
+                          {errors.country && <p id="country-error" className="text-red-500 text-xs mt-2">{errors.country.message}</p>}
                         </div>
                       </div>
                     </div>

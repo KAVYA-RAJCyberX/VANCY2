@@ -168,7 +168,7 @@ export function ProductDetail() {
                 price: product.price,
                 image: galleryImages[0] || product.images[0]
               })}
-              className={`absolute top-4 right-4 md:hidden z-10 p-2 min-w-[40px] min-h-[40px] flex items-center justify-center bg-background/60 backdrop-blur-md rounded-full transition-transform`}
+              className={`absolute top-4 right-4 md:hidden z-10 p-2 min-w-[44px] min-h-[44px] flex items-center justify-center bg-background/60 backdrop-blur-md rounded-full transition-transform`}
               aria-label={inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
             >
               <Heart className={`w-5 h-5 transition-colors ${inWishlist ? 'fill-foreground text-foreground' : 'text-foreground'}`} strokeWidth={inWishlist ? 0 : 1.5} />
@@ -185,6 +185,8 @@ export function ProductDetail() {
                           src={img} 
                           alt={`${product.name} in ${selectedColor}`} 
                           className="w-full h-full object-cover mix-blend-multiply opacity-90" 
+                          loading={idx === 0 ? "eager" : "lazy"}
+                          decoding={idx === 0 ? "sync" : "async"}
                         />
                       </div>
                     </CarouselItem>
@@ -218,6 +220,8 @@ export function ProductDetail() {
                         src={img} 
                         alt={`${product.name} in ${selectedColor}`} 
                         className="w-full h-full object-cover mix-blend-multiply opacity-90" 
+                        loading={idx === 0 ? "eager" : "lazy"}
+                        decoding={idx === 0 ? "sync" : "async"}
                       />
                     </div>
                   ))}
@@ -282,13 +286,13 @@ export function ProductDetail() {
                             onClick={() => handleColorSelect(color)}
                             onMouseEnter={() => setHoveredColor(color)}
                             onMouseLeave={() => setHoveredColor(null)}
-                            className="relative flex items-center justify-center w-8 h-8 rounded-full outline-none focus:outline-none"
+                            className="relative flex items-center justify-center w-[44px] h-[44px] rounded-full outline-none focus:outline-none"
                             aria-label={`Select ${color} color`}
                           >
                             {isSelected && (
                               <motion.div
                                 layoutId="selected-color-ring"
-                                className="absolute inset-0 rounded-full border border-foreground"
+                                className="absolute w-8 h-8 rounded-full border border-foreground"
                                 initial={false}
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 style={{ padding: '2px' }}

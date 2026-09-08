@@ -32,7 +32,8 @@ const sendInviteEmail = async (email, token, role) => {
       }
     });
 
-    const inviteLink = `${process.env.FRONTEND_URL}/admin/invite/accept/${token}`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5175';
+    const inviteLink = `${baseUrl}/admin/invite/accept/${token}`;
     
     // For local testing: log the invite link so it can be clicked
     console.log('\n=============================================');

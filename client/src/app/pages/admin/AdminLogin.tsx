@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import api from "../../../lib/axios";
 
@@ -15,6 +15,10 @@ export function AdminLogin() {
   const navigate = useNavigate();
   const { login } = useAdminAuth();
 
+  useEffect(() => {
+    localStorage.removeItem('admin_access_token');
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -28,7 +32,8 @@ export function AdminLogin() {
         setStep('verify-2fa');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed');
+      console.error('Admin login error:', err);
+      setError(err.response?.data?.message || err.message || 'Login failed');
     }
   };
 
@@ -45,7 +50,8 @@ export function AdminLogin() {
       
       navigate('/admin');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid 2FA code');
+      console.error('Admin 2FA error:', err);
+      setError(err.response?.data?.message || err.message || 'Invalid 2FA code');
     }
   };
 

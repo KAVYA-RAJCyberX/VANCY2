@@ -2,18 +2,31 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const connectDB = require('./config/db');
 
 const app = express();
 
 // CORS Middleware - MUST be before DB connection to ensure fast preflight without DB dependency
 const corsOptions = { 
-  origin: [
-    'https://vancy-2.vercel.app',
-    process.env.CLIENT_URL,
-    'http://localhost:5173',
-    'http://localhost:3000'
-  ].filter(Boolean), 
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      return callback(null, true);
+    }
+    const allowedOrigins = [
+      process.env.CLIENT_URL,
+      process.env.FRONTEND_URL,
+      process.env.ADMIN_URL,
+      'http://localhost:5173',
+      'http://localhost:5175',
+      'http://localhost:3000'
+    ].filter(Boolean);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  }, 
   credentials: true 
 };
 app.use(cors(corsOptions));
@@ -35,8 +48,35 @@ app.use(async (req, res, next) => {
 });
 
 // Middlewares
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+      connectSrc: ["'self'", process.env.CLIENT_URL, process.env.FRONTEND_URL, process.env.ADMIN_URL, "http://localhost:5173", "http://localhost:5175"].filter(Boolean),
+      frameAncestors: ["'none'"], // Protect against Clickjacking
+    },
+  },
+  crossOriginResourcePolicy: { policy: "cross-origin" }, // API must be accessible from the frontend domain
+}));
 app.use(express.json());
 app.use(cookieParser());
+
+const rateLimit = require('express-rate-limit');
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Generous limit for normal shopping/browsing
+  message: { message: 'Too many requests from this IP, please try again after 15 minutes' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api', apiLimiter);
+
+const { csrfProtection } = require('./middlewares/csrfMiddleware');
+app.use('/api', csrfProtection);
 
 // Basic Route
 app.get('/', (req, res) => {

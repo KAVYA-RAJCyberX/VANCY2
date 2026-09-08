@@ -24,6 +24,7 @@ const Contact = lazy(() => import("./pages/StaticPages").then((m) => ({ default:
 const Shipping = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Shipping })));
 const Terms = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Terms })));
 const Privacy = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.Privacy })));
+const CookiePolicy = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.CookiePolicy })));
 const FAQ = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.FAQ })));
 
 // Admin Pages
@@ -118,6 +119,7 @@ export const router = createBrowserRouter([
       { path: "shipping", element: <Suspense fallback={<PageLoader />}><Shipping /></Suspense> },
       { path: "terms", element: <Suspense fallback={<PageLoader />}><Terms /></Suspense> },
       { path: "privacy", element: <Suspense fallback={<PageLoader />}><Privacy /></Suspense> },
+      { path: "cookie-policy", element: <Suspense fallback={<PageLoader />}><CookiePolicy /></Suspense> },
       { path: "faq", element: <Suspense fallback={<PageLoader />}><FAQ /></Suspense> },
 
       // Catch-all 404

@@ -16,6 +16,8 @@ import { useTheme } from "next-themes";
 import { Sun, Moon, Search, ShoppingBag, User, Heart, Home, Grid, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
+import { CookieBanner } from "./CookieBanner";
+import { useCookieConsentStore } from "../../store/useCookieConsentStore";
 
 function StemLeaf({ scrollYProgress, pos, i }: { scrollYProgress: any, pos: number, i: number }) {
   const opacity = useTransform(scrollYProgress, [pos - 0.1, pos], [0, 1]);
@@ -103,6 +105,8 @@ export function Layout() {
   const [isScrolled, setIsScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
   
+  const { showBanner } = useCookieConsentStore();
+  
   const totalItems = useCartStore((state) => state.items.reduce((acc, item) => acc + item.quantity, 0));
   const cartItems = useCartStore((state) => state.items) || [];
   const cartTotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -151,12 +155,22 @@ export function Layout() {
     }
     requestAnimationFrame(raf);
 
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    const observerTarget = document.getElementById('scroll-observer-target');
+    let observer: IntersectionObserver | null = null;
+    
+    if (observerTarget) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          setIsScrolled(!entry.isIntersecting);
+        },
+        { threshold: 0 }
+      );
+      observer.observe(observerTarget);
+    }
     
     return () => {
       lenis.destroy();
-      window.removeEventListener('scroll', handleScroll);
+      if (observer) observer.disconnect();
     };
   }, []);
 
@@ -200,6 +214,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-background text-foreground selection:bg-accent selection:text-foreground">
+      <div id="scroll-observer-target" className="absolute top-0 left-0 w-full h-[50px] pointer-events-none opacity-0" />
       
       <AnimatePresence>
         {loading && (
@@ -296,7 +311,7 @@ export function Layout() {
                 <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center min-h-[48px]">
                   <img src="/images/logo/vancy-logo.png" alt="Vancy Logo" className="h-12 object-contain" />
                 </Link>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground hover:text-accent transition-colors min-w-[48px] min-h-[48px] flex items-center justify-center">
+                <button onClick={() => setMobileMenuOpen(false)} aria-label="Close Mobile Menu" className="text-muted-foreground hover:text-accent transition-colors min-w-[48px] min-h-[48px] flex items-center justify-center">
                   <VancyClose className="w-5 h-5" strokeWidth={1} />
                 </button>
               </div>
@@ -342,7 +357,7 @@ export function Layout() {
             >
               <div className="p-6 md:p-10 flex justify-between items-center border-b border-border/50">
                 <h2 className="text-xs font-medium tracking-[0.2em] uppercase">Your Wardrobe</h2>
-                <button onClick={() => setCartOpen(false)} className="text-muted-foreground hover:text-accent transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2">
+                <button onClick={() => setCartOpen(false)} aria-label="Close Cart" className="text-muted-foreground hover:text-accent transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2">
                   <VancyClose className="w-5 h-5" strokeWidth={1} />
                 </button>
               </div>
@@ -360,7 +375,7 @@ export function Layout() {
                 ) : (
                   cartItems.map((item, idx) => (
                     <div key={idx} className="flex gap-6 items-start relative group">
-                      <button onClick={() => removeItem(item.id, item._id)} className="absolute -left-4 top-0 p-2 text-muted-foreground hover:text-accent md:opacity-0 group-hover:opacity-100 transition-opacity min-w-[44px] min-h-[44px] flex items-center justify-center">
+                      <button onClick={() => removeItem(item.id, item._id)} aria-label="Remove item" className="absolute -left-4 top-0 p-2 text-muted-foreground hover:text-accent md:opacity-0 group-hover:opacity-100 transition-opacity min-w-[44px] min-h-[44px] flex items-center justify-center">
                         <VancyClose className="w-4 h-4" />
                       </button>
                       <div className="w-24 aspect-square bg-muted overflow-hidden relative">
@@ -373,12 +388,12 @@ export function Layout() {
                           <p className="text-xs text-muted-foreground">{item.size} / {item.color}</p>
                         </div>
                         <div className="flex justify-between items-end mt-6">
-                          <div className="flex items-center gap-4 border border-border px-3 py-1">
-                            <button onClick={() => updateQuantity(item.id, item.quantity - 1, item._id)} className="text-muted-foreground hover:text-accent transition-colors p-2 min-w-[32px] min-h-[32px] flex items-center justify-center">
+                          <div className="flex items-center gap-2 border border-border px-1 py-1">
+                            <button onClick={() => updateQuantity(item.id, item.quantity - 1, item._id)} aria-label="Decrease quantity" className="text-muted-foreground hover:text-accent transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
                               <VancyMinus className="w-3 h-3" />
                             </button>
                             <span className="text-xs font-medium w-4 text-center">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, item.quantity + 1, item._id)} className="text-muted-foreground hover:text-accent transition-colors p-2 min-w-[32px] min-h-[32px] flex items-center justify-center">
+                            <button onClick={() => updateQuantity(item.id, item.quantity + 1, item._id)} aria-label="Increase quantity" className="text-muted-foreground hover:text-accent transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center">
                               <VancyPlus className="w-3 h-3" />
                             </button>
                           </div>
@@ -485,14 +500,16 @@ export function Layout() {
                 Receive early access to new collections, editorials, and exclusive releases.
               </p>
               <form className="flex border-b border-border pb-3 group relative" onSubmit={handleNewsletterSubmit}>
+                <label htmlFor="newsletter-email" className="sr-only">Email Address</label>
                 <input 
+                  id="newsletter-email"
                   type="email" 
                   placeholder="Email Address" 
                   value={newsletterEmail}
                   onChange={(e) => setNewsletterEmail(e.target.value)}
                   className="bg-transparent w-full focus:outline-none placeholder:text-muted-foreground/40 normal-case tracking-normal" 
                 />
-                <button type="submit" className="text-muted-foreground group-hover:text-accent transition-colors">
+                <button type="submit" aria-label="Subscribe to newsletter" className="text-muted-foreground group-hover:text-accent transition-colors">
                   <VancyPlus className="w-4 h-4" />
                 </button>
                 <span className="absolute left-0 bottom-[-1px] w-full h-[1px] bg-accent scale-x-0 group-focus-within:scale-x-100 transition-transform duration-700 origin-left ease-[cubic-bezier(0.16,1,0.3,1)]"></span>
@@ -527,6 +544,7 @@ export function Layout() {
             <p>© {new Date().getFullYear()} VANCY. All Rights Reserved.</p>
             <div className="flex gap-4 md:gap-8 mt-2 md:mt-0">
               <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+              <button onClick={showBanner} className="hover:text-foreground transition-colors">Cookie Preferences</button>
               <Link to="/terms" className="hover:text-foreground transition-colors">Terms & Conditions</Link>
             </div>
             <p className="mt-2 md:mt-0">Designed without compromise.</p>
@@ -560,6 +578,8 @@ export function Layout() {
           <span className="text-[9px] font-medium tracking-widest uppercase">Profile</span>
         </Link>
       </nav>
+      
+      <CookieBanner />
     </div>
   );
 }

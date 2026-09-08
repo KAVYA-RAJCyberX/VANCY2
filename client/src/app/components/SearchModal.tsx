@@ -47,13 +47,16 @@ export function SearchModal({ onClose }: { onClose: () => void }) {
       <div className="container mx-auto flex flex-col h-full max-w-6xl relative">
         <button 
           onClick={onClose} 
+          aria-label="Close Search"
           className="absolute -top-16 right-0 text-muted-foreground hover:text-foreground transition-colors"
         >
           <X className="w-8 h-8" strokeWidth={1} />
         </button>
 
         <div className="flex items-end border-b border-border pb-6 mb-16">
+          <label htmlFor="search-input" className="sr-only">Search for products</label>
           <input
+            id="search-input"
             ref={inputRef}
             type="text"
             placeholder="Search for essentials..."

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import api from "../../../lib/axios";
 
+import { useAdminAuth } from '../context/AdminAuthContext';
+
 export function AdminLogin() {
   const [step, setStep] = useState<'login' | 'setup-2fa' | 'verify-2fa'>('login');
   const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ export function AdminLogin() {
   const [userId, setUserId] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAdminAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +37,12 @@ export function AdminLogin() {
     setError('');
     try {
       const { data } = await api.post('/admin/auth/verify-2fa', { userId, token: twoFactorToken });
-      // Store token (or rely on httpOnly cookies)
-      localStorage.setItem('admin_access_token', data.accessToken);
-      // We should ideally have a useAdminAuthStore, but for now redirect
+      
+      login({
+        accessToken: data.accessToken,
+        admin: data.user
+      });
+      
       navigate('/admin');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid 2FA code');

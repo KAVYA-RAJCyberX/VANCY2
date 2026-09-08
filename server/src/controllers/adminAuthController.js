@@ -108,11 +108,14 @@ const verify2FA = async (req, res) => {
       });
 
       res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        accessToken
+        accessToken,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          permissions: user.permissions || []
+        }
       });
     } else {
       res.status(401).json({ message: 'Invalid 2FA token' });
@@ -142,7 +145,17 @@ const refreshToken = async (req, res) => {
       await session.save();
 
       const newAccessToken = generateAccessToken(user._id, user.role);
-      res.json({ accessToken: newAccessToken });
+      
+      res.json({ 
+        accessToken: newAccessToken,
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          permissions: user.permissions || []
+        }
+      });
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

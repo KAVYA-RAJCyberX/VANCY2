@@ -33,6 +33,12 @@ const sendInviteEmail = async (email, token, role) => {
     });
 
     const inviteLink = `${process.env.FRONTEND_URL}/admin/invite/accept/${token}`;
+    
+    // For local testing: log the invite link so it can be clicked
+    console.log('\n=============================================');
+    console.log(`✉️ SIMULATED EMAIL TO: ${email}`);
+    console.log(`🔗 INVITE LINK: ${inviteLink}`);
+    console.log('=============================================\n');
 
     const mailOptions = {
       from: `"Vancy Admin" <${process.env.EMAIL_USER}>`,

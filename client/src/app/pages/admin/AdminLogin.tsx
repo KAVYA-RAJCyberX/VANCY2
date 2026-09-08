@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import api from "../../../lib/axios";
 
-import { useAdminAuth } from '../context/AdminAuthContext';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 
 export function AdminLogin() {
   const [step, setStep] = useState<'login' | 'setup-2fa' | 'verify-2fa'>('login');

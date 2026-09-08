@@ -23,7 +23,13 @@ const csrfProtection = (req, res, next) => {
   ].filter(Boolean);
 
   let isAllowed = false;
-  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+  if (
+    origin.startsWith('http://localhost:') || 
+    origin.startsWith('http://127.0.0.1:') ||
+    origin.startsWith('http://192.168.') ||
+    origin.startsWith('http://10.') ||
+    origin.startsWith('capacitor://')
+  ) {
     isAllowed = true;
   } else {
     isAllowed = allowedOrigins.some(allowed => origin === allowed || origin.startsWith(allowed + '/'));

@@ -11,7 +11,13 @@ const app = express();
 const corsOptions = { 
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    if (
+      origin.startsWith('http://localhost:') || 
+      origin.startsWith('http://127.0.0.1:') ||
+      origin.startsWith('http://192.168.') ||
+      origin.startsWith('http://10.') ||
+      origin.startsWith('capacitor://')
+    ) {
       return callback(null, true);
     }
     const allowedOrigins = [
@@ -37,13 +43,14 @@ const mongoose = require('mongoose');
 // Vercel-safe Database Connection Middleware
 app.use(async (req, res, next) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
+    // Only attempt to connect if disconnected (0). If connecting (2) or connected (1), skip.
+    if (mongoose.connection.readyState === 0) {
       await connectDB();
     }
     next();
   } catch (error) {
     console.error('Database connection failed in middleware:', error);
-    res.status(500).json({ message: 'Internal Server Error: Database connection failed.' });
+    res.status(500).json({ message: 'Database connection failed' });
   }
 });
 

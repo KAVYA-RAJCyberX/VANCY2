@@ -28,7 +28,8 @@ const csrfProtection = (req, res, next) => {
     origin.startsWith('http://127.0.0.1:') ||
     origin.startsWith('http://192.168.') ||
     origin.startsWith('http://10.') ||
-    origin.startsWith('capacitor://')
+    origin.startsWith('capacitor://') ||
+    origin.endsWith('.vercel.app')
   ) {
     isAllowed = true;
   } else {

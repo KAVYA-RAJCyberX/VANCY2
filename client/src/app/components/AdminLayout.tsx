@@ -14,47 +14,62 @@ import {
   Star,
   LogOut,
   Menu,
-  X
+  X,
+  Activity,
+  UserCircle
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useAdminAuth } from "../context/AdminAuthContext";
 
-const navItems = [
-  { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
-  { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
-  { name: 'Inventory', path: '/admin/inventory', icon: Package },
-  { name: 'Products', path: '/admin/products', icon: Tags },
-  { name: 'Customers', path: '/admin/customers', icon: Users },
-  { name: 'Discounts', path: '/admin/discounts', icon: Percent },
-  { name: 'Returns', path: '/admin/returns', icon: RefreshCcw },
-  { name: 'Support', path: '/admin/support', icon: MessageSquare },
-  { name: 'Reviews', path: '/admin/reviews', icon: Star },
-  { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
-  { name: 'Staff', path: '/admin/staff', icon: UserCog },
-  { name: 'Settings', path: '/admin/settings', icon: Settings },
+interface NavItem {
+  name: string;
+  path: string;
+  icon: any;
+  roles?: string[];
+  permissions?: string[];
+}
+
+const navItems: NavItem[] = [
+  { name: 'Dashboard', path: '/admin', icon: LayoutDashboard, roles: ['manager', 'super-admin'] },
+  { name: 'Orders', path: '/admin/orders', icon: ShoppingCart, roles: ['support-staff', 'manager', 'super-admin'], permissions: ['manage_orders'] },
+  { name: 'Inventory', path: '/admin/inventory', icon: Package, roles: ['support-staff', 'manager', 'super-admin'], permissions: ['manage_products'] },
+  { name: 'Products', path: '/admin/products', icon: Tags, roles: ['support-staff', 'manager', 'super-admin'], permissions: ['manage_products'] },
+  { name: 'Customers', path: '/admin/customers', icon: Users, roles: ['support-staff', 'manager', 'super-admin'], permissions: ['manage_users'] },
+  { name: 'Discounts', path: '/admin/discounts', icon: Percent, roles: ['manager', 'super-admin'], permissions: ['manage_settings'] },
+  { name: 'Returns', path: '/admin/returns', icon: RefreshCcw, roles: ['support-staff', 'manager', 'super-admin'], permissions: ['manage_orders'] },
+  { name: 'Support', path: '/admin/support', icon: MessageSquare, roles: ['support-staff', 'manager', 'super-admin'], permissions: ['manage_orders'] },
+  { name: 'Reviews', path: '/admin/reviews', icon: Star, roles: ['support-staff', 'manager', 'super-admin'], permissions: ['manage_products'] },
+  { name: 'Analytics', path: '/admin/analytics', icon: BarChart3, roles: ['manager', 'super-admin'], permissions: ['view_analytics'] },
+  { name: 'Staff', path: '/admin/staff', icon: UserCog, roles: ['super-admin'] },
+  { name: 'Activity Log', path: '/admin/activity', icon: Activity, roles: ['super-admin'] },
+  { name: 'Settings', path: '/admin/settings', icon: Settings, roles: ['manager', 'super-admin'], permissions: ['manage_settings'] },
 ];
 
 export function AdminLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const { currentAdmin, logout, hasRole, hasPermission } = useAdminAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem('admin_access_token');
-    if (!token) {
-      navigate('/admin/login');
-    }
-  }, [navigate, location.pathname]);
 
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_access_token');
-    navigate('/admin/login');
-  };
+  const filteredNavItems = navItems.filter(item => {
+    // If no roles or permissions specified, anyone can see it (though routes are protected)
+    if (!item.roles && !item.permissions) return true;
+    
+    // Super-admin sees everything
+    if (currentAdmin?.role === 'super-admin') return true;
+
+    // Check roles
+    if (item.roles && hasRole(item.roles)) return true;
+
+    // Check permissions
+    if (item.permissions && item.permissions.some(p => hasPermission(p))) return true;
+
+    return false;
+  });
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans text-sm text-gray-900 overflow-hidden">
@@ -93,7 +108,7 @@ export function AdminLayout() {
         
         <nav className="flex-1 overflow-y-auto py-6 px-4">
           <ul className="space-y-1.5">
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const isActive = location.pathname === item.path || 
                 (item.path !== '/admin' && location.pathname.startsWith(item.path));
               
@@ -120,13 +135,16 @@ export function AdminLayout() {
 
         <div className="p-4 border-t border-gray-100 bg-gray-50/50">
           <div className="flex items-center justify-between px-2">
-            <div className="flex flex-col">
-              <span className="text-xs text-gray-500 mb-0.5">Logged in as</span>
-              <span className="font-semibold text-gray-900 text-sm truncate max-w-[120px]">Admin</span>
-            </div>
+            <Link to="/admin/profile" className="flex items-center flex-1 hover:bg-gray-100 -ml-2 p-2 rounded-lg transition-colors overflow-hidden mr-2">
+              <UserCircle className="w-8 h-8 text-gray-400 mr-2 flex-shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="font-semibold text-gray-900 text-sm truncate">{currentAdmin?.name || 'Admin'}</span>
+                <span className="text-xs text-gray-500 truncate capitalize">{currentAdmin?.role?.replace('-', ' ')}</span>
+              </div>
+            </Link>
             <button 
-              onClick={handleLogout} 
-              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center"
+              onClick={logout} 
+              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center flex-shrink-0"
               title="Logout"
             >
               <LogOut className="w-5 h-5" />
@@ -139,7 +157,7 @@ export function AdminLayout() {
       <main className="flex-1 flex flex-col h-screen overflow-hidden pt-16 md:pt-0 bg-gray-50/50">
         <header className="hidden md:flex h-16 bg-white/80 backdrop-blur-md border-b border-gray-200/80 items-center px-8 flex-shrink-0 sticky top-0 z-30">
           <h1 className="text-xl font-semibold tracking-tight text-gray-900">
-            {navItems.find(i => i.path === location.pathname)?.name || 'Dashboard'}
+            {navItems.find(i => i.path === location.pathname)?.name || 'Admin'}
           </h1>
         </header>
         

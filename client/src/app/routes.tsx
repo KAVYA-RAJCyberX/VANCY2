@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Outlet } from "react-router";
 import { Layout } from "./components/Layout";
 import { NotFound } from "./pages/NotFound";
 
@@ -28,6 +28,7 @@ const FAQ = lazy(() => import("./pages/StaticPages").then((m) => ({ default: m.F
 
 // Admin Pages
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin").then((m) => ({ default: m.AdminLogin })));
+const AcceptInvite = lazy(() => import("./pages/admin/AcceptInvite").then((m) => ({ default: m.AcceptInvite })));
 const Dashboard = lazy(() => import("./pages/admin/Dashboard").then((m) => ({ default: m.Dashboard })));
 const AdminOrders = lazy(() => import("./pages/admin/Orders").then((m) => ({ default: m.Orders })));
 const Inventory = lazy(() => import("./pages/admin/Inventory").then((m) => ({ default: m.Inventory })));
@@ -40,7 +41,12 @@ const Settings = lazy(() => import("./pages/admin/Settings").then((m) => ({ defa
 const AdminReturns = lazy(() => import("./pages/admin/Returns").then((m) => ({ default: m.Returns })));
 const AdminSupport = lazy(() => import("./pages/admin/Support").then((m) => ({ default: m.Support })));
 const AdminReviews = lazy(() => import("./pages/admin/Reviews").then((m) => ({ default: m.Reviews })));
+const AdminProfile = lazy(() => import("./pages/admin/Profile").then((m) => ({ default: m.Profile })));
+const ActivityLog = lazy(() => import("./pages/admin/ActivityLog").then((m) => ({ default: m.ActivityLog })));
+
 import { AdminLayout } from "./components/AdminLayout";
+import { AdminAuthProvider } from "./context/AdminAuthContext";
+import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
 
 // Loading fallback component (Premium Minimal Loader)
 const PageLoader = () => (
@@ -51,27 +57,38 @@ const PageLoader = () => (
   </div>
 );
 
+// Admin wrapper provides context for all /admin routes
+const AdminRoot = () => (
+  <AdminAuthProvider>
+    <Outlet />
+  </AdminAuthProvider>
+);
+
 export const router = createBrowserRouter([
   {
     path: "/admin",
+    element: <AdminRoot />,
     children: [
       { path: "login", element: <Suspense fallback={<PageLoader />}><AdminLogin /></Suspense> },
+      { path: "invite/accept/:token", element: <Suspense fallback={<PageLoader />}><AcceptInvite /></Suspense> },
       {
         path: "",
-        element: <Suspense fallback={<PageLoader />}><AdminLayout /></Suspense>,
+        element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute /><AdminLayout /></Suspense>,
         children: [
-          { index: true, element: <Suspense fallback={<PageLoader />}><Dashboard /></Suspense> },
-          { path: "orders", element: <Suspense fallback={<PageLoader />}><AdminOrders /></Suspense> },
-          { path: "inventory", element: <Suspense fallback={<PageLoader />}><Inventory /></Suspense> },
-          { path: "products", element: <Suspense fallback={<PageLoader />}><AdminProducts /></Suspense> },
-          { path: "customers", element: <Suspense fallback={<PageLoader />}><Customers /></Suspense> },
-          { path: "discounts", element: <Suspense fallback={<PageLoader />}><Discounts /></Suspense> },
-          { path: "returns", element: <Suspense fallback={<PageLoader />}><AdminReturns /></Suspense> },
-          { path: "support", element: <Suspense fallback={<PageLoader />}><AdminSupport /></Suspense> },
-          { path: "reviews", element: <Suspense fallback={<PageLoader />}><AdminReviews /></Suspense> },
-          { path: "analytics", element: <Suspense fallback={<PageLoader />}><Analytics /></Suspense> },
-          { path: "staff", element: <Suspense fallback={<PageLoader />}><Staff /></Suspense> },
-          { path: "settings", element: <Suspense fallback={<PageLoader />}><Settings /></Suspense> },
+          { index: true, element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['manager', 'super-admin']} /><Dashboard /></Suspense> },
+          { path: "orders", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['support-staff', 'manager', 'super-admin']} permissions={['manage_orders']} /><AdminOrders /></Suspense> },
+          { path: "inventory", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['support-staff', 'manager', 'super-admin']} permissions={['manage_products']} /><Inventory /></Suspense> },
+          { path: "products", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['support-staff', 'manager', 'super-admin']} permissions={['manage_products']} /><AdminProducts /></Suspense> },
+          { path: "customers", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['support-staff', 'manager', 'super-admin']} permissions={['manage_users']} /><Customers /></Suspense> },
+          { path: "discounts", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['manager', 'super-admin']} permissions={['manage_settings']} /><Discounts /></Suspense> },
+          { path: "returns", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['support-staff', 'manager', 'super-admin']} permissions={['manage_orders']} /><AdminReturns /></Suspense> },
+          { path: "support", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['support-staff', 'manager', 'super-admin']} permissions={['manage_orders']} /><AdminSupport /></Suspense> },
+          { path: "reviews", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['support-staff', 'manager', 'super-admin']} permissions={['manage_products']} /><AdminReviews /></Suspense> },
+          { path: "analytics", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['manager', 'super-admin']} permissions={['view_analytics']} /><Analytics /></Suspense> },
+          { path: "staff", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['super-admin']} /><Staff /></Suspense> },
+          { path: "settings", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['manager', 'super-admin']} permissions={['manage_settings']} /><Settings /></Suspense> },
+          { path: "profile", element: <Suspense fallback={<PageLoader />}><AdminProfile /></Suspense> },
+          { path: "activity", element: <Suspense fallback={<PageLoader />}><AdminProtectedRoute roles={['super-admin']} /><ActivityLog /></Suspense> },
         ]
       }
     ]

@@ -25,6 +25,7 @@ const {
   updateSettings
 } = require('../controllers/adminController');
 const { getTickets, updateTicketStatus, replyToTicket } = require('../controllers/supportController');
+const { getActiveSessions, terminateSession, updatePassword, toggle2FA } = require('../controllers/adminProfileController');
 
 // All routes require a valid admin JWT
 router.use(protectAdmin);
@@ -40,8 +41,12 @@ router.put('/orders/:id/status', requireRole(['support-staff', 'manager', 'super
 router.get('/customers', requireRole(['support-staff', 'manager', 'super-admin']), getAdminCustomers);
 
 // Staff & Audit Logs (Super Admin only)
+const { getInvitations, resendInvitation, cancelInvitation } = require('../controllers/adminInviteController');
 router.get('/staff', requireRole(['super-admin']), getAdminStaff);
 router.post('/staff/invite', requireRole(['super-admin']), inviteStaff);
+router.get('/staff/invites', requireRole(['super-admin']), getInvitations);
+router.post('/staff/invites/:id/resend', requireRole(['super-admin']), resendInvitation);
+router.post('/staff/invites/:id/cancel', requireRole(['super-admin']), cancelInvitation);
 router.put('/staff/:id/access', requireRole(['super-admin']), updateStaffAccess);
 router.get('/audit-logs', requireRole(['super-admin']), getAuditLogs);
 
@@ -68,5 +73,11 @@ router.post('/support/:id/reply', requireRole(['support-staff', 'manager', 'supe
 // Settings
 router.get('/settings', requireRole(['manager', 'super-admin']), getSettings);
 router.put('/settings', requireRole(['manager', 'super-admin']), updateSettings);
+
+// Profile & Sessions
+router.get('/profile/sessions', getActiveSessions);
+router.delete('/profile/sessions/:id', terminateSession);
+router.put('/profile/password', updatePassword);
+router.post('/profile/2fa/toggle', toggle2FA);
 
 module.exports = router;

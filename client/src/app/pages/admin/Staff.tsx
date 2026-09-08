@@ -12,6 +12,7 @@ const AVAILABLE_PERMISSIONS = [
 
 export function Staff() {
   const [staff, setStaff] = useState<any[]>([]);
+  const [invites, setInvites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
@@ -23,19 +24,23 @@ export function Staff() {
   const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [accessForm, setAccessForm] = useState({ id: '', role: '', permissions: [] as string[] });
 
-  const fetchStaff = async () => {
+  const fetchData = async () => {
     try {
-      const { data } = await api.get("/admin/staff");
-      setStaff(data);
+      const [staffRes, invitesRes] = await Promise.all([
+        api.get("/admin/staff"),
+        api.get("/admin/staff/invites")
+      ]);
+      setStaff(staffRes.data);
+      setInvites(invitesRes.data);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to load staff");
+      setError(err.response?.data?.message || "Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchStaff();
+    fetchData();
   }, []);
 
   const handleUpdateAccess = async (e: React.FormEvent) => {
@@ -47,7 +52,7 @@ export function Staff() {
         permissions: accessForm.permissions 
       });
       setIsAccessModalOpen(false);
-      await fetchStaff();
+      await fetchData();
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to update access");
     } finally {
@@ -63,7 +68,7 @@ export function Staff() {
       alert("Staff invited successfully. An email with credentials has been sent.");
       setIsInviteModalOpen(false);
       setInviteForm({ name: '', email: '', phone: '', role: 'support-staff', permissions: [] });
-      await fetchStaff();
+      await fetchData();
     } catch (err: any) {
       alert(err.response?.data?.message || "Failed to invite staff");
     } finally {
@@ -81,8 +86,30 @@ export function Staff() {
     });
   };
 
+  const [activeTab, setActiveTab] = useState('staff'); // 'staff' | 'invites'
+
   if (loading) return <div className="p-6">Loading staff...</div>;
   if (error) return <div className="p-6 text-red-500">Error: {error}</div>;
+
+  const handleResendInvite = async (id: string) => {
+    try {
+      await api.post(`/admin/staff/invites/${id}/resend`);
+      alert("Invitation resent.");
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to resend invite");
+    }
+  };
+
+  const handleCancelInvite = async (id: string) => {
+    if (!confirm("Are you sure you want to cancel this invitation?")) return;
+    try {
+      await api.post(`/admin/staff/invites/${id}/cancel`);
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to cancel invite");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -96,70 +123,175 @@ export function Staff() {
           Invite Staff
         </button>
       </div>
-      
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto pr-24 lg:pr-32">
-          <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50 border-b border-gray-100 text-gray-900 uppercase tracking-wider text-xs">
-              <tr>
-                <th className="px-6 py-4 font-medium">Name</th>
-                <th className="px-6 py-4 font-medium">Email / Phone</th>
-                <th className="px-6 py-4 font-medium">Role & Permissions</th>
-                <th className="px-6 py-4 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {staff.map((user) => (
-                <tr key={user._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                    <UserCog className="w-5 h-5 text-gray-500" />
-                    {user.name}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col">
-                      <span>{user.email}</span>
-                      {user.phone && <span className="text-xs text-gray-400 mt-0.5">{user.phone}</span>}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col gap-1.5 items-start">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        user.role === 'super-admin' ? 'bg-purple-100 text-purple-700' :
-                        user.role === 'manager' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {user.role}
-                      </span>
-                      {user.role !== 'super-admin' && user.permissions?.length > 0 && (
-                        <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
-                          {user.permissions.length} Custom Permissions
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      disabled={updating === user._id}
-                      onClick={() => {
-                        setAccessForm({ id: user._id, role: user.role, permissions: user.permissions || [] });
-                        setIsAccessModalOpen(true);
-                      }}
-                      className="text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1.5 rounded transition-colors disabled:opacity-50"
-                    >
-                      {updating === user._id ? 'Updating...' : 'Manage Access'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {staff.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-gray-500">No staff members found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+
+      <div className="flex border-b border-gray-200">
+        <button 
+          onClick={() => setActiveTab('staff')}
+          className={`py-3 px-6 font-medium text-sm border-b-2 transition-colors ${activeTab === 'staff' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+        >
+          Active Staff
+        </button>
+        <button 
+          onClick={() => setActiveTab('invites')}
+          className={`py-3 px-6 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'invites' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+        >
+          Pending Invitations
+          {invites.filter((i: any) => i.status === 'pending').length > 0 && (
+            <span className="bg-black text-white text-[10px] px-1.5 py-0.5 rounded-full">
+              {invites.filter((i: any) => i.status === 'pending').length}
+            </span>
+          )}
+        </button>
       </div>
+      
+      {activeTab === 'staff' && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto pr-24 lg:pr-32">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 border-b border-gray-100 text-gray-900 uppercase tracking-wider text-xs">
+                <tr>
+                  <th className="px-6 py-4 font-medium">Name</th>
+                  <th className="px-6 py-4 font-medium">Email / Phone</th>
+                  <th className="px-6 py-4 font-medium">Role & Permissions</th>
+                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {staff.map((user) => (
+                  <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
+                      <UserCog className="w-5 h-5 text-gray-500" />
+                      {user.name}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span>{user.email}</span>
+                        {user.phone && <span className="text-xs text-gray-400 mt-0.5">{user.phone}</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1.5 items-start">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          user.role === 'super-admin' ? 'bg-purple-100 text-purple-700' :
+                          user.role === 'manager' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {user.role}
+                        </span>
+                        {user.role !== 'super-admin' && user.permissions?.length > 0 && (
+                          <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                            {user.permissions.length} Custom Permissions
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        disabled={updating === user._id}
+                        onClick={() => {
+                          setAccessForm({ id: user._id, role: user.role, permissions: user.permissions || [] });
+                          setIsAccessModalOpen(true);
+                        }}
+                        className="text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1.5 rounded transition-colors disabled:opacity-50"
+                      >
+                        {updating === user._id ? 'Updating...' : 'Manage Access'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {staff.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">No staff members found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'invites' && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto pr-24 lg:pr-32">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 border-b border-gray-100 text-gray-900 uppercase tracking-wider text-xs">
+                <tr>
+                  <th className="px-6 py-4 font-medium">Email</th>
+                  <th className="px-6 py-4 font-medium">Role & Permissions</th>
+                  <th className="px-6 py-4 font-medium">Status & Expiry</th>
+                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {invites.map((invite) => (
+                  <tr key={invite._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
+                      <Mail className="w-5 h-5 text-gray-500" />
+                      {invite.email}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1.5 items-start">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          invite.role === 'super-admin' ? 'bg-purple-100 text-purple-700' :
+                          invite.role === 'manager' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {invite.role}
+                        </span>
+                        {invite.role !== 'super-admin' && invite.permissions?.length > 0 && (
+                          <span className="text-[10px] uppercase tracking-wider text-gray-400 font-medium">
+                            {invite.permissions.length} Custom Permissions
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col items-start gap-1">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          invite.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          invite.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                          invite.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {invite.status}
+                        </span>
+                        {invite.status === 'pending' && (
+                          <span className="text-[10px] text-gray-500">
+                            Expires {new Date(invite.expiresAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      {invite.status === 'pending' && (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleResendInvite(invite._id)}
+                            className="text-xs font-medium text-blue-600 hover:text-blue-800 px-3 py-1.5 rounded transition-colors"
+                          >
+                            Resend
+                          </button>
+                          <button
+                            onClick={() => handleCancelInvite(invite._id)}
+                            className="text-xs font-medium text-red-600 hover:text-red-800 px-3 py-1.5 rounded transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {invites.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">No invitations found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Access Management Modal */}
       {isAccessModalOpen && (

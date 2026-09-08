@@ -17,4 +17,9 @@ router.post('/verify-2fa', loginLimiter, verify2FA);
 router.post('/refresh', refreshToken);
 router.post('/logout', adminLogout);
 
+// Public invitation routes
+const { validateInviteToken, acceptInvitation } = require('../controllers/adminInviteController');
+router.get('/invites/:token', validateInviteToken);
+router.post('/invites/accept', acceptInvitation);
+
 module.exports = router;

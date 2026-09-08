@@ -559,9 +559,11 @@ const inviteStaff = async (req, res) => {
   try {
     const { name, email, phone, role, permissions } = req.body;
     const sendEmail = require('../utils/sendEmail');
+    const crypto = require('crypto');
+    const StaffInvitation = require('../models/StaffInvitation');
+    const { sendInviteEmail } = require('./adminInviteController');
 
     let user = await User.findOne({ email });
-    let tempPassword = null;
 
     if (user) {
       // User exists. Upgrade them.
@@ -577,48 +579,42 @@ const inviteStaff = async (req, res) => {
         to: email,
         subject: 'Vancy - You have been granted Staff Access',
         html: `
-          <h2>Welcome to the Vancy Admin Team</h2>
-          <p>Hi ${user.name},</p>
-          <p>Your existing Vancy account has been upgraded to staff level access.</p>
-          <p><strong>Role:</strong> ${user.role}</p>
-          <p>You can now log into the admin dashboard using your existing password.</p>
-          <a href="${process.env.CLIENT_URL}/admin/login" style="padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Go to Admin Dashboard</a>
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaec; border-radius: 8px;">
+            <h2 style="color: #000;">Welcome to the Vancy Admin Team</h2>
+            <p>Hi ${user.name},</p>
+            <p>Your existing Vancy account has been upgraded to staff level access.</p>
+            <p><strong>Role:</strong> ${user.role}</p>
+            <p>You can now log into the admin dashboard using your existing password.</p>
+            <a href="${process.env.CLIENT_URL}/admin/login" style="padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Go to Admin Dashboard</a>
+          </div>
         `
       });
-
+      await logAction(req.user._id, 'UPGRADE_STAFF', 'User', user._id, null, { role, permissions }, req);
+      return res.status(200).json({ message: 'User already exists and was upgraded successfully', user });
     } else {
-      // Generate a temporary password
-      tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
+      // Create a secure token invitation
+      const existingInvite = await StaffInvitation.findOne({ email, status: 'pending' });
+      if (existingInvite) {
+        return res.status(400).json({ message: 'A pending invitation already exists for this email.' });
+      }
 
-      user = await User.create({
-        name,
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+      const invitation = await StaffInvitation.create({
         email,
-        password: tempPassword,
-        phone,
         role,
         permissions: permissions || [],
-        isAdmin: true,
+        tokenHash,
+        invitedBy: req.user._id,
+        expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000)
       });
 
-      // Email notification for new user
-      await sendEmail({
-        to: email,
-        subject: 'Vancy - Staff Invitation',
-        html: `
-          <h2>Welcome to the Vancy Admin Team</h2>
-          <p>Hi ${user.name},</p>
-          <p>An admin account has been created for you.</p>
-          <p><strong>Role:</strong> ${user.role}</p>
-          <p><strong>Temporary Password:</strong> ${tempPassword}</p>
-          <p>Please log in and change your password as soon as possible.</p>
-          <a href="${process.env.CLIENT_URL}/admin/login" style="padding: 10px 20px; background-color: #000; color: #fff; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">Log in to Admin Dashboard</a>
-        `
-      });
+      await sendInviteEmail(email, token, role);
+      await logAction(req.user._id, 'CREATE_INVITE', 'StaffInvitation', invitation._id, null, { email, role, permissions }, req);
+
+      return res.status(201).json({ message: 'Staff invitation sent successfully' });
     }
-
-    await logAction(req.user._id, 'INVITE_STAFF', 'User', user._id, null, { role, permissions }, req);
-
-    res.status(201).json({ message: 'Staff invited successfully', user });
   } catch (error) {
     console.error("Invite Staff Error:", error);
     res.status(500).json({ message: 'Failed to invite staff', error: error.message });
